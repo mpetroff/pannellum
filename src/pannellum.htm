@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>pannellum</title>
+		<meta charset="utf-8">
+		<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />
+	</head>
+	
+	<body>
+		<div id="container"></div> 
+		
+		<div id="nojavascript"><p>Javascript is required to view this panorama.<br>(It could be worse, you could need a plugin.)</p></div>
+		
+		<div id="panorama_info">
+			<div id="title_box"></div>
+			<div id="author_box"></div>
+		</div>
+		
+		<div id="zoomcontrols">
+			<div id="zoom_in" onclick="if( fov >= 40 ) {fov -= 5; camera.projectionMatrix = THREE.Matrix4.makePerspective( fov, window.innerWidth / window.innerHeight, 1, 1100 ); render();}"></div>
+			<div id="zoom_out" onclick="if( fov <= 100 ) {fov += 5; camera.projectionMatrix = THREE.Matrix4.makePerspective( fov, window.innerWidth / window.innerHeight, 1, 1100 ); render();}"></div>
+		</div>
+		
+		<div id="about_button" onclick="if(about_box.style.display == 'inline'){about_box.style.display = 'none';} else{about_box.style.display = 'inline';}"></div>
+		
+		<div id="pannellum_logo"><a  href="http://pannellum.sf.net/" target="_blank"></a></div>
+		
+		<div id="load_box"><p>Loading...<div id="load_indicator"></div></div>
+		
+		<div id="load_button" onclick="var load_button = document.getElementById('load_button'); load_button.style.display = 'none';
+		var load_box = document.getElementById('load_box');load_box.style.display = 'inline';init();animate();"><p>Load<br>Panorama<p></div>
+		
+		<div id="nocanvas"><p>A browser supporting the canvas element is required to view this panorama.</p></div>
+		
+		<div id="about_box"><div id="pannellum_logo_about"></div><a href="http://pannellum.sf.net/" target="_blank">http://pannellum.sf.net/</a><p>Licensing:<br><a href="LICENSE.txt" target="_blank">GNU LGPL v2.1</a></div>
+		
+		<script type="text/javascript" src="js/Three.js"></script>
+		<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
+		
+		<script type="text/javascript" src="js/pannellum.js"></script>
+	</body>
+</html>

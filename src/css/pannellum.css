@@ -1,0 +1,254 @@
+body
+{
+    background-image:url('img/background.png');
+	margin: 0px;
+	overflow: hidden;
+}
+
+#zoomcontrols
+{
+	position:absolute;
+	top:2px;
+	left:2px;
+	width:27px;
+	height:54px;
+}
+
+#zoom_in
+{
+	width:100%;
+	height:50%;
+	position:absolute;
+	top:0px;
+	background-image:url('img/sprites.png');
+	background-position: 0px -27px;
+}
+
+#zoom_in:hover
+{
+	background-image:url('img/sprites.png');
+	background-position: 0px -54px;
+}
+
+#zoom_out
+{
+	width:100%;
+	height:50%;
+	position:absolute;
+	bottom:0px;
+	background-image:url('img/sprites.png');
+	background-position: -27px -27px;
+}
+
+#zoom_out:hover
+{
+	background-image:url('img/sprites.png');
+	background-position: -27px -54px;
+}
+
+#about_button
+{
+	position:absolute;
+	top:2px;
+	right:2px;
+	width:27px;
+	height:27px;
+	background-image:url('img/sprites.png');
+	background-position: -54px -27px;
+}
+
+#about_button:hover
+{
+	background-image:url('img/sprites.png');
+	background-position: -54px -54px;
+}
+
+#about_box
+{
+	position:absolute;
+	top:50%;
+	left:50%;
+	width:200px;
+	height:127px;
+	margin:-75px 0px 0px -100px;
+	background-image:url('img/box.png');
+	display:none;
+	text-align:center;
+	padding-top:23px;
+}
+
+#pannellum_logo
+{
+	background-image:url('img/sprites.png');
+	background-position: 0px 0px;
+	position:absolute;
+	bottom:2px;
+	right:2px;
+	width:81px;
+	height:27px;
+	display:none;
+}
+
+#pannellum_logo a:link
+{
+	display:block;
+	width:85px;
+	height:28px;
+}
+
+#panorama_info
+{
+	position:absolute;
+	bottom:2px;
+	width:100%;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	user-select:none;
+	cursor:default;
+}
+
+#title_box
+{
+	position:relative;
+	width:auto;
+	text-align:left;
+	font-family:serif;
+	font-size:20px;
+	background-color:rgba(0,0,0,0.7);
+	display:table;
+	padding-left:5px;
+	padding-right:15px;
+	color:#ffffff;
+}
+
+#author_box
+{
+	position:relative;
+	width:auto;
+	text-align:left;
+	font-family:serif;
+	font-size:12px;
+	background-color:rgba(0,0,0,0.7);
+	display:table;
+	padding-left:5px;
+	padding-right:30px;
+	margin-top:3px;
+	color:#fff;
+}
+
+#load_box
+{
+	position:absolute;
+	top:50%;
+	left:50%;
+	width:200px;
+	height:150px;
+	margin:-75px 0px 0px -100px;
+	background-image:url('img/box.png');
+	text-align:center;
+	font-family:serif;
+	font-size:20px;
+	display:none;
+}
+
+#load_indicator
+{
+	position:absolute;
+	top:50%;
+	left:50%;
+	width:20px;
+	height:20px;
+	margin:-10px 0px 0px -10px;
+	background-image:url('img/loading.svg');
+}
+
+#load_button
+{
+	position:absolute;
+	top:50%;
+	left:50%;
+	width:200px;
+	height:100px;
+	margin:-50px 0px 0px -100px;
+	background-image:url('img/loadbutton.png');
+	background-position: 0px 0px;
+	text-align:center;
+	font-family:serif;
+	font-size:20px;
+	display:none;
+	color:#fff;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	user-select:none;
+	cursor:default;
+}
+#load_button:hover
+{
+	background-image:url('img/loadbutton.png');
+	background-position: 0px -100px;
+	color:#000;
+}
+#load_button p
+{
+	display:table-cell;
+	vertical-align:middle;
+}
+
+#nojavascript
+{
+	color:#000;
+	font-family:serif;
+	font-size:15px;
+	position:absolute;
+	top:50%;
+	left:50%;
+	width:190px;
+	height:150px;
+	margin:-75px 0px 0px -100px;
+	background-image:url('img/box.png');
+	display:table;
+	text-align:center;
+	padding:0px 5px 0px 5px;
+}
+#nojavascript p
+{
+	display:table-cell;
+	vertical-align:middle;
+}
+
+#pannellum_logo_about
+{
+	position:relative;
+	background-image:url('img/sprites.png');
+	background-position: 0px 0px;
+	width:81px;
+	height:27px;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+#nocanvas
+{
+	color:#000;
+	font-family:serif;
+	font-size:15px;
+	position:absolute;
+	top:50%;
+	left:50%;
+	width:190px;
+	height:150px;
+	margin:-75px 0px 0px -100px;
+	background-image:url('img/box.png');
+	display:none;
+	text-align:center;
+	padding:0px 5px 0px 5px;
+}
+#nocanvas p
+{
+	display:table-cell;
+	vertical-align:middle;
+}
