@@ -87,10 +87,6 @@ function init()
 		document.getElementById('nocanvas').style.display = 'table';
 	}
 	
-	// hide loading display
-	var load_box = document.getElementById('load_box');
-	load_box.style.display = 'none';
-	
 	// try to use WebGL, else fallback to 2D canvas
 	try
 	{
@@ -250,6 +246,11 @@ function renderinit()
 	if(!isTimedOut)
 	{
 		requestAnimationFrame(renderinit);
+	}
+	else
+	{
+		// hide loading display
+		document.getElementById('load_box').style.display = 'none';
 	}
 }
 
