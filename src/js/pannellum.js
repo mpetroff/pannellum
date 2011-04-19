@@ -75,43 +75,51 @@ function init()
 	
 	scene = new THREE.Scene();
 	
-	mesh = new THREE.Mesh(new THREE.Sphere(500,60,40), new THREE.MeshBasicMaterial({map:THREE.ImageUtils.loadTexture(getURLParameter('panorama'))}));
-	mesh.scale.x = -1;
-	try
+	var panoimage = new Image(),panotexture = new THREE.Texture(panoimage);
+	panoimage.onload = function()
 	{
-		scene.addObject(mesh);
-	}
-	catch (event)
-	{
-		// show error message if canvas is not supported
-		document.getElementById('nocanvas').style.display = 'table';
-	}
-	
-	// try to use WebGL, else fallback to 2D canvas
-	try
-	{
-		renderer = new THREE.WebGLRenderer();
-		renderer.setSize(window.innerWidth,window.innerHeight);
-		renderer.initWebGLObjects(scene);
-	}
-	catch (event)
-	{
-		renderer = new THREE.CanvasRenderer();
-		renderer.setSize(window.innerWidth,window.innerHeight);
-	}
-	
-	container.appendChild(renderer.domElement);
-	
-	document.addEventListener('mousedown',onDocumentMouseDown,false);
-	document.addEventListener('mousemove',onDocumentMouseMove,false);
-	document.addEventListener('mouseup',onDocumentMouseUp,false);
-	document.addEventListener('mousewheel',onDocumentMouseWheel,false);
-	document.addEventListener('DOMMouseScroll',onDocumentMouseWheel,false);
-	
-	document.onkeydown = onDocumentKeyPress;
-	
-	renderinit();
-	var t=setTimeout("isTimedOut = true",500);
+		//var panotexture = new THREE.Texture(panoimage);
+		
+		panotexture.needsUpdate = true;
+		mesh = new THREE.Mesh(new THREE.Sphere(500,60,40), new THREE.MeshBasicMaterial({map:panotexture}));
+		mesh.scale.x = -1;
+		try
+		{
+			scene.addObject(mesh);
+		}
+		catch (event)
+		{
+			// show error message if canvas is not supported
+			document.getElementById('nocanvas').style.display = 'table';
+		}
+		
+		// try to use WebGL, else fallback to 2D canvas
+		try
+		{
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth,window.innerHeight);
+			renderer.initWebGLObjects(scene);
+		}
+		catch (event)
+		{
+			renderer = new THREE.CanvasRenderer();
+			renderer.setSize(window.innerWidth,window.innerHeight);
+		}
+		
+		container.appendChild(renderer.domElement);
+		
+		document.addEventListener('mousedown',onDocumentMouseDown,false);
+		document.addEventListener('mousemove',onDocumentMouseMove,false);
+		document.addEventListener('mouseup',onDocumentMouseUp,false);
+		document.addEventListener('mousewheel',onDocumentMouseWheel,false);
+		document.addEventListener('DOMMouseScroll',onDocumentMouseWheel,false);
+		
+		document.onkeydown = onDocumentKeyPress;
+		
+		renderinit();
+		var t=setTimeout("isTimedOut = true",500);
+	};
+	panoimage.src = getURLParameter('panorama');
 }
 
 function onDocumentMouseDown(event)
