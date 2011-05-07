@@ -88,6 +88,21 @@ body
 	user-select:none;
 }
 
+#close_button
+{
+	float:right;
+	background-image:url('img/sprites.png');
+	background-position:-17px -81px;
+	width:17px;
+	height:17px;
+	margin-right:5px;
+	margin-top:-18px;
+}
+#close_button:hover
+{
+	background-position:0px -81px;
+}
+
 #pannellum_logo
 {
 	background-image:url('img/sprites.png');
