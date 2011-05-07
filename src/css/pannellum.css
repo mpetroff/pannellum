@@ -3,6 +3,12 @@ body
     background-image:url('img/background.png');
 	margin: 0px;
 	overflow: hidden;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:-moz-none;
+	-o-user-select:none;
+	user-select:none;
+	cursor:default;
 }
 
 #zoomcontrols
@@ -75,6 +81,11 @@ body
 	display:none;
 	text-align:center;
 	padding-top:23px;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	user-select:none;
 }
 
 #pannellum_logo
@@ -106,7 +117,6 @@ body
 	-moz-user-select:none;
 	-o-user-select:none;
 	user-select:none;
-	cursor:default;
 }
 
 #title_box
@@ -151,6 +161,11 @@ body
 	font-family:serif;
 	font-size:20px;
 	display:none;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	user-select:none;
 }
 
 #load_indicator
@@ -184,7 +199,6 @@ body
 	-moz-user-select:none;
 	-o-user-select:none;
 	user-select:none;
-	cursor:default;
 }
 #load_button:hover
 {
@@ -212,6 +226,11 @@ body
 	background-image:url('img/box.png');
 	display:table;
 	text-align:center;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	user-select:none;
 }
 #nojavascript p
 {
@@ -246,6 +265,11 @@ body
 	display:none;
 	text-align:center;
 	padding:0px 5px 0px 5px;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	user-select:none;
 }
 #nocanvas p
 {
