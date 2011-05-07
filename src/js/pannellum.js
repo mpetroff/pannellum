@@ -152,10 +152,8 @@ function onDocumentMouseUp(event)
 
 function onDocumentMouseWheel(event)
 {
-	if (fov >= 40 && fov <= 100)
-	{
-		fov -= event.wheelDeltaY * 0.05;
-		
+	if (fov >= 35 && fov <= 105)
+	{	
 		// WebKit
 		if (event.wheelDeltaY)
 		{
@@ -169,20 +167,19 @@ function onDocumentMouseWheel(event)
 		// Firefox
 		else if (event.detail)
 		{
-			fov += event.detail * 1.0;
-		}
-		
-		// keep field of view within bounds
-		if(fov < 40)
-		{
-			fov = 40;
-		}
-		if(fov > 100)
-		{
-			fov = 100;
+			fov += event.detail * 1.5;
 		}
 	}
 	
+	// keep field of view within bounds
+	if(fov < 35)
+	{
+		fov = 35;
+	}
+	if(fov > 105)
+	{
+		fov = 105;
+	}
 	camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
 	render();
 }
@@ -206,6 +203,15 @@ function onDocumentKeyPress (event)
 			camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
 			render();
 		}
+		// keep field of view within bounds
+		if(fov < 40)
+		{
+			fov = 40;
+		}
+		if(fov > 100)
+		{
+			fov = 100;
+		}
 	}
 	
 	// if plus key is pressed
@@ -217,6 +223,15 @@ function onDocumentKeyPress (event)
 			fov -= 5;
 			camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
 			render();
+		}
+		// keep field of view within bounds
+		if(fov < 40)
+		{
+			fov = 40;
+		}
+		if(fov > 100)
+		{
+			fov = 100;
 		}
 	}	
 }
