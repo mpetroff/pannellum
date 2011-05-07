@@ -27,13 +27,12 @@ body
 	position:absolute;
 	top:0px;
 	background-image:url('img/sprites.png');
-	background-position: 0px -27px;
+	background-position:0px -27px;
 }
 
 #zoom_in:hover
 {
-	background-image:url('img/sprites.png');
-	background-position: 0px -54px;
+	background-position:0px -54px;
 }
 
 #zoom_out
@@ -43,13 +42,12 @@ body
 	position:absolute;
 	bottom:0px;
 	background-image:url('img/sprites.png');
-	background-position: -27px -27px;
+	background-position:-27px -27px;
 }
 
 #zoom_out:hover
 {
-	background-image:url('img/sprites.png');
-	background-position: -27px -54px;
+	background-position:-27px -54px;
 }
 
 #about_button
@@ -60,13 +58,12 @@ body
 	width:27px;
 	height:27px;
 	background-image:url('img/sprites.png');
-	background-position: -54px -27px;
+	background-position:-54px -27px;
 }
 
 #about_button:hover
 {
-	background-image:url('img/sprites.png');
-	background-position: -54px -54px;
+	background-position:-54px -54px;
 }
 
 #about_box
@@ -106,7 +103,7 @@ body
 #pannellum_logo
 {
 	background-image:url('img/sprites.png');
-	background-position: 0px 0px;
+	background-position:0px 0px;
 	position:absolute;
 	bottom:2px;
 	right:2px;
@@ -203,7 +200,7 @@ body
 	height:100px;
 	margin:-50px 0px 0px -100px;
 	background-image:url('img/loadbutton.png');
-	background-position: 0px 0px;
+	background-position:0px 0px;
 	text-align:center;
 	font-family:serif;
 	font-size:20px;
@@ -217,8 +214,7 @@ body
 }
 #load_button:hover
 {
-	background-image:url('img/loadbutton.png');
-	background-position: 0px -100px;
+	background-position:0px -100px;
 	color:#000;
 }
 #load_button p
@@ -258,7 +254,7 @@ body
 {
 	position:relative;
 	background-image:url('img/sprites.png');
-	background-position: 0px 0px;
+	background-position:0px 0px;
 	width:81px;
 	height:27px;
 	margin-left:auto;
@@ -273,13 +269,12 @@ body
 	position:absolute;
 	top:50%;
 	left:50%;
-	width:190px;
+	width:200px;
 	height:150px;
 	margin:-75px 0px 0px -100px;
 	background-image:url('img/box.png');
 	display:none;
 	text-align:center;
-	padding:0px 5px 0px 5px;
 	-webkit-user-select:none;
 	-khtml-user-select:none;
 	-moz-user-select:none;
@@ -290,4 +285,5 @@ body
 {
 	display:table-cell;
 	vertical-align:middle;
+	padding:0px 5px 0px 5px;
 }
