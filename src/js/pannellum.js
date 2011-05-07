@@ -17,9 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-// hide javascript required message
-document.getElementById('nojavascript').style.display = 'none';
-
 if(getURLParameter('logo') == 'yes')
 {
 	document.getElementById('pannellum_logo').style.display = 'inline';
