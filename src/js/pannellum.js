@@ -31,6 +31,10 @@ if(getURLParameter('author'))
 {
 	document.getElementById('author_box').innerHTML = 'by ' + getURLParameter('author');
 }
+if(getURLParameter('popout') == 'yes')
+{
+	document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+}
 
 var camera, scene, renderer, renderGL;
 
@@ -46,11 +50,13 @@ var isTimedOut = false;
 
 var about_box = document.getElementById('about_box');
 
-if( getURLParameter('autoload') == 'yes' )
+if(getURLParameter('autoload') == 'yes' || getURLParameter('popoutautoload') == 'yes')
 {
-	// show loading box
-	var load_box = document.getElementById('load_box');
-	load_box.style.display = 'inline';
+	if(getURLParameter('popoutautoload') != 'yes')
+	{
+		// show loading box
+		document.getElementById('load_box').load_box.style.display = 'inline';
+	}
 	// initialize
 	init();
 	animate();
@@ -110,6 +116,7 @@ function init()
 		document.addEventListener('mouseup',onDocumentMouseUp,false);
 		document.addEventListener('mousewheel',onDocumentMouseWheel,false);
 		document.addEventListener('DOMMouseScroll',onDocumentMouseWheel,false);
+		document.addEventListener('onresize',onDocumentResize,false);
 		
 		document.onkeydown = onDocumentKeyPress;
 		
@@ -233,6 +240,23 @@ function onDocumentKeyPress (event)
 	}	
 }
 
+window.onresize = function(){onDocumentResize();};
+function onDocumentResize()
+{
+	// reset panorama renderer
+	try
+	{
+		camera.aspect = window.innerWidth / window.innerHeight;
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
+		render();
+	}
+	catch(event)
+	{
+		// panorama not loaded
+	}
+}
+
 function animate()
 {
 	render();
@@ -244,33 +268,47 @@ function animate()
 
 function render()
 {
-	lat = Math.max(-85,Math.min(85,lat));
-	phi = (90 - lat) * Math.PI / 180;
-	theta = lon * Math.PI / 180;
-	
-	camera.target.position.x = 500 * Math.sin(phi) * Math.cos(theta);
-	camera.target.position.y = 500 * Math.cos(phi);
-	camera.target.position.z = 500 * Math.sin(phi) * Math.sin(theta);
-	
-	renderer.render(scene,camera);
+	try
+	{
+		lat = Math.max(-85,Math.min(85,lat));
+		phi = (90 - lat) * Math.PI / 180;
+		theta = lon * Math.PI / 180;
+		
+		camera.target.position.x = 500 * Math.sin(phi) * Math.cos(theta);
+		camera.target.position.y = 500 * Math.cos(phi);
+		camera.target.position.z = 500 * Math.sin(phi) * Math.sin(theta);
+		
+		renderer.render(scene,camera);
+	}
+	catch(event)
+	{
+		// panorama not loaded
+	}
 }
 
 function renderinit()
 {
-	camera.target.x = 0;
-	camera.target.y = 0;
-	camera.target.z = 0;
-	
-	renderer.render(scene,camera);
-	
-	if(!isTimedOut)
+	try
 	{
-		requestAnimationFrame(renderinit);
+		camera.target.x = 0;
+		camera.target.y = 0;
+		camera.target.z = 0;
+		
+		renderer.render(scene,camera);
+		
+		if(!isTimedOut)
+		{
+			requestAnimationFrame(renderinit);
+		}
+		else
+		{
+			// hide loading display
+			document.getElementById('load_box').style.display = 'none';
+		}
 	}
-	else
+	catch(event)
 	{
-		// hide loading display
-		document.getElementById('load_box').style.display = 'none';
+		// panorama not loaded
 	}
 }
 
@@ -287,5 +325,114 @@ function getURLParameter(name)
 	else
 	{
 		return results[1];
+	}
+}
+
+// expand to full window
+var crosssitescripting;
+try
+{
+	var panoramaiframe = parent.document.getElementById(getURLParameter('id'));
+	var originaliframewidth = panoramaiframe.width;
+	var originaliframeheight = panoramaiframe.height;
+	var originalposition = panoramaiframe.style.position;
+	var originaltop = panoramaiframe.style.top;
+	var originalleft = panoramaiframe.style.left;
+	var originaloverflow = parent.document.body.style.overflow;
+	var fullWindowActive = false;
+	crosssitescripting = false;
+}
+catch(event) // cross-site scripting error
+{
+	crosssitescripting = true
+}
+function fullWindow()
+{
+	// prevent scroll bars
+	parent.document.body.style.overflow = 'hidden';
+	// position iframe in top corner
+	panoramaiframe.style.position = 'absolute';
+	panoramaiframe.style.top = '0px';
+	panoramaiframe.style.left = '0px';
+	// resize iframe to full window
+	panoramaiframe.width = '100%';
+	panoramaiframe.height = '100%';
+	// set viewer mode
+	fullWindowActive = true;
+	// reset panorama renderer
+	try
+	{
+		camera.aspect = window.innerWidth / window.innerHeight;
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
+		render();
+	}
+	catch(event)
+	{
+		// panorama not loaded
+	}
+}
+function hideFullWindow()
+{	
+	// reset iframe
+	panoramaiframe.width = originaliframewidth;
+	panoramaiframe.height = originaliframeheight;
+	panoramaiframe.style.position = originalposition;
+	panoramaiframe.style.top = originaltop;
+	panoramaiframe.style.left = originalleft;
+	// reset scroll bars
+	parent.document.body.style.overflow = originaloverflow;
+	// set viewer mode
+	fullWindowActive = false;
+	// reset panorama renderer
+	try
+	{
+		camera.aspect = window.innerWidth / window.innerHeight;
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
+		render();
+	}
+	catch(event)
+	{
+		// panorama not loaded
+	}
+}
+function toggleFullWindow()
+{
+	if(crosssitescripting == false)
+	{
+		if(fullWindowActive == false)
+		{
+			fullWindow();
+			document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+		}
+		else
+		{
+			hideFullWindow();
+			document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
+		}
+	}
+	else
+	{
+		if(getURLParameter('popout') != 'yes')
+		{
+			// open new window instead
+			var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
+			var windowlocation = window.location.href + '&popout=yes';
+			try
+			{
+				camera.aspect = window.innerWidth / window.innerHeight;
+				windowlocation += '&popoutautoload=yes';
+			}
+			catch(event)
+			{
+				// panorama not loaded
+			}
+			window.open(windowlocation,null,windowspecs)
+		}
+		else
+		{
+			window.close();
+		}
 	}
 }

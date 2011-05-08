@@ -4,6 +4,9 @@
 		<title>pannellum</title>
 		<meta charset="utf-8">
 		<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />
+		<script type="text/javascript">
+			//window.onresize = function(){alert('hello')};
+		</script>
 	</head>
 	
 	<body>
@@ -24,6 +27,8 @@
 		<div id="about_button" onclick="if(about_box.style.display == 'inline'){about_box.style.display = 'none';} else{about_box.style.display = 'inline';}"></div>
 		
 		<div id="pannellum_logo"><a  href="http://pannellum.sf.net/" target="_blank"></a></div>
+		
+		<div id="fullwindowtoggle_button" onclick="toggleFullWindow();"></div>
 		
 		<div id="load_box"><p>Loading...<div id="load_indicator"></div></div>
 		

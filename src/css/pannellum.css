@@ -89,7 +89,7 @@ body
 {
 	float:right;
 	background-image:url('img/sprites.png');
-	background-position:-17px -81px;
+	background-position:-54px -98px;
 	width:17px;
 	height:17px;
 	margin-right:5px;
@@ -97,7 +97,7 @@ body
 }
 #close_button:hover
 {
-	background-position:0px -81px;
+	background-position:-54px -81px;
 }
 
 #pannellum_logo
@@ -105,8 +105,8 @@ body
 	background-image:url('img/sprites.png');
 	background-position:0px 0px;
 	position:absolute;
-	bottom:2px;
-	right:2px;
+	top:2px;
+	right:29px;
 	width:81px;
 	height:27px;
 	display:none;
@@ -115,8 +115,8 @@ body
 #pannellum_logo a:link
 {
 	display:block;
-	width:85px;
-	height:28px;
+	width:81px;
+	height:27px;
 }
 
 #panorama_info
@@ -286,4 +286,33 @@ body
 	display:table-cell;
 	vertical-align:middle;
 	padding:0px 5px 0px 5px;
+}
+
+#fullwindowtoggle_button
+{
+	position:absolute;
+	bottom:2px;
+	right:2px;
+	width:27px;
+	height:27px;
+	background-image:url('img/sprites.png');
+	background-position:-27px -81px;
+}
+#fullwindowtoggle_button:hover
+{
+	background-position:-27px -108px;
+}
+#fullwindowtoggle_button_active
+{
+	position:absolute;
+	bottom:2px;
+	right:2px;
+	width:27px;
+	height:27px;
+	background-image:url('img/sprites.png');
+	background-position:0px -81px;
+}
+#fullwindowtoggle_button_active:hover
+{
+	background-position:0px -108px;
 }

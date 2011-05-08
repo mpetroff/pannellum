@@ -7,15 +7,17 @@
 		<SCRIPT LANGUAGE="JavaScript">
 			function processForm (form)
 			{
-				var TestVar = form.embed_width.value;
+				var id = 'pannellum_' + randomString();
 				var embed_code = document.getElementById('embed_code');
 				embed_code.innerHTML = '<iframe title="pannellum panorama viewer"' +
 					' width="' + escape(form.embed_width.value) +
 					'" height="' + escape(form.embed_height.value) +
 					'" style="border-style:none;"' +
-					' src="' + escape(form.pannellum_url.value) +
+					' id="' + escape(id) +
+					'" src="' + escape(form.pannellum_url.value) +
 					'?' +
-					'panorama=' + escape(form.pano_url.value);
+					'panorama=' + escape(form.pano_url.value) +
+					'&amp;amp;id=' + id;
 					if(form.use_logo.checked)
 					{
 						embed_code.innerHTML += '&amp;amp;logo=yes';
@@ -34,6 +36,17 @@
 					}
 					embed_code.innerHTML += '"></iframe>';
 				return false;
+			}
+			function randomString()
+			{
+				var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+				var randomstring = '';
+				for (var i=0;i<10;i++)
+				{
+					var rnum = Math.floor(Math.random() * chars.length);
+					randomstring += chars.substring(rnum,rnum+1);
+				}
+				return randomstring;
 			}
 		</SCRIPT>
 	</head>
