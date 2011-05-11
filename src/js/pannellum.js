@@ -31,9 +31,11 @@ if(getURLParameter('author'))
 {
 	document.getElementById('author_box').innerHTML = 'by ' + getURLParameter('author');
 }
+var popoutmode = false;
 if(getURLParameter('popout') == 'yes')
 {
 	document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+	popoutmode = true;
 }
 
 var camera, scene, renderer, renderGL;
@@ -237,7 +239,17 @@ function onDocumentKeyPress (event)
 		{
 			fov = 100;
 		}
-	}	
+	}
+	
+	// if in full window / popout mode
+	if(fullWindowActive == true || popoutmode == true)
+	{
+		// if escape key is pressed
+		if(keynumber == 27)
+		{
+			toggleFullWindow();
+		}
+	}
 }
 
 window.onresize = function(){onDocumentResize();};
