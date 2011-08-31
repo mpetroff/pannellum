@@ -211,8 +211,10 @@ body
 	width:200px;
 	height:100px;
 	margin:-50px 0px 0px -100px;
-	background-image:url('img/loadbutton.png');
-	background-position:0px 0px;
+	background-color:rgba(0,0,0,.7);
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
 	text-align:center;
 	font-family:serif;
 	font-size:20px;
@@ -226,7 +228,7 @@ body
 }
 #load_button:hover
 {
-	background-position:0px -100px;
+	background-color:rgba(255,255,255,.7);
 	color:#000;
 }
 #load_button p
