@@ -1,6 +1,6 @@
 /*
  * pannellum - an HTML5 based panorama viewer
- * Copyright (C) 2011  Matthew Petroff
+ * Copyright (C) 2011-2012 Matthew Petroff
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,8 @@ onMouseDownMouseX = 0, onMouseDownMouseY = 0,
 lon = 0, onMouseDownLon = 0,
 lat = 0, onMouseDownLat = 0,
 phi = 0, theta = 0;
+
+var fullWindowActive = false;
 
 var isTimedOut = false;
 
@@ -340,111 +342,65 @@ function getURLParameter(name)
 	}
 }
 
-// expand to full window
-var crosssitescripting;
-try
-{
-	var panoramaiframe = parent.document.getElementById(getURLParameter('id'));
-	var originaliframewidth = panoramaiframe.width;
-	var originaliframeheight = panoramaiframe.height;
-	var originalposition = panoramaiframe.style.position;
-	var originaltop = panoramaiframe.style.top;
-	var originalleft = panoramaiframe.style.left;
-	var originaloverflow = parent.document.body.style.overflow;
-	var fullWindowActive = false;
-	crosssitescripting = false;
-}
-catch(event) // cross-site scripting error
-{
-	crosssitescripting = true
-}
-function fullWindow()
-{
-	// prevent scroll bars
-	parent.document.body.style.overflow = 'hidden';
-	// position iframe in top corner
-	panoramaiframe.style.position = 'absolute';
-	panoramaiframe.style.top = '0px';
-	panoramaiframe.style.left = '0px';
-	// resize iframe to full window
-	panoramaiframe.width = '100%';
-	panoramaiframe.height = '100%';
-	// set viewer mode
-	fullWindowActive = true;
-	// reset panorama renderer
-	try
-	{
-		camera.aspect = window.innerWidth / window.innerHeight;
-		renderer.setSize(window.innerWidth,window.innerHeight);
-		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
-		render();
-	}
-	catch(event)
-	{
-		// panorama not loaded
-	}
-}
-function hideFullWindow()
-{	
-	// reset iframe
-	panoramaiframe.width = originaliframewidth;
-	panoramaiframe.height = originaliframeheight;
-	panoramaiframe.style.position = originalposition;
-	panoramaiframe.style.top = originaltop;
-	panoramaiframe.style.left = originalleft;
-	// reset scroll bars
-	parent.document.body.style.overflow = originaloverflow;
-	// set viewer mode
-	fullWindowActive = false;
-	// reset panorama renderer
-	try
-	{
-		camera.aspect = window.innerWidth / window.innerHeight;
-		renderer.setSize(window.innerWidth,window.innerHeight);
-		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
-		render();
-	}
-	catch(event)
-	{
-		// panorama not loaded
-	}
-}
 function toggleFullWindow()
 {
-	if(crosssitescripting == false)
+	if(fullWindowActive == false)
 	{
-		if(fullWindowActive == false)
+		try
 		{
-			fullWindow();
+			var page = document.getElementById('page');
+			if (page.requestFullscreen) {
+				page.requestFullscreen();
+			} else if (page.mozRequestFullScreen) {
+				page.mozRequestFullScreen();
+			} else {
+				page.webkitRequestFullScreen();
+			}
+			
 			document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+			fullWindowActive = true;
 		}
-		else
+		catch(event)
 		{
-			hideFullWindow();
-			document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
+			if(getURLParameter('popout') != 'yes')
+			{
+				// open new window instead
+				var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
+				var windowlocation = window.location.href + '&popout=yes';
+				try
+				{
+					camera.aspect = window.innerWidth / window.innerHeight;
+					windowlocation += '&popoutautoload=yes';
+				}
+				catch(event)
+				{
+					// panorama not loaded
+				}
+				window.open(windowlocation,null,windowspecs)
+			}
+			else
+			{
+				window.close();
+			}
 		}
 	}
 	else
 	{
-		if(getURLParameter('popout') != 'yes')
-		{
-			// open new window instead
-			var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
-			var windowlocation = window.location.href + '&popout=yes';
-			try
-			{
-				camera.aspect = window.innerWidth / window.innerHeight;
-				windowlocation += '&popoutautoload=yes';
-			}
-			catch(event)
-			{
-				// panorama not loaded
-			}
-			window.open(windowlocation,null,windowspecs)
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
 		}
-		else
-		{
+		else if (document.mozCancelFullScreen) {
+			document.mozCancelFullScreen();
+		}
+		else if (document.webkitCancelFullScreen) {
+			document.webkitCancelFullScreen();
+		}
+		
+		if(getURLParameter('popout') == 'yes') {
 			window.close();
 		}
+		
+		document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
+		fullWindowActive = false;
 	}
 }
