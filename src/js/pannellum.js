@@ -128,6 +128,8 @@ function init()
 		var t=setTimeout("isTimedOut = true",500);
 	};
 	panoimage.src = getURLParameter('panorama');
+	
+	document.getElementById('page').className = 'grab';
 }
 
 function onDocumentMouseDown(event)
@@ -141,6 +143,8 @@ function onDocumentMouseDown(event)
 	
 	onPointerDownLon = lon;
 	onPointerDownLat = lat;	
+	
+	document.getElementById('page').className = 'grabbing';
 }
 
 function onDocumentMouseMove(event)
@@ -156,6 +160,7 @@ function onDocumentMouseMove(event)
 function onDocumentMouseUp(event)
 {
 	isUserInteracting = false;
+	document.getElementById('page').className = 'grab';
 }
 
 function onDocumentMouseWheel(event)

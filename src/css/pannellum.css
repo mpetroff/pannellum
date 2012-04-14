@@ -11,6 +11,20 @@ body
 	cursor:default;
 }
 
+.grab
+{
+	cursor:url(img/grab.png) 12 8,default;
+}
+.grabbing
+{
+	cursor:url(img/grabbing.png) 12 8,default;
+}
+
+#container
+{
+	cursor:inherit;
+}
+
 #page
 {
 	background-image:url('img/background.png');
@@ -25,6 +39,7 @@ body
 	left:2px;
 	width:27px;
 	height:54px;
+	cursor:pointer;
 }
 
 #zoom_in
@@ -66,6 +81,7 @@ body
 	height:27px;
 	background-image:url('img/sprites.png');
 	background-position:-54px -27px;
+	cursor:pointer;
 }
 
 #about_button:hover
@@ -107,6 +123,7 @@ body
 	height:17px;
 	margin-right:2px;
 	margin-top:-21px;
+	cursor:pointer;
 }
 #close_button:hover
 {
@@ -123,6 +140,7 @@ body
 	width:81px;
 	height:27px;
 	display:none;
+	cursor:pointer;
 }
 
 #pannellum_logo a:link
@@ -232,6 +250,7 @@ body
 	-moz-user-select:none;
 	-o-user-select:none;
 	user-select:none;
+	cursor:pointer;
 }
 #load_button:hover
 {
@@ -330,6 +349,7 @@ body
 	height:27px;
 	background-image:url('img/sprites.png');
 	background-position:-27px -81px;
+	cursor:pointer;
 }
 #fullwindowtoggle_button:hover
 {
@@ -344,6 +364,7 @@ body
 	height:27px;
 	background-image:url('img/sprites.png');
 	background-position:0px -81px;
+	cursor:pointer;
 }
 #fullwindowtoggle_button_active:hover
 {
