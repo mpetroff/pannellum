@@ -1,7 +1,16 @@
+html {
+	height: 100%;
+	background-color: #666;
+	background-image: -webkit-linear-gradient(-45deg, #999 24%, #666 26%, #666 49%, #999 51%, #999 74%, #666 76%, #666);
+	background-image: -moz-linear-gradient(-45deg, #999 24%, #666 26%, #666 49%, #999 51%, #999 74%, #666 76%, #666);
+	background-image: linear-gradient(-45deg, #999 24%, #666 26%, #666 49%, #999 51%, #999 74%, #666 76%, #666);
+	background-size:20px 20px;
+}
+
 body
 {
-    background-image:url('img/background.png');
 	margin: 0px;
+	padding: 0px;
 	overflow: hidden;
 	-webkit-user-select:none;
 	-khtml-user-select:none;
@@ -9,15 +18,21 @@ body
 	-o-user-select:none;
 	user-select:none;
 	cursor:default;
+	width: 100%;
 }
 
 .grab
 {
-	cursor:url(img/grab.png) 12 8,default;
+	cursor:url('img/grab.png') 12 8,default;
 }
 .grabbing
 {
-	cursor:url(img/grabbing.png) 12 8,default;
+	cursor:url('img/grabbing.png') 12 8,default;
+}
+
+.sprite
+{
+	background-image:url('img/sprites.png');
 }
 
 #container
@@ -27,7 +42,6 @@ body
 
 #page
 {
-	background-image:url('img/background.png');
 	width: 100%;
 	height: 100%;
 }
@@ -48,7 +62,6 @@ body
 	height:50%;
 	position:absolute;
 	top:0px;
-	background-image:url('img/sprites.png');
 	background-position:0px -27px;
 }
 
@@ -63,7 +76,6 @@ body
 	height:50%;
 	position:absolute;
 	bottom:0px;
-	background-image:url('img/sprites.png');
 	background-position:-27px -27px;
 }
 
@@ -79,7 +91,6 @@ body
 	right:2px;
 	width:27px;
 	height:27px;
-	background-image:url('img/sprites.png');
 	background-position:-54px -27px;
 	cursor:pointer;
 }
@@ -117,7 +128,6 @@ body
 #close_button
 {
 	float:right;
-	background-image:url('img/sprites.png');
 	background-position:-54px -98px;
 	width:17px;
 	height:17px;
@@ -132,7 +142,6 @@ body
 
 #pannellum_logo
 {
-	background-image:url('img/sprites.png');
 	background-position:0px 0px;
 	position:absolute;
 	top:2px;
@@ -299,7 +308,6 @@ body
 #pannellum_logo_about
 {
 	position:relative;
-	background-image:url('img/sprites.png');
 	background-position:0px 0px;
 	width:81px;
 	height:27px;
@@ -347,7 +355,6 @@ body
 	right:2px;
 	width:27px;
 	height:27px;
-	background-image:url('img/sprites.png');
 	background-position:-27px -81px;
 	cursor:pointer;
 }
@@ -362,7 +369,6 @@ body
 	right:2px;
 	width:27px;
 	height:27px;
-	background-image:url('img/sprites.png');
 	background-position:0px -81px;
 	cursor:pointer;
 }

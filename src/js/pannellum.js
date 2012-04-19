@@ -409,3 +409,36 @@ function toggleFullWindow()
 		fullWindowActive = false;
 	}
 }
+
+function zoomIn() {
+	if( fov >= 40 ) {
+		fov -= 5;
+		camera.projectionMatrix = THREE.Matrix4.makePerspective( fov, window.innerWidth / window.innerHeight, 1, 1100 );
+		render();
+	}
+}
+
+function zoomOut() {
+	if( fov <= 100 ) {
+		fov += 5;
+		camera.projectionMatrix = THREE.Matrix4.makePerspective( fov, window.innerWidth / window.innerHeight, 1, 1100 );
+		render();
+	}
+}
+
+function about() {
+	if(about_box.style.display == 'inline') {
+		about_box.style.display = 'none';
+	} else {
+		about_box.style.display = 'inline';
+	}
+}
+
+function load() {
+	var load_button = document.getElementById('load_button');
+	load_button.style.display = 'none';
+	var load_box = document.getElementById('load_box');
+	load_box.style.display = 'inline';
+	init();
+	animate();
+}
