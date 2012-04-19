@@ -30,7 +30,7 @@ def read(filename):
 		return f.read()
 
 def output(text, filename):
-	with open(os.path.join('..', 'build', filename), 'w') as f:
+	with open(os.path.join('..', 'build', filename), 'wb') as f:
 		f.write(text)
 
 def JScompress(text):
