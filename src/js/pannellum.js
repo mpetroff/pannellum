@@ -90,28 +90,30 @@ function init()
 		panotexture.needsUpdate = true;
 		mesh = new THREE.Mesh(new THREE.Sphere(500,60,40), new THREE.MeshBasicMaterial({map:panotexture}));
 		mesh.scale.x = -1;
-		//try
-		//{
+		try
+		{
 			scene.addObject(mesh);
-		//}
-		//catch (event)
-		//{
-		//	// show error message if canvas is not supported
-		//	document.getElementById('nocanvas').style.display = 'table';
-		//}
+		}
+		catch (event)
+		{
+			// show error message if canvas is not supported
+			load_box.style.display = 'none';
+			document.getElementById('nocanvas').style.display = 'table';
+		}
 		
 		// try to use WebGL, else fallback to 2D canvas
-		//try
-		//{
+		try
+		{
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth,window.innerHeight);
 			renderer.initWebGLObjects(scene);
-		//}
-		/*catch (event)
+		}
+		catch (event)
 		{
-			renderer = new THREE.CanvasRenderer();
-			renderer.setSize(window.innerWidth,window.innerHeight);
-		}*/
+			// show error message if WebGl is not supported
+			load_box.style.display = 'none';
+			document.getElementById('nocanvas').style.display = 'table';
+		}
 		
 		container.appendChild(renderer.domElement);
 		
