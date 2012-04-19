@@ -6,14 +6,14 @@
 		<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />
 	</head>
 	
-	<body>
+	<body class="noselect">
 		<div id="page">
 		
 		<div id="container"></div>
 		
-		<noscript><div id="nojavascript"><p>Javascript is required to view this panorama.<br>(It could be worse; you could need a plugin.)</p></div></noscript>
+		<noscript><div id="nojavascript" class="noselect"><p>Javascript is required to view this panorama.<br>(It could be worse; you could need a plugin.)</p></div></noscript>
 		
-		<div id="panorama_info">
+		<div id="panorama_info" class="noselect">
 			<div id="title_box"></div>
 			<div id="author_box"></div>
 		</div>
@@ -29,13 +29,13 @@
 		
 		<div id="fullwindowtoggle_button" onclick="toggleFullWindow()" class="sprite"></div>
 		
-		<div id="load_box"><p>Loading...<div id="load_indicator"></div></div>
+		<div id="load_box" class="noselect"><p>Loading...<div id="load_indicator"></div></div>
 		
-		<div id="load_button" onclick="load()"><p>Load<br>Panorama<p></div>
+		<div id="load_button" onclick="load()" class="noselect"><p>Load<br>Panorama<p></div>
 		
-		<div id="nocanvas"><p>A browser supporting the canvas element (and WebGL) is required to view this panorama.</p></div>
+		<div id="nocanvas" class="noselect"><p>A browser supporting the canvas element (and WebGL) is required to view this panorama.</p></div>
 		
-		<div id="about_box"><div id="close_button" class="sprite" onclick="about_box.style.display='none'"></div><div id="pannellum_logo_about" class="sprite"></div><a href="http://pannellum.sf.net/" target="_blank">http://pannellum.sf.net/</a><p>Licensing:<br><a href="//www.gnu.org/licenses/lgpl-2.1.txt" target="_blank">GNU LGPL v2.1</a></div>
+		<div id="about_box" class="noselect"><div id="close_button" class="sprite" onclick="about_box.style.display='none'"></div><div id="pannellum_logo_about" class="sprite"></div><a href="http://pannellum.sf.net/" target="_blank">http://pannellum.sf.net/</a><p>Licensing:<br><a href="//www.gnu.org/licenses/lgpl-2.1.txt" target="_blank">GNU LGPL v2.1</a></div>
 		
 		<script type="text/javascript" src="js/Three.js"></script>
 		<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
