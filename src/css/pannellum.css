@@ -99,6 +99,7 @@ body {
 	width:194px;
 	height:121px;
 	margin:-75px 0px 0px -100px;
+	background-color:#eee;
 	background-color:rgba(255,255,255,.85);
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -183,6 +184,7 @@ body {
 	width:194px;
 	height:144px;
 	margin:-75px 0px 0px -100px;
+	background-color:#eee;
 	background-color:rgba(255,255,255,.85);
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -213,6 +215,7 @@ body {
 	width:200px;
 	height:100px;
 	margin:-50px 0px 0px -100px;
+	background-color:#222;
 	background-color:rgba(0,0,0,.7);
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -226,6 +229,7 @@ body {
 }
 
 #load_button:hover {
+	background-color:#eee;
 	background-color:rgba(255,255,255,.7);
 	color:#000;
 }
@@ -245,6 +249,7 @@ body {
 	width:194px;
 	height:144px;
 	margin:-75px 0px 0px -100px;
+	background-color:#eee;
 	background-color:rgba(255,255,255,.85);
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -281,6 +286,7 @@ body {
 	width:194px;
 	height:144px;
 	margin:-75px 0px 0px -100px;
+	background-color:#eee;
 	background-color:rgba(255,255,255,.85);
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;

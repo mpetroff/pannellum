@@ -188,10 +188,10 @@ function onDocumentKeyPress (event) {
 		zoomIn();
 	}
 	
-	// if in full window / popout mode
-	if(fullWindowActive == true || popoutmode == true) {
-		// if escape key is pressed
-		if(keynumber == 27) {
+	// if escape key is pressed
+	if(keynumber == 27) {
+		// if in full window / popout mode
+		if(fullWindowActive == true || popoutmode == true) {
 			toggleFullWindow();
 		}
 	}
@@ -265,50 +265,52 @@ function getURLParameter(name) {
 }
 
 function toggleFullWindow() {
-	if(fullWindowActive == false) {
-		try {
-			var page = document.getElementById('page');
-			if (page.requestFullscreen) {
-				page.requestFullscreen();
-			} else if (page.mozRequestFullScreen) {
-				page.mozRequestFullScreen();
-			} else {
-				page.webkitRequestFullScreen();
+	if(scene) {
+		if(fullWindowActive == false) {
+			try {
+				var page = document.getElementById('page');
+				if (page.requestFullscreen) {
+					page.requestFullscreen();
+				} else if (page.mozRequestFullScreen) {
+					page.mozRequestFullScreen();
+				} else {
+					page.webkitRequestFullScreen();
+				}
+				
+				//document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+				fullWindowActive = true;
+			} catch(event) {
+				if(getURLParameter('popout') != 'yes') {
+					// open new window instead
+					var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
+					var windowlocation = window.location.href + '&popout=yes';
+					try {
+						camera.aspect = window.innerWidth / window.innerHeight;
+						windowlocation += '&popoutautoload=yes';
+					} catch(event) {
+						// panorama not loaded
+					}
+					window.open(windowlocation,null,windowspecs)
+				} else {
+					window.close();
+				}
+			}
+		} else {
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if (document.mozCancelFullScreen) {
+				document.mozCancelFullScreen();
+			} else if (document.webkitCancelFullScreen) {
+				document.webkitCancelFullScreen();
 			}
 			
-			document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
-			fullWindowActive = true;
-		} catch(event) {
-			if(getURLParameter('popout') != 'yes') {
-				// open new window instead
-				var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
-				var windowlocation = window.location.href + '&popout=yes';
-				try {
-					camera.aspect = window.innerWidth / window.innerHeight;
-					windowlocation += '&popoutautoload=yes';
-				} catch(event) {
-					// panorama not loaded
-				}
-				window.open(windowlocation,null,windowspecs)
-			} else {
+			if(getURLParameter('popout') == 'yes') {
 				window.close();
 			}
+			
+			document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
+			fullWindowActive = false;
 		}
-	} else {
-		if (document.exitFullscreen) {
-			document.exitFullscreen();
-		} else if (document.mozCancelFullScreen) {
-			document.mozCancelFullScreen();
-		} else if (document.webkitCancelFullScreen) {
-			document.webkitCancelFullScreen();
-		}
-		
-		if(getURLParameter('popout') == 'yes') {
-			window.close();
-		}
-		
-		document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
-		fullWindowActive = false;
 	}
 }
 
