@@ -91,11 +91,11 @@ def build(files, css, html, filename):
 	print "=" * 40
 	
 	css = merge(css)
-	css = css.replace("url('img/grab.png')","'data:image/png;base64," + read('css/img/grab.png').encode('base64').replace('\n', '') + "'")
-	css = css.replace("url('img/grabbing.png')","'data:image/png;base64," + read('css/img/grabbing.png').encode('base64').replace('\n', '') + "'")
-	css = css.replace("url('img/loading.svg')","'data:image/svg+xml;base64," + read('css/img/loading.svg').encode('base64').replace('\n', '') + "'")
+	css = css.replace("'img/grab.png'","'data:image/png;base64," + read('css/img/grab.png').encode('base64').replace('\n', '') + "'")
+	css = css.replace("'img/grabbing.png'","'data:image/png;base64," + read('css/img/grabbing.png').encode('base64').replace('\n', '') + "'")
+	css = css.replace("'img/loading.svg'","'data:image/svg+xml;base64," + read('css/img/loading.svg').encode('base64').replace('\n', '') + "'")
 	css = cssCompress(css)
-	css = css.replace("url('img/sprites.png')","'data:image/png;base64," + read('css/img/sprites.png').encode('base64').replace('\n', '') + "'")
+	css = css.replace("'img/sprites.png'","'data:image/png;base64," + read('css/img/sprites.png').encode('base64').replace('\n', '') + "'")
 	
 	print "=" * 40
 	print "Compiling", htmlfilename
