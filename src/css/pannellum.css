@@ -8,8 +8,7 @@ html {
 	background-size:20px 20px;
 }
 
-body
-{
+body {
 	margin: 0px;
 	padding: 0px;
 	overflow: hidden;
@@ -17,22 +16,19 @@ body
 	width: 100%;
 }
 
-.grab
-{
+.grab {
 	cursor:url('img/grab.png') 12 8,default;
 }
-.grabbing
-{
+
+.grabbing {
 	cursor:url('img/grabbing.png') 12 8,default;
 }
 
-.sprite
-{
+.sprite {
 	background-image:url('img/sprites.png');
 }
 
-.noselect
-{
+.noselect {
 	-webkit-user-select:none;
 	-khtml-user-select:none;
 	-moz-user-select:-moz-none;
@@ -40,19 +36,16 @@ body
 	user-select:none;
 }
 
-#container
-{
+#container {
 	cursor:inherit;
 }
 
-#page
-{
+#page {
 	width: 100%;
 	height: 100%;
 }
 
-#zoomcontrols
-{
+#zoomcontrols {
 	position:absolute;
 	top:2px;
 	left:2px;
@@ -61,8 +54,7 @@ body
 	cursor:pointer;
 }
 
-#zoom_in
-{
+#zoom_in {
 	width:100%;
 	height:50%;
 	position:absolute;
@@ -70,13 +62,11 @@ body
 	background-position:0px -27px;
 }
 
-#zoom_in:hover
-{
+#zoom_in:hover {
 	background-position:0px -54px;
 }
 
-#zoom_out
-{
+#zoom_out {
 	width:100%;
 	height:50%;
 	position:absolute;
@@ -84,13 +74,11 @@ body
 	background-position:-27px -27px;
 }
 
-#zoom_out:hover
-{
+#zoom_out:hover {
 	background-position:-27px -54px;
 }
 
-#about_button
-{
+#about_button {
 	position:absolute;
 	top:2px;
 	right:2px;
@@ -100,13 +88,11 @@ body
 	cursor:pointer;
 }
 
-#about_button:hover
-{
+#about_button:hover {
 	background-position:-54px -54px;
 }
 
-#about_box
-{
+#about_box {
 	position:absolute;
 	top:50%;
 	left:50%;
@@ -125,8 +111,7 @@ body
 	padding-top:23px;
 }
 
-#close_button
-{
+#close_button {
 	float:right;
 	background-position:-54px -98px;
 	width:17px;
@@ -135,13 +120,13 @@ body
 	margin-top:-21px;
 	cursor:pointer;
 }
+
 #close_button:hover
 {
 	background-position:-54px -81px;
 }
 
-#pannellum_logo
-{
+#pannellum_logo {
 	background-position:0px 0px;
 	position:absolute;
 	top:2px;
@@ -152,22 +137,19 @@ body
 	cursor:pointer;
 }
 
-#pannellum_logo a:link
-{
+#pannellum_logo a:link {
 	display:block;
 	width:81px;
 	height:27px;
 }
 
-#panorama_info
-{
+#panorama_info {
 	position:absolute;
 	bottom:2px;
 	width:100%;
 }
 
-#title_box
-{
+#title_box {
 	position:relative;
 	width:auto;
 	text-align:left;
@@ -180,8 +162,7 @@ body
 	color:#fff;
 }
 
-#author_box
-{
+#author_box {
 	position:relative;
 	width:auto;
 	text-align:left;
@@ -195,8 +176,7 @@ body
 	color:#fff;
 }
 
-#load_box
-{
+#load_box {
 	position:absolute;
 	top:50%;
 	left:50%;
@@ -216,8 +196,7 @@ body
 	display:none;
 }
 
-#load_indicator
-{
+#load_indicator {
 	position:absolute;
 	top:50%;
 	left:50%;
@@ -227,8 +206,7 @@ body
 	background-image:url('img/loading.svg');
 }
 
-#load_button
-{
+#load_button {
 	position:absolute;
 	top:50%;
 	left:50%;
@@ -246,19 +224,18 @@ body
 	color:#fff;
 	cursor:pointer;
 }
-#load_button:hover
-{
+
+#load_button:hover {
 	background-color:rgba(255,255,255,.7);
 	color:#000;
 }
-#load_button p
-{
+
+#load_button p {
 	display:table-cell;
 	vertical-align:middle;
 }
 
-#nojavascript
-{
+#nojavascript {
 	color:#000;
 	font-family:serif;
 	font-size:15px;
@@ -278,15 +255,14 @@ body
 	display:table;
 	text-align:center;
 }
-#nojavascript p
-{
+
+#nojavascript p {
 	display:table-cell;
 	vertical-align:middle;
 	padding:0px 5px 0px 5px;
 }
 
-#pannellum_logo_about
-{
+#pannellum_logo_about {
 	position:relative;
 	background-position:0px 0px;
 	width:81px;
@@ -295,8 +271,7 @@ body
 	margin-right:auto;
 }
 
-#nocanvas
-{
+#nocanvas {
 	color:#000;
 	font-family:serif;
 	font-size:15px;
@@ -316,15 +291,14 @@ body
 	display:none;
 	text-align:center;
 }
-#nocanvas p
-{
+
+#nocanvas p {
 	display:table-cell;
 	vertical-align:middle;
 	padding:0px 5px 0px 5px;
 }
 
-#fullwindowtoggle_button
-{
+#fullwindowtoggle_button {
 	position:absolute;
 	bottom:2px;
 	right:2px;
@@ -333,12 +307,12 @@ body
 	background-position:-27px -81px;
 	cursor:pointer;
 }
-#fullwindowtoggle_button:hover
-{
+
+#fullwindowtoggle_button:hover {
 	background-position:-27px -108px;
 }
-#fullwindowtoggle_button_active
-{
+
+#fullwindowtoggle_button_active {
 	position:absolute;
 	bottom:2px;
 	right:2px;
@@ -347,7 +321,7 @@ body
 	background-position:0px -81px;
 	cursor:pointer;
 }
-#fullwindowtoggle_button_active:hover
-{
+
+#fullwindowtoggle_button_active:hover {
 	background-position:0px -108px;
 }
