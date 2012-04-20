@@ -29,6 +29,22 @@ if(getURLParameter('author')) {
 	document.getElementById('author_box').innerHTML = 'by ' + getURLParameter('author');
 }
 
+if(getURLParameter('license')) {
+	var licenseType;
+	switch(parseInt(getURLParameter('license'))) {
+		case 0: licenseType = 'by'; break;
+		case 1: licenseType = 'by-sa'; break;
+		case 2: licenseType = 'by-nd'; break;
+		case 3: licenseType = 'by-nc'; break;
+		case 4: licenseType = 'by-nc-sa'; break;
+		case 5: licenseType = 'by-nc-nd'; break;
+	}
+	document.getElementById('author_box').innerHTML += '<a rel="license" target="_blank" href="http://creativecommons.org/licenses/' + licenseType + '/3.0/"><div id="license"></div></a>';
+	var license = document.getElementById('license').style;
+	license.backgroundImage = "url('http://i.creativecommons.org/l/" + licenseType + "/3.0/80x15.png')";
+	license.width = '80px';
+}
+
 var popoutmode = false;
 
 if(getURLParameter('popout') == 'yes') {
