@@ -70,7 +70,8 @@ def htmlCompress(text):
 	return compressed
 
 def addHeader(text):
-	return '<!-- Pannellum, http://pannellum.sf.net/ -->\n' + text
+	text = text.replace('<!DOCTYPE HTML>','');
+	return '<!DOCTYPE HTML>\n<!-- Pannellum, http://pannellum.sf.net/ -->\n' + text
 
 def build(files, css, html, filename):
 	folder = ''
