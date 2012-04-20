@@ -4,7 +4,7 @@
 		<title>pannellum embed configuration</title>
 		<meta charset="utf-8">
 		<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />
-		<SCRIPT LANGUAGE="JavaScript">
+		<script language="JavaScript">
 			function processForm (form)
 			{
 				var id = 'pannellum_' + randomString();
@@ -12,28 +12,26 @@
 				embed_code.innerHTML = '<iframe title="pannellum panorama viewer"' +
 					' width="' + escape(form.embed_width.value) +
 					'" height="' + escape(form.embed_height.value) +
-					'webkitAllowFullScreen mozallowfullscreen allowFullScreen' +
-					'" style="border-style:none;"' +
+					'" webkitAllowFullScreen mozallowfullscreen allowFullScreen' +
+					' style="border-style:none;"' +
 					' id="' + escape(id) +
 					'" src="' + escape(form.pannellum_url.value) +
 					'?' +
-					'panorama=' + escape(form.pano_url.value) +
-					'&amp;amp;id=' + id;
-					if(form.use_logo.checked)
-					{
+					'panorama=' + escape(form.pano_url.value);
+					if(form.use_logo.checked) {
 						embed_code.innerHTML += '&amp;amp;logo=yes';
 					}
-					if(form.pano_title.value != '')
-					{
+					if(form.pano_title.value != '') {
 						embed_code.innerHTML += '&amp;amp;title=' + escape(form.pano_title.value);
 					}
-					if(form.pano_author.value != '')
-					{
+					if(form.pano_author.value != '') {
 						embed_code.innerHTML += '&amp;amp;author=' + escape(form.pano_author.value);
 					}
-					if(form.autoload.checked)
-					{
+					if(form.autoload.checked) {
 						embed_code.innerHTML += '&amp;amp;autoload=yes';
+					}
+					if(form.license.value > -1) {
+						embed_code.innerHTML += '&amp;amp;license=' + escape(form.license.value);
 					}
 					embed_code.innerHTML += '"></iframe>';
 				return false;
@@ -42,14 +40,13 @@
 			{
 				var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
 				var randomstring = '';
-				for (var i=0;i<10;i++)
-				{
+				for (var i=0;i<10;i++) {
 					var rnum = Math.floor(Math.random() * chars.length);
 					randomstring += chars.substring(rnum,rnum+1);
 				}
 				return randomstring;
 			}
-		</SCRIPT>
+		</script>
 	</head>
 	
 	<body>
@@ -64,9 +61,19 @@
 			<input name="embed_width" type="number" min="200" placeholder="Width" required> <input name="embed_height" type="number" min="150" placeholder="Height" required><p>
 			Include pannellum logo: <input name="use_logo" type="checkbox"><p>
 			Auto Load: <input name="autoload" type="checkbox"><p>
+			Creative Commons License: 
+			<select name="license">
+				<option value="-1">None</option>
+				<option value="0">CC BY 3.0</option>
+				<option value="1">CC BY-SA 3.0</option>
+				<option value="2">CC BY-ND 3.0</option>
+				<option value="3">CC BY-NC 3.0</option>
+				<option value="4">CC BY-NC-SA 3.0</option>
+				<option value="5">CC BY-NC-ND 3.0</option>
+			</select><p>
 			<input type="submit" value="Generate" onclick="document.getElementById('embed_code').innerHTML = ''"><p>
 		</form>
 		
-		<textarea id="embed_code" style="resize: none;" cols="100" readonly></textarea>
+		<textarea id="embed_code" style="resize: none; height:200px;" onclick="this.select()" cols="100" readonly></textarea>
 	</body>
 </html>
