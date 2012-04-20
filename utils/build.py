@@ -71,7 +71,8 @@ def htmlCompress(text):
 
 def addHeader(text):
 	text = text.replace('<!DOCTYPE HTML>','');
-	return '<!DOCTYPE HTML>\n<!-- Pannellum, http://pannellum.sf.net/ -->\n' + text
+	header = '<!DOCTYPE HTML>\n<!-- Pannellum ' + read('../VERSION') + ', http://pannellum.sf.net/ -->\n'
+	return header + text
 
 def build(files, css, html, filename):
 	folder = ''
@@ -107,6 +108,7 @@ def build(files, css, html, filename):
 	html = html.replace('<script type="text/javascript" src="js/Three.js"></script>','')
 	html = html.replace('<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>','')
 	html = html.replace('<script type="text/javascript" src="js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
+	html = html.replace('</div></a><p>Licensing:<br>','</div></a>Version ' + read('../VERSION') + '<p>Licensing:<br>')
 	html = htmlCompress(html)
 	
 	output(addHeader(html), folder + htmlfilename)
