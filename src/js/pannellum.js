@@ -93,8 +93,6 @@ function init() {
 	
 	var panoimage = new Image(),panotexture = new THREE.Texture(panoimage);
 	panoimage.onload = function() {
-		//var panotexture = new THREE.Texture(panoimage);
-		
 		panotexture.needsUpdate = true;
 		mesh = new THREE.Mesh(new THREE.Sphere(500,60,40), new THREE.MeshBasicMaterial({map:panotexture}));
 		mesh.scale.x = -1;
@@ -293,7 +291,7 @@ function toggleFullWindow() {
 					page.webkitRequestFullScreen();
 				}
 				
-				//document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+				document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
 				fullWindowActive = true;
 			} catch(event) {
 				if(getURLParameter('popout') != 'yes') {
