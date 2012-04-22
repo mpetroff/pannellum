@@ -126,6 +126,9 @@ function init() {
 		document.addEventListener('mozfullscreenchange',onFullScreenChange,false);
 		document.addEventListener('webkitfullscreenchange',onFullScreenChange,false);
 		document.addEventListener('fullscreenchange',onFullScreenChange,false);
+		document.addEventListener('mozfullscreenerror',fullScreenError,false);
+		document.addEventListener('webkitfullscreenerror',fullScreenError,false);
+		document.addEventListener('fullscreenerror',fullScreenError,false);
 		window.addEventListener('resize',onDocumentResize,false);
 		document.addEventListener('keydown',onDocumentKeyPress,false)
 		
@@ -293,20 +296,7 @@ function toggleFullWindow() {
 					page.webkitRequestFullScreen();
 				}
 			} catch(event) {
-				if(getURLParameter('popout') != 'yes') {
-					// open new window instead
-					var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
-					var windowlocation = window.location.href + '&popout=yes';
-					try {
-						camera.aspect = window.innerWidth / window.innerHeight;
-						windowlocation += '&popoutautoload=yes';
-					} catch(event) {
-						// panorama not loaded
-					}
-					window.open(windowlocation,null,windowspecs)
-				} else {
-					window.close();
-				}
+				fullScreenError();
 			}
 		} else {
 			if (document.exitFullscreen) {
@@ -331,6 +321,23 @@ function onFullScreenChange() {
 	} else {
 		document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
 		fullWindowActive = false;
+	}
+}
+
+function fullScreenError() {
+	if(getURLParameter('popout') != 'yes') {
+		// open new window instead
+		var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
+		var windowlocation = window.location.href + '&popout=yes';
+		try {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			windowlocation += '&popoutautoload=yes';
+		} catch(event) {
+			// panorama not loaded
+		}
+		window.open(windowlocation,null,windowspecs)
+	} else {
+		window.close();
 	}
 }
 
