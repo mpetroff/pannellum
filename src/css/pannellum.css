@@ -338,3 +338,11 @@ body {
 #fullwindowtoggle_button_active:hover {
 	background-position:0px -108px;
 }
+
+/*#fullwindowtoggle_button:-moz-full-screen,#fullwindowtoggle_button:-webkit-full-screen,#fullwindowtoggle_button:fullscreen {
+	background-position:0px -81px;
+}
+
+#fullwindowtoggle_button:-moz-full-screen:hover,#fullwindowtoggle_button:-webkit-full-screen:hover,#fullwindowtoggle_button:fullscreen:hover {
+	background-position:0px -108px;
+}*/

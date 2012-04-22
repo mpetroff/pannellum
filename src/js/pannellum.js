@@ -123,8 +123,11 @@ function init() {
 		document.addEventListener('mousewheel',onDocumentMouseWheel,false);
 		document.addEventListener('DOMMouseScroll',onDocumentMouseWheel,false);
 		document.addEventListener('onresize',onDocumentResize,false);
-		
-		document.onkeydown = onDocumentKeyPress;
+		document.addEventListener('mozfullscreenchange',onFullScreenChange,false);
+		document.addEventListener('webkitfullscreenchange',onFullScreenChange,false);
+		document.addEventListener('fullscreenchange',onFullScreenChange,false);
+		window.addEventListener('resize',onDocumentResize,false);
+		document.addEventListener('keydown',onDocumentKeyPress,false)
 		
 		renderInit();
 		var t=setTimeout('isTimedOut = true',500);
@@ -185,7 +188,7 @@ function onDocumentMouseWheel(event) {
 	render();
 }
 
-function onDocumentKeyPress (event) {
+function onDocumentKeyPress(event) {
 	// record key pressed
 	keynumber = event.keycode;
 	if(event.which) {
@@ -193,12 +196,12 @@ function onDocumentKeyPress (event) {
 	}
 	
 	// if minus key is pressed
-	if(keynumber == 109) {
+	if(keynumber == 109 || keynumber == 189 || keynumber == 17) {
 		zoomOut();
 	}
 	
 	// if plus key is pressed
-	if(keynumber == 107) {
+	if(keynumber == 107 || keynumber == 187 || keynumber == 16) {
 		zoomIn();
 	}
 	
@@ -211,7 +214,6 @@ function onDocumentKeyPress (event) {
 	}
 }
 
-window.onresize = function(){onDocumentResize();};
 function onDocumentResize() {
 	// reset panorama renderer
 	try {
@@ -290,9 +292,6 @@ function toggleFullWindow() {
 				} else {
 					page.webkitRequestFullScreen();
 				}
-				
-				document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
-				fullWindowActive = true;
 			} catch(event) {
 				if(getURLParameter('popout') != 'yes') {
 					// open new window instead
@@ -321,10 +320,17 @@ function toggleFullWindow() {
 			if(getURLParameter('popout') == 'yes') {
 				window.close();
 			}
-			
-			document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
-			fullWindowActive = false;
 		}
+	}
+}
+
+function onFullScreenChange() {
+	if(document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen) {
+		document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+		fullWindowActive = true;
+	} else {
+		document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
+		fullWindowActive = false;
 	}
 }
 
