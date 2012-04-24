@@ -185,6 +185,7 @@ function onDocumentMouseUp(event) {
 }
 
 function onDocumentMouseWheel(event) {
+	event.preventDefault();
 	if (fov >= 35 && fov <= 105) {
 		if (event.wheelDeltaY) {
 			// WebKit
