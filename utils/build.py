@@ -5,9 +5,9 @@ import tempfile
 import sys
 
 JS = [
-'js/pannellum.js',
 'js/Three.js',
-'js/RequestAnimationFrame.js'
+'js/RequestAnimationFrame.js',
+'js/pannellum.js'
 ]
 
 CSS = [

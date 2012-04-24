@@ -302,7 +302,7 @@ function getURLParameter(name) {
 
 function toggleFullWindow() {
 	if(scene) {
-		if(fullWindowActive == false) {
+		if(!fullWindowActive && !popoutmode) {
 			try {
 				var page = document.getElementById('page');
 				if (page.requestFullscreen) {
