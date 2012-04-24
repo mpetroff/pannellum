@@ -1,6 +1,6 @@
 /*
- * pannellum - an HTML5 based panorama viewer
- * Copyright (C) 2011-2012 Matthew Petroff
+ * Pannellum - An HTML5 based Panorama Viewer
+ * Copyright (c) 2011-2012 Matthew Petroff
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+document.addEventListener('contextmenu',onRightClick, false);
 
 if(getURLParameter('logo') == 'yes') {
 	document.getElementById('pannellum_logo').style.display = 'inline';
@@ -110,7 +112,7 @@ function init() {
 			renderer.setSize(window.innerWidth,window.innerHeight);
 			renderer.initWebGLObjects(scene);
 		} catch (event) {
-			// show error message if WebGl is not supported
+			// show error message if WebGL is not supported
 			load_box.style.display = 'none';
 			document.getElementById('nocanvas').style.display = 'table';
 		}
@@ -130,7 +132,7 @@ function init() {
 		document.addEventListener('webkitfullscreenerror',fullScreenError,false);
 		document.addEventListener('fullscreenerror',fullScreenError,false);
 		window.addEventListener('resize',onDocumentResize,false);
-		document.addEventListener('keydown',onDocumentKeyPress,false)
+		document.addEventListener('keydown',onDocumentKeyPress,false);
 		
 		renderInit();
 		var t=setTimeout('isTimedOut = true',500);
@@ -138,6 +140,18 @@ function init() {
 	panoimage.src = getURLParameter('panorama');
 	
 	document.getElementById('page').className = 'grab';
+}
+
+function onRightClick(event) {
+	document.getElementById('about').style.left = event.clientX + 'px';
+	document.getElementById('about').style.top = event.clientY + 'px';
+	clearTimeout(onRightClick.t1);
+	clearTimeout(onRightClick.t2);
+	document.getElementById('about').style.display = 'block';
+	document.getElementById('about').style.opacity = 1;
+	onRightClick.t1 = setTimeout(function(){document.getElementById('about').style.opacity = 0;},2000);
+	onRightClick.t2 = setTimeout(function(){document.getElementById('about').style.display = 'none';},2500);
+	event.preventDefault();
 }
 
 function onDocumentMouseDown(event) {
@@ -366,14 +380,6 @@ function zoomOut() {
 		fov = 40;
 	} else if(fov > 100) {
 		fov = 100;
-	}
-}
-
-function about() {
-	if(about_box.style.display == 'inline') {
-		about_box.style.display = 'none';
-	} else {
-		about_box.style.display = 'inline';
 	}
 }
 

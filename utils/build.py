@@ -108,7 +108,7 @@ def build(files, css, html, filename):
 	html = html.replace('<script type="text/javascript" src="js/Three.js"></script>','')
 	html = html.replace('<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>','')
 	html = html.replace('<script type="text/javascript" src="js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
-	html = html.replace('</div></a><p>Licensing:<br>','</div></a>Version ' + read('../VERSION') + '<p>Licensing:<br>')
+	html = html.replace('"_blank">Pannellum</a></span>','"_blank">Pannellum</a> ' + read('../VERSION') + '</span>')
 	html = htmlCompress(html)
 	
 	output(addHeader(html), folder + htmlfilename)

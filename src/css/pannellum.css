@@ -14,6 +14,7 @@ body {
 	overflow: hidden;
 	cursor:default;
 	width: 100%;
+	font-family:serif;
 }
 
 .grab {
@@ -31,8 +32,9 @@ body {
 .noselect {
 	-webkit-user-select:none;
 	-khtml-user-select:none;
-	-moz-user-select:-moz-none;
+	-moz-user-select:none;
 	-o-user-select:none;
+	-ms-user-select:none;
 	user-select:none;
 }
 
@@ -78,60 +80,11 @@ body {
 	background-position:-27px -54px;
 }
 
-#about_button {
-	position:absolute;
-	top:2px;
-	right:2px;
-	width:27px;
-	height:27px;
-	background-position:-54px -27px;
-	cursor:pointer;
-}
-
-#about_button:hover {
-	background-position:-54px -54px;
-}
-
-#about_box {
-	position:absolute;
-	top:50%;
-	left:50%;
-	width:194px;
-	height:121px;
-	margin:-75px 0px 0px -100px;
-	background-color:#eee;
-	background-color:rgba(255,255,255,.85);
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
-	border-radius: 10px;
-	border-style:solid;
-	border-width:3px;
-	border-color:#000;
-	display:none;
-	text-align:center;
-	padding-top:23px;
-}
-
-#close_button {
-	float:right;
-	background-position:-54px -98px;
-	width:17px;
-	height:17px;
-	margin-right:2px;
-	margin-top:-21px;
-	cursor:pointer;
-}
-
-#close_button:hover
-{
-	background-position:-54px -81px;
-}
-
 #pannellum_logo {
 	background-position:0px 0px;
 	position:absolute;
 	top:2px;
-	right:29px;
+	right:2px;
 	width:81px;
 	height:27px;
 	display:none;
@@ -193,14 +146,11 @@ body {
 	margin:-75px 0px 0px -100px;
 	background-color:#eee;
 	background-color:rgba(255,255,255,.85);
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
 	border-radius: 10px;
 	border-style:solid;
 	border-width:3px;
 	border-color:#000;
 	text-align:center;
-	font-family:serif;
 	font-size:20px;
 	display:none;
 }
@@ -224,8 +174,6 @@ body {
 	margin:-50px 0px 0px -100px;
 	background-color:#222;
 	background-color:rgba(0,0,0,.7);
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
 	border-radius: 10px;
 	text-align:center;
 	font-family:serif;
@@ -258,8 +206,6 @@ body {
 	margin:-75px 0px 0px -100px;
 	background-color:#eee;
 	background-color:rgba(255,255,255,.85);
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
 	border-radius: 10px;
 	border-style:solid;
 	border-width:3px;
@@ -295,8 +241,6 @@ body {
 	margin:-75px 0px 0px -100px;
 	background-color:#eee;
 	background-color:rgba(255,255,255,.85);
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
 	border-radius: 10px;
 	border-style:solid;
 	border-width:3px;
@@ -346,3 +290,30 @@ body {
 #fullwindowtoggle_button:-moz-full-screen:hover,#fullwindowtoggle_button:-webkit-full-screen:hover,#fullwindowtoggle_button:fullscreen:hover {
 	background-position:0px -108px;
 }*/
+
+#about {
+	font-size:11px;
+	line-height:11px;
+	color:#fff;
+	padding: 5px 8px 5px 8px;
+	background:rgba(0,0,0,0.7);
+	border-radius:3px;
+	position:absolute;
+	top:50px;
+	left:50px;
+	display:none;
+	opacity:0;
+	-moz-transition: opacity .3s ease-in-out;
+	-webkit-transition: opacity .3s ease-in-out;
+	-o-transition: opacity .3s ease-in-out;
+	-ms-transition: opacity .3s ease-in-out;
+	transition: opacity .3s ease-in-out;
+}
+
+#about a:link, #about a:visited {
+	color:#fff;
+}
+
+#about a:hover, #about a:active {
+	color:#eee;
+}
