@@ -21,7 +21,11 @@
  * THE SOFTWARE.
  */
 
-document.addEventListener('contextmenu',onRightClick, false);
+try {
+	document.addEventListener('contextmenu',onRightClick, false);
+} catch(event) {
+	// Lack of "about" display is not a big deal
+}
 
 if(getURLParameter('logo') == 'yes') {
 	document.getElementById('pannellum_logo').style.display = 'inline';
@@ -69,7 +73,8 @@ lat = 0, onMouseDownLat = 0,
 phi = 0, theta = 0;
 
 var fullWindowActive = false;
-
+var loaded = false;
+var error = false;
 var isTimedOut = false;
 
 var about_box = document.getElementById('about_box');
@@ -77,15 +82,14 @@ var about_box = document.getElementById('about_box');
 if(getURLParameter('autoload') == 'yes' || getURLParameter('popoutautoload') == 'yes') {
 	if(getURLParameter('popoutautoload') != 'yes') {
 		// show loading box
-		document.getElementById('load_box').load_box.style.display = 'inline';
+		document.getElementById('load_box').style.display = 'inline';
 	}
 	// initialize
 	init();
 	animate();
 } else {
 	// show load button
-	var load_button = document.getElementById('load_button');
-	load_button.style.display = 'table';
+	document.getElementById('load_button').style.display = 'table';
 }
 
 function init() {
@@ -106,8 +110,9 @@ function init() {
 			scene.addObject(mesh);
 		} catch (event) {
 			// show error message if canvas is not supported
-			load_box.style.display = 'none';
+			document.getElementById('load_box').style.display = 'none';
 			document.getElementById('nocanvas').style.display = 'table';
+			error = true;
 		}
 		
 		try {
@@ -116,8 +121,9 @@ function init() {
 			renderer.initWebGLObjects(scene);
 		} catch (event) {
 			// show error message if WebGL is not supported
-			load_box.style.display = 'none';
+			document.getElementById('load_box').style.display = 'none';
 			document.getElementById('nocanvas').style.display = 'table';
+			error = true;
 		}
 		
 		container.appendChild(renderer.domElement);
@@ -283,6 +289,7 @@ function renderInit() {
 		} else {
 			// hide loading display
 			document.getElementById('load_box').style.display = 'none';
+			loaded = true;
 		}
 	} catch(event) {
 		// panorama not loaded
@@ -302,7 +309,7 @@ function getURLParameter(name) {
 }
 
 function toggleFullWindow() {
-	if(scene) {
+	if(loaded && !error) {
 		if(!fullWindowActive && !popoutmode) {
 			try {
 				var page = document.getElementById('page');
@@ -388,10 +395,8 @@ function zoomOut() {
 }
 
 function load() {
-	var load_button = document.getElementById('load_button');
-	load_button.style.display = 'none';
-	var load_box = document.getElementById('load_box');
-	load_box.style.display = 'inline';
+	document.getElementById('load_button').style.display = 'none';
+	document.getElementById('load_box').style.display = 'inline';
 	init();
 	animate();
 }
