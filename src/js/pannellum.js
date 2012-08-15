@@ -72,6 +72,8 @@ lon = 0, onMouseDownLon = 0,
 lat = 0, onMouseDownLat = 0,
 phi = 0, theta = 0;
 
+var keysDown = new Array(10);
+
 var fullWindowActive = false;
 var loaded = false;
 var error = false;
@@ -142,9 +144,13 @@ function init() {
 		document.addEventListener('fullscreenerror',fullScreenError,false);
 		window.addEventListener('resize',onDocumentResize,false);
 		document.addEventListener('keydown',onDocumentKeyPress,false);
+		document.addEventListener('keyup',onDocumentKeyUp,false);
+		window.addEventListener('blur',clearKeys,false);
 		
 		renderInit();
 		var t=setTimeout('isTimedOut = true',500);
+		
+		setInterval('keyRepeat()',10);
 	};
 	panoimage.src = getURLParameter('panorama');
 	
@@ -164,8 +170,6 @@ function onRightClick(event) {
 }
 
 function onDocumentMouseDown(event) {
-	event.preventDefault();
-	
 	isUserInteracting = true;
 	
 	onPointerDownPointerX = event.clientX;
@@ -216,6 +220,9 @@ function onDocumentMouseWheel(event) {
 }
 
 function onDocumentKeyPress(event) {
+	// override default action
+	event.preventDefault();
+	
 	// record key pressed
 	keynumber = event.keycode;
 	if(event.which) {
@@ -224,12 +231,12 @@ function onDocumentKeyPress(event) {
 	
 	// if minus key is pressed
 	if(keynumber == 109 || keynumber == 189 || keynumber == 17) {
-		zoomOut();
+		keysDown[0] = true;
 	}
 	
 	// if plus key is pressed
 	if(keynumber == 107 || keynumber == 187 || keynumber == 16) {
-		zoomIn();
+		keysDown[1] = true;
 	}
 	
 	// if escape key is pressed
@@ -238,6 +245,146 @@ function onDocumentKeyPress(event) {
 		if(fullWindowActive == true || popoutmode == true) {
 			toggleFullWindow();
 		}
+	}
+	
+	// if up arrow is pressed
+	if(keynumber == 38) {
+		keysDown[2] = true;
+	}
+	// if "w" is pressed
+	if(keynumber == 87) {
+		keysDown[6] = true;
+	}
+	
+	// if down arrow is pressed
+	if(keynumber == 40) {
+		keysDown[3] = true;
+	}
+	// if "s" is pressed
+	if(keynumber == 83) {
+		keysDown[7] = true;
+	}
+	
+	// if left arrow is pressed
+	if(keynumber == 37) {
+		keysDown[4] = true;
+	}
+	// if "a" is pressed
+	if(keynumber == 65) {
+		keysDown[8] = true;
+	}
+	
+	// if right arrow is pressed
+	if(keynumber == 39) {
+		keysDown[5] = true;
+	}
+	// if "d" is pressed
+	if(keynumber == 68) {
+		keysDown[9] = true;
+	}
+}
+
+function clearKeys() {
+	for(i=0;i<10;i++) {
+		keysDown[i] = false;
+	}
+}
+
+function onDocumentKeyUp(event) {
+	// override default action
+	event.preventDefault();
+	
+	// record key released
+	keynumber = event.keycode;
+	if(event.which) {
+		keynumber = event.which;
+	}
+	
+	// if minus key is released
+	if(keynumber == 109 || keynumber == 189 || keynumber == 17) {
+		keysDown[0] = false;
+	}
+	
+	// if plus key is released
+	if(keynumber == 107 || keynumber == 187 || keynumber == 16) {
+		keysDown[1] = false;
+	}
+	
+	// if up arrow is released
+	if(keynumber == 38) {
+		keysDown[2] = false;
+	}
+	// if "w" is released
+	if(keynumber == 87) {
+		keysDown[6] = false;
+	}
+	
+	// if down arrow is released
+	if(keynumber == 40) {
+		keysDown[3] = false;
+	}
+	// if "s" is released
+	if(keynumber == 83) {
+		keysDown[7] = false;
+	}
+	
+	// if left arrow is released
+	if(keynumber == 37) {
+		//alert('left arrow released');
+		keysDown[4] = false;
+	}
+	// if "a" is released
+	if(keynumber == 65) {
+		keysDown[8] = false;
+	}
+	
+	// if right arrow is released
+	if(keynumber == 39) {
+		keysDown[5] = false;
+	}
+	// if "d" is released
+	if(keynumber == 68) {
+		keysDown[9] = false;
+	}
+}
+
+function keyRepeat() {
+	// if minus key is down
+	if(keysDown[0] == true) {
+		zoomOut(1);
+	}
+	
+	// if plus key is down
+	if(keysDown[1] == true) {
+		zoomIn(1);
+	}
+	
+	// if up arrow or "w" is down
+	if(keysDown[2] == true || keysDown[6] == true) {
+		// pan up
+		lat += 1;
+		animate();
+	}
+	
+	// if down arrow or "s" is down
+	if(keysDown[3] == true || keysDown[7] == true) {
+		// pan down
+		lat -= 1;
+		animate();
+	}
+	
+	// if left arrow or "a" is down
+	if(keysDown[4] == true || keysDown[8] == true) {
+		// pan left
+		lon -= 1;
+		animate();
+	}
+	
+	// if right arrow or "d" is down
+	if(keysDown[5] == true || keysDown[9] == true) {
+		// pan right
+		lon += 1;
+		animate();
 	}
 }
 
@@ -369,9 +516,9 @@ function fullScreenError() {
 	}
 }
 
-function zoomIn() {
+function zoomIn(amount) {
 	if( fov >= 40 ) {
-		fov -= 5;
+		fov -= amount;
 		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
 		render();
 	}
@@ -383,9 +530,9 @@ function zoomIn() {
 	}
 }
 
-function zoomOut() {
+function zoomOut(amount) {
 	if(fov <= 100) {
-		fov += 5;
+		fov += amount;
 		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
 		render();
 	}
