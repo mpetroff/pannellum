@@ -260,25 +260,22 @@ body {
 	right:2px;
 	width:27px;
 	height:27px;
-	background-position:-27px -81px;
 	cursor:pointer;
 }
 
-#fullwindowtoggle_button:hover {
+.fullwindowtoggle_button_inactive {
+	background-position:-27px -81px;
+}
+
+.fullwindowtoggle_button_inactive:hover {
 	background-position:-27px -108px;
 }
 
-#fullwindowtoggle_button_active {
-	position:absolute;
-	bottom:2px;
-	right:2px;
-	width:27px;
-	height:27px;
+.fullwindowtoggle_button_active {
 	background-position:0px -81px;
-	cursor:pointer;
 }
 
-#fullwindowtoggle_button_active:hover {
+.fullwindowtoggle_button_active:hover {
 	background-position:0px -108px;
 }
 

@@ -248,6 +248,9 @@ function onDocumentResize() {
 		renderer.setSize(window.innerWidth,window.innerHeight);
 		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
 		render();
+		
+		// Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
+		onFullScreenChange();
 	} catch(event) {
 		// panorama not loaded
 	}
@@ -341,10 +344,10 @@ function toggleFullWindow() {
 
 function onFullScreenChange() {
 	if(document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen) {
-		document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+		document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
 		fullWindowActive = true;
 	} else {
-		document.getElementById('fullwindowtoggle_button_active').id = 'fullwindowtoggle_button';
+		document.getElementById('fullwindowtoggle_button').classList.remove('fullwindowtoggle_button_active');
 		fullWindowActive = false;
 	}
 }
