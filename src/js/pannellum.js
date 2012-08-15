@@ -58,7 +58,7 @@ if(getURLParameter('license')) {
 var popoutmode = false;
 
 if(getURLParameter('popout') == 'yes') {
-	document.getElementById('fullwindowtoggle_button').id = 'fullwindowtoggle_button_active';
+	document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
 	popoutmode = true;
 }
 
