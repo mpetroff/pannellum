@@ -33,6 +33,9 @@
 					if(form.license.value > -1) {
 						embed_code.innerHTML += '&amp;amp;license=' + escape(form.license.value);
 					}
+					if(form.fallback_url.value != '') {
+						embed_code.innerHTML += '&amp;amp;fallback=' + escape(form.fallback_url.value);
+					}
 					embed_code.innerHTML += '"></iframe>';
 				return false;
 			}
@@ -71,6 +74,8 @@
 				<option value="4">CC BY-NC-SA 3.0</option>
 				<option value="5">CC BY-NC-ND 3.0</option>
 			</select><p>
+			URL to fall back to if WebGL is not supported:<br>
+			<input name="fallback_url" placeholder="Fallback URL"><p>
 			<input type="submit" value="Generate" onclick="document.getElementById('embed_code').innerHTML = ''"><p>
 		</form>
 		

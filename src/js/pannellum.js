@@ -62,6 +62,10 @@ if(getURLParameter('popout') == 'yes') {
 	popoutmode = true;
 }
 
+if(getURLParameter('fallback')) {
+	document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + getURLParameter('fallback') + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
+}
+
 var camera, scene, renderer, renderGL;
 
 var fov = 70,
