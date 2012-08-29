@@ -150,6 +150,7 @@ function init() {
 		document.addEventListener('keydown',onDocumentKeyPress,false);
 		document.addEventListener('keyup',onDocumentKeyUp,false);
 		window.addEventListener('blur',clearKeys,false);
+		document.addEventListener('mouseout',onDocumentMouseUp,false);
 		
 		renderInit();
 		var t=setTimeout('isTimedOut = true',500);
@@ -174,6 +175,11 @@ function onRightClick(event) {
 }
 
 function onDocumentMouseDown(event) {
+	// override default action
+	event.preventDefault();
+	// but not all of it
+	window.focus();
+	
 	isUserInteracting = true;
 	
 	onPointerDownPointerX = event.clientX;
