@@ -11544,6 +11544,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	function setTexture( texture, slot ) {
 
+		// clear errors
+		_gl.getError()
+
 		if ( texture.needsUpdate ) {
 
 			if ( !texture.__webglInit ) {
@@ -11573,6 +11576,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 		_gl.activeTexture( _gl.TEXTURE0 + slot );
 		_gl.bindTexture( _gl.TEXTURE_2D, texture.__webglTexture );
 
+		// throw error if unsupported texture size
+		if(_gl.getError()){throw "bad texture";}
 	};
 
 	/*function setCubeTexture( texture, slot ) {

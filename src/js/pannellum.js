@@ -116,9 +116,7 @@ function init() {
 			scene.addObject(mesh);
 		} catch (event) {
 			// show error message if canvas is not supported
-			document.getElementById('load_box').style.display = 'none';
-			document.getElementById('nocanvas').style.display = 'table';
-			error = true;
+			anError();
 		}
 		
 		try {
@@ -127,9 +125,7 @@ function init() {
 			renderer.initWebGLObjects(scene);
 		} catch (event) {
 			// show error message if WebGL is not supported
-			document.getElementById('load_box').style.display = 'none';
-			document.getElementById('nocanvas').style.display = 'table';
-			error = true;
+			anError();
 		}
 		
 		container.appendChild(renderer.domElement);
@@ -163,6 +159,12 @@ function init() {
 	panoimage.src = getURLParameter('panorama');
 	
 	document.getElementById('page').className = 'grab';
+}
+
+function anError() {
+	document.getElementById('load_box').style.display = 'none';
+	document.getElementById('nocanvas').style.display = 'table';
+	error = true;
 }
 
 function onRightClick(event) {
@@ -477,6 +479,11 @@ function renderInit() {
 		}
 	} catch(event) {
 		// panorama not loaded
+		
+		// display error if there is a bad texture
+		if(event == "bad texture") {
+			anError();
+		}
 	}
 }
 
