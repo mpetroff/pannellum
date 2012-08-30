@@ -151,6 +151,9 @@ function init() {
 		document.addEventListener('keyup',onDocumentKeyUp,false);
 		window.addEventListener('blur',clearKeys,false);
 		document.addEventListener('mouseout',onDocumentMouseUp,false);
+		document.addEventListener('touchstart',onDocumentTouchStart,false);
+		document.addEventListener('touchmove',onDocumentTouchMove,false);
+		document.addEventListener('touchend',onDocumentTouchEnd,false);
 		
 		renderInit();
 		var t=setTimeout('isTimedOut = true',500);
@@ -202,6 +205,27 @@ function onDocumentMouseMove(event) {
 function onDocumentMouseUp(event) {
 	isUserInteracting = false;
 	document.getElementById('page').className = 'grab';
+}
+
+function onDocumentTouchStart(event) {
+	onPointerDownPointerX = event.targetTouches[0].clientX;
+	onPointerDownPointerY = event.targetTouches[0].clientY;
+	
+	onPointerDownLon = lon;
+	onPointerDownLat = lat;
+}
+
+function onDocumentTouchMove(event) {
+	// override default action
+	event.preventDefault();
+		
+	lon = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownLon;
+	lat = (event.targetTouches[0].clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+	animate();
+}
+
+function onDocumentTouchEnd(event) {
+	// do nothing for now
 }
 
 function onDocumentMouseWheel(event) {
