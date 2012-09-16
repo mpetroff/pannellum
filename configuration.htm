@@ -36,6 +36,15 @@
 					if(form.fallback_url.value != '') {
 						embed_code.innerHTML += '&amp;amp;fallback=' + escape(form.fallback_url.value);
 					}
+					if(form.fov.value != 0) {
+						embed_code.innerHTML += '&amp;amp;fov=' + escape(form.fov.value);
+					}
+					if(form.lat.value != 0) {
+						embed_code.innerHTML += '&amp;amp;lat=' + escape(form.lat.value);
+					}
+					if(form.lon.value != 0) {
+						embed_code.innerHTML += '&amp;amp;lon=' + escape(form.lon.value);
+					}
 					embed_code.innerHTML += '"></iframe>';
 				return false;
 			}
@@ -62,6 +71,8 @@
 			<input name="pano_title" placeholder="Title"> <input name="pano_author" placeholder="Author"><p>
 			Embed Size:<br>
 			<input name="embed_width" type="number" min="200" placeholder="Width" required> <input name="embed_height" type="number" min="150" placeholder="Height" required><p>
+			Initial Parameters:<br>
+			<input name="fov" type="number" min="40" max="100" placeholder="Field of View"> <input name="lat" type="number" min="-85" max "85" placeholder="Lat"> <input name="lon" type="number" min="-180" max "180" placeholder="Lon"><p>
 			Include Pannellum Logo: <input name="use_logo" type="checkbox"><p>
 			Auto Load: <input name="autoload" type="checkbox"><p>
 			Creative Commons License: 

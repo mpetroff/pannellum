@@ -66,14 +66,37 @@ if(getURLParameter('fallback')) {
 	document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + getURLParameter('fallback') + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
 }
 
+var fov = 70, lat = 0, lon = 0;
+if(getURLParameter('fov')) {
+	fov = parseFloat(getURLParameter('fov'));
+	
+	// keep field of view within bounds
+	if(fov < 40) {
+		fov = 40;
+	} else if(fov > 100) {
+		fov = 100;
+	}
+}
+if(getURLParameter('lat')) {
+	lat = parseFloat(getURLParameter('lat'));
+	
+	// keep lat within bounds
+	if(fov < -85) {
+		fov = -85;
+	} else if(fov > 85) {
+		fov = 85;
+	}
+}
+if(getURLParameter('lon')) {
+	lon = parseFloat(getURLParameter('lon'));
+}
+
 var camera, scene, renderer, renderGL;
 
-var fov = 70,
-texture_placeholder,
+var texture_placeholder,
 isUserInteracting = false,
 onMouseDownMouseX = 0, onMouseDownMouseY = 0,
-lon = 0, onMouseDownLon = 0,
-lat = 0, onMouseDownLat = 0,
+onMouseDownLon = 0, onMouseDownLat = 0,
 phi = 0, theta = 0;
 
 var keysDown = new Array(10);
@@ -200,7 +223,7 @@ function onDocumentMouseMove(event) {
 	if (isUserInteracting) {		
 		lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
 		lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
-		animate();	
+		animate();
 	}
 }
 
@@ -464,11 +487,7 @@ function render() {
 
 function renderInit() {
 	try {
-		camera.target.x = 0;
-		camera.target.y = 0;
-		camera.target.z = 0;
-		
-		renderer.render(scene,camera);
+		render();
 		
 		if(!isTimedOut) {
 			requestAnimationFrame(renderInit);
