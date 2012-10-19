@@ -582,30 +582,34 @@ function fullScreenError() {
 }
 
 function zoomIn(amount) {
-	if( fov >= 40 ) {
-		fov -= amount;
-		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
-		render();
-	}
-	// keep field of view within bounds
-	if(fov < 40) {
-		fov = 40;
-	} else if(fov > 100) {
-		fov = 100;
+	if(loaded) {
+		if( fov >= 40 ) {
+			fov -= amount;
+			camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
+			render();
+		}
+		// keep field of view within bounds
+		if(fov < 40) {
+			fov = 40;
+		} else if(fov > 100) {
+			fov = 100;
+		}
 	}
 }
 
 function zoomOut(amount) {
-	if(fov <= 100) {
-		fov += amount;
-		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
-		render();
-	}
-	// keep field of view within bounds
-	if(fov < 40) {
-		fov = 40;
-	} else if(fov > 100) {
-		fov = 100;
+	if(loaded) {
+		if(fov <= 100) {
+			fov += amount;
+			camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
+			render();
+		}
+		// keep field of view within bounds
+		if(fov < 40) {
+			fov = 40;
+		} else if(fov > 100) {
+			fov = 100;
+		}
 	}
 }
 
