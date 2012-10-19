@@ -45,6 +45,9 @@
 					if(form.lon.value != 0) {
 						embed_code.innerHTML += '&amp;amp;lon=' + escape(form.lon.value);
 					}
+					if(form.preview_url.value != '') {
+						embed_code.innerHTML += '&amp;amp;preview=' + escape(form.preview_url.value);
+					}
 					embed_code.innerHTML += '"></iframe>';
 				return false;
 			}
@@ -67,6 +70,8 @@
 			<input name="pannellum_url" placeholder="pannellum.htm Location" required><p>
 			Panorama URL:<br>
 			<input name="pano_url" placeholder="Image File" required><p>
+			Panorama Preview URL (optional):<br>
+			<input name="preview_url" placeholder="Image File"><p>
 			Basic Information:<br>
 			<input name="pano_title" placeholder="Title"> <input name="pano_author" placeholder="Author"><p>
 			Embed Size:<br>

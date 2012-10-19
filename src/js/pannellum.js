@@ -66,6 +66,11 @@ if(getURLParameter('fallback')) {
 	document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + getURLParameter('fallback') + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
 }
 
+if(getURLParameter('preview')) {
+	document.body.style.backgroundImage = "url('" + getURLParameter('preview') + "')";
+	document.body.style.backgroundSize = "auto";
+}
+
 var fov = 70, lat = 0, lon = 0;
 if(getURLParameter('fov')) {
 	fov = parseFloat(getURLParameter('fov'));
