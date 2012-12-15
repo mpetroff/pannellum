@@ -49,9 +49,9 @@ if(getURLParameter('license')) {
 		case 4: licenseType = 'by-nc-sa'; break;
 		case 5: licenseType = 'by-nc-nd'; break;
 	}
-	document.getElementById('author_box').innerHTML += '<a rel="license" target="_blank" href="http://creativecommons.org/licenses/' + licenseType + '/3.0/"><div id="license"></div></a>';
+	document.getElementById('author_box').innerHTML += '<a rel="license" target="_blank" href="//creativecommons.org/licenses/' + licenseType + '/3.0/"><div id="license"></div></a>';
 	var license = document.getElementById('license').style;
-	license.backgroundImage = "url('http://i.creativecommons.org/l/" + licenseType + "/3.0/80x15.png')";
+	license.backgroundImage = "url('//i.creativecommons.org/l/" + licenseType + "/3.0/80x15.png')";
 	license.width = '80px';
 }
 
