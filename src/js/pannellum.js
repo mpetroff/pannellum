@@ -126,6 +126,15 @@ if(getURLParameter('autoload') == 'yes' || getURLParameter('popoutautoload') == 
 	document.getElementById('load_button').style.display = 'table';
 }
 
+var autoRotate = false;
+
+if(getURLParameter('autorotate') == 'cw') {
+    autoRotate = 'cw';
+}
+if(getURLParameter('autorotate') == 'ccw') {
+    autoRotate = 'ccw';
+}
+
 function init() {
 	var container, mesh;
 	
@@ -213,6 +222,9 @@ function onDocumentMouseDown(event) {
 	// but not all of it
 	window.focus();
 	
+	// turn off auto-rotation if enabled
+	autoRotate = false;
+	
 	isUserInteracting = true;
 	
 	onPointerDownPointerX = event.clientX;
@@ -286,6 +298,9 @@ function onDocumentMouseWheel(event) {
 function onDocumentKeyPress(event) {
 	// override default action
 	event.preventDefault();
+	
+	// turn off auto-rotation if enabled
+	autoRotate = false;
 	
 	// record key pressed
 	keynumber = event.keycode;
@@ -448,6 +463,20 @@ function keyRepeat() {
 	if(keysDown[5] == true || keysDown[9] == true) {
 		// pan right
 		lon += 1;
+		animate();
+	}
+	
+	// if clockwise auto-rotate
+	if(autoRotate == 'cw') {
+		// pan left
+		lon -= .25;
+		animate();
+	}
+	
+	// if counter-clockwise auto-rotate
+	if(autoRotate == 'ccw') {
+		// pan right
+		lon += .25;
 		animate();
 	}
 }
