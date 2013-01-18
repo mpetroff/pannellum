@@ -86,10 +86,10 @@ if(getURLParameter('lat')) {
 	lat = parseFloat(getURLParameter('lat'));
 	
 	// keep lat within bounds
-	if(fov < -85) {
-		fov = -85;
-	} else if(fov > 85) {
-		fov = 85;
+	if(lat < -85) {
+		lat = -85;
+	} else if(lat > 85) {
+		lat = 85;
 	}
 }
 if(getURLParameter('lon')) {
