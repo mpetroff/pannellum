@@ -5,7 +5,7 @@ import tempfile
 import sys
 
 JS = [
-'js/Three.js',
+'js/libpannellum.js',
 'js/RequestAnimationFrame.js',
 'js/pannellum.js'
 ]
@@ -105,7 +105,7 @@ def build(files, css, html, filename):
 	
 	html = merge(html)
 	html = html.replace('<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />','<style type="text/css">' + css + '</style>')
-	html = html.replace('<script type="text/javascript" src="js/Three.js"></script>','')
+	html = html.replace('<script type="text/javascript" src="js/libpannellum.js"></script>','')
 	html = html.replace('<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>','')
 	html = html.replace('<script type="text/javascript" src="js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
 	html = html.replace('"_blank">Pannellum</a></span>','"_blank">Pannellum</a> ' + read('../VERSION') + '</span>')
