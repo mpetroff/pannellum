@@ -71,7 +71,7 @@ def htmlCompress(text):
 
 def addHeader(text):
 	text = text.replace('<!DOCTYPE HTML>','');
-	header = '<!DOCTYPE HTML>\n<!-- Pannellum ' + read('../VERSION') + ', https://bitbucket.org/mpetroff/pannellum/ -->\n'
+	header = '<!DOCTYPE HTML>\n<!-- Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum -->\n'
 	return header + text
 
 def build(files, css, html, filename):
