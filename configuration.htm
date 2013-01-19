@@ -51,6 +51,15 @@
 					if(form.preview_url.value != '') {
 						embed_code.innerHTML += '&amp;amp;preview=' + escape(form.preview_url.value);
 					}
+					if(form.haov.value != 0) {
+						embed_code.innerHTML += '&amp;amp;haov=' + escape(form.haov.value);
+					}
+					if(form.vaov.value != 0) {
+						embed_code.innerHTML += '&amp;amp;vaov=' + escape(form.vaov.value);
+					}
+					if(form.voffset.value != 0) {
+						embed_code.innerHTML += '&amp;amp;voffset=' + escape(form.voffset.value);
+					}
 					embed_code.innerHTML += '"></iframe>';
 				return false;
 			}
@@ -77,9 +86,11 @@
 			<input name="preview_url" placeholder="Image File"><p>
 			Basic Information:<br>
 			<input name="pano_title" placeholder="Title"> <input name="pano_author" placeholder="Author"><p>
+			Partial Panorama (degrees) (optional):<br>
+			<input name="haov" type="number" min="0" max="360" placeholder="Horizontal Angle of View"> <input name="vaov" type="number" min="0" max="180" placeholder="Vertical Angle of View"> <input name="voffset" type="number" min="-90" max="90" placeholder="Vertical Offset"><p>
 			Embed Size:<br>
 			<input name="embed_width" type="number" min="200" placeholder="Width" required> <input name="embed_height" type="number" min="150" placeholder="Height" required><p>
-			Initial Parameters:<br>
+			Initial Parameters (degrees) (optional):<br>
 			<input name="fov" type="number" min="40" max="100" placeholder="Field of View"> <input name="lat" type="number" min="-85" max="85" placeholder="Lat"> <input name="lon" type="number" min="-180" max="180" placeholder="Lon"><p>
 			Include Pannellum Logo: <input name="use_logo" type="checkbox"><p>
 			Auto Load: <input name="autoload" type="checkbox"><p>

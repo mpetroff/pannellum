@@ -44,11 +44,11 @@ The `utils` folder contains the required build tools, with the exception of Pyth
 ## License
 Pannellum is distributed under the MIT License. For more information, read the file `COPYING` or peruse the license [online](http://www.opensource.org/licenses/MIT).
 
-Parts of Pannellum are based on [three.js](https://github.com/mrdoob/three.js) r40, which is licensed under the [MIT License](https://github.com/mrdoob/three.js/blob/44a8652c37e576d51a7edd97b0f99f00784c3db7/LICENSE).
+In the past, parts of Pannellum were based on [three.js](https://github.com/mrdoob/three.js) r40, which is licensed under the [MIT License](https://github.com/mrdoob/three.js/blob/44a8652c37e576d51a7edd97b0f99f00784c3db7/LICENSE).
 
 The panoramic image provided with the examples is licensed under the [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/).
 
 ## Credits
 
 * [Matthew Petroff](http://www.mpetroff.net/), Original Author
-* [three.js](https://github.com/mrdoob/three.js) r40, Underlying Framework
+* [three.js](https://github.com/mrdoob/three.js) r40, Former Underlying Framework

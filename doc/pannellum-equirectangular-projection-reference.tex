@@ -1,0 +1,113 @@
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage{amsmath}
+\usepackage[empty,cm]{fullpage}
+\pagenumbering{gobble}
+
+\begin{document}
+
+\title{Pannellum Equirectangular Projection Reference}
+\author{Matthew Petroff}
+\date{January 2013}
+\maketitle 
+
+Let a coordinate system be defined with the origin at the focal point, the
+x-axis parallel to the camera's horizontal axis with positive to the right as
+viewed from behind the camera, the y-axis parallel to the camera's vertical
+axis with positive upward as viewed from behind the camera, and the z-axis be
+perpendicular to these two axes with positive extending away from the
+camera.\footnote{Note that this is a left-handed coordinate system.}
+Let \(\lambda\) represent the panorama's latitude, \(\phi\) the panorama's
+longitude, \(\theta\) the latitudinal offset, \(\psi\) the longitudinal offset,
+and \(f\) the focal length. Let \(\mathbf{a}\) represent a point's position
+vector, \(\mathrm{R}_x(\theta)\) the latitudinal rotation matrix,
+\(\mathbf{d}\) a point's position vector in the camera's reference frame, \(x\)
+and \(y\) a point's position on the image plane, and \(p_x\) and \(p_y\) a
+point's position on an equirectangular projection.
+
+\begin{equation} \label{eq:posvec}
+\mathbf{a} = \begin{bmatrix}
+\mathbf{a}_x \\ \mathbf{a}_y \\ \mathbf{a}_z
+\end{bmatrix} = \begin{bmatrix}
+\sin(\lambda)\cos(\phi) \\ \sin(\phi) \\ \cos(\phi)\cos(\lambda) \end{bmatrix}
+\end{equation}
+
+\begin{equation}  \label{eq:rotmat}
+\mathrm{R}_x(\theta) = \begin{bmatrix}
+1 & 0 & 0 \\
+0 & \cos(\theta) & -\sin(\theta) \\
+0 & \sin(\theta) & \cos(\theta)
+\end{bmatrix}
+\end{equation}
+
+With a point's position vector \eqref{eq:posvec} and the latitudinal rotation
+matrix \eqref{eq:rotmat}, one can calculate a point's position in the camera's
+reference frame.\nopagebreak
+
+\begin{equation}
+\mathbf{d} = \begin{bmatrix}
+\mathbf{d}_x \\ \mathbf{d}_y \\ \mathbf{d}_z
+\end{bmatrix} = \mathrm{R}_x(\theta)\mathbf{a} = \begin{bmatrix}
+1 & 0 & 0 \\
+0 & \cos(\theta) & -\sin(\theta) \\
+0 & \sin(\theta) & \cos(\theta)
+\end{bmatrix}
+\begin{bmatrix}
+\sin(\lambda)\cos(\phi) \\ \sin(\phi) \\ \cos(\phi)\cos(\lambda)
+\end{bmatrix} = \begin{bmatrix}
+\sin(\lambda)\cos(\phi) \\
+\sin(\phi)\cos(\theta) - \cos(\phi)\cos(\lambda)\sin(\theta) \\
+\sin(\phi)\sin(\theta) + \cos(\phi)\cos(\lambda)\cos(\theta)
+\end{bmatrix}
+\end{equation}
+
+Using the pinhole camera model, one can then calculate positions on the
+image plane.\nopagebreak
+
+\begin{equation}
+\begin{bmatrix} x \\ y \end{bmatrix} = \frac{f}{\mathbf{d}_z}
+\begin{bmatrix} \mathbf{d}_x \\ \mathbf{d}_y \end{bmatrix}
+= \frac{f}{\sin(\phi)\sin(\theta) + \cos(\phi)\cos(\lambda)\cos(\theta)}
+\begin{bmatrix}
+\sin(\lambda)\cos(\phi) \\
+\sin(\phi)\cos(\theta) - \cos(\phi)\cos(\lambda)\sin(\theta)
+\end{bmatrix}
+\end{equation}
+
+\begin{equation} \label{eq:xf}
+\frac{x}{f} = \frac{\sin(\lambda)\cos(\phi)}{\sin(\phi)\sin(\theta) +
+\cos(\phi)\cos(\lambda)\cos(\theta)}
+\end{equation}
+
+\begin{equation} \label{eq:yf}
+\frac{y}{f} = \frac{\sin(\phi)\cos(\theta) -
+\cos(\phi)\cos(\lambda)\sin(\theta)}{\sin(\phi)\sin(\theta) +
+\cos(\phi)\cos(\lambda)\cos(\theta)}
+\end{equation}
+
+Solving the system of \eqref{eq:xf} and \eqref{eq:yf} for \(\lambda\) and
+\(\phi\) and adding the longitudinal offset, one is able to find a point's
+position on the unit sphere from its position on the image plane.\nopagebreak
+
+\begin{equation}
+\lambda = \tan ^{-1}\left(\frac{x}{\sqrt{x^2 + \left(f \cos(\theta) -
+y \sin(\theta) \right)^2}},\frac{f \cos(\theta) - y \sin(\theta)}{\sqrt{x^2 +
+\left(f \cos(\theta) - y \sin(\theta) \right)^2}}\right) + \psi
+\end{equation}
+
+\begin{equation}
+\phi = \tan ^{-1}\left(\frac{y \cos(\theta) + f \sin(\theta)}{\sqrt{x^2 +
+\left(f \cos(\theta) - y \sin(\theta) \right)^2}}\right)
+\end{equation}
+
+Once a point's position on the unit sphere is known, it is trivial to find its
+position on an equirectangular projection.\nopagebreak
+
+\begin{equation}
+p_x = \frac{\lambda}{\pi}
+\end{equation}
+\begin{equation}
+p_y = \frac{\phi}{\frac{\pi}{2}}
+\end{equation}
+
+\end{document}

@@ -71,7 +71,7 @@ if(getURLParameter('preview')) {
 	document.body.style.backgroundSize = "auto";
 }
 
-var fov = 70, lat = 0, lon = 0;
+var fov = 70, lat = 0, lon = 0, haov = 360, vaov = 180, voffset = 0;
 if(getURLParameter('fov')) {
 	fov = parseFloat(getURLParameter('fov'));
 	
@@ -94,6 +94,15 @@ if(getURLParameter('lat')) {
 }
 if(getURLParameter('lon')) {
 	lon = parseFloat(getURLParameter('lon'));
+}
+if(getURLParameter('haov')) {
+	haov = parseFloat(getURLParameter('haov'));
+}
+if(getURLParameter('vaov')) {
+	vaov = parseFloat(getURLParameter('vaov'));
+}
+if(getURLParameter('voffset')) {
+    voffset = parseFloat(getURLParameter('voffset'));
 }
 
 var camera, scene, renderer, renderGL;
@@ -135,37 +144,17 @@ if(getURLParameter('autorotate') == 'ccw') {
     autoRotate = 'ccw';
 }
 
+var canvas = document.getElementById('canvas');
+
 function init() {
-	var container, mesh;
-	
-	container = document.getElementById('container');
-	
-	camera = new THREE.Camera(fov,window.innerWidth / window.innerHeight,1,1100);
-	
-	scene = new THREE.Scene();
-	
-	var panoimage = new Image(),panotexture = new THREE.Texture(panoimage);
+	var panoimage = new Image()
 	panoimage.onload = function() {
-		panotexture.needsUpdate = true;
-		mesh = new THREE.Mesh(new THREE.Sphere(500,60,40), new THREE.MeshBasicMaterial({map:panotexture}));
-		mesh.scale.x = -1;
 		try {
-			scene.addObject(mesh);
-		} catch (event) {
-			// show error message if canvas is not supported
-			anError();
-		}
-		
-		try {
-			renderer = new THREE.WebGLRenderer();
-			renderer.setSize(window.innerWidth,window.innerHeight);
-			renderer.initWebGLObjects(scene);
+			renderer = new libpannellum.renderer(canvas, panoimage);
 		} catch (event) {
 			// show error message if WebGL is not supported
 			anError();
 		}
-		
-		container.appendChild(renderer.domElement);
 		
 		document.addEventListener('mousedown',onDocumentMouseDown,false);
 		document.addEventListener('mousemove',onDocumentMouseMove,false);
@@ -291,7 +280,6 @@ function onDocumentMouseWheel(event) {
 	} else if(fov > 105) {
 		fov = 105;
 	}
-	camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
 	render();
 }
 
@@ -484,10 +472,7 @@ function keyRepeat() {
 function onDocumentResize() {
 	// reset panorama renderer
 	try {
-		camera.aspect = window.innerWidth / window.innerHeight;
-		renderer.setSize(window.innerWidth,window.innerHeight);
-		camera.projectionMatrix = THREE.Matrix4.makePerspective(fov,window.innerWidth / window.innerHeight,1,1100);
-		render();
+		renderInit();
 		
 		// Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
 		onFullScreenChange();
@@ -505,15 +490,14 @@ function animate() {
 
 function render() {
 	try {
+		if(lon > 180) {
+		    lon -= 360;
+		} else if(lon < -180) {
+		    lon += 360;
+		}
+		
 		lat = Math.max(-85,Math.min(85,lat));
-		phi = (90 - lat) * Math.PI / 180;
-		theta = lon * Math.PI / 180;
-		
-		camera.target.position.x = 500 * Math.sin(phi) * Math.cos(theta);
-		camera.target.position.y = 500 * Math.cos(phi);
-		camera.target.position.z = 500 * Math.sin(phi) * Math.sin(theta);
-		
-		renderer.render(scene,camera);
+		renderer.render(lat * Math.PI / 180,lon * Math.PI / 180,fov * Math.PI / 180);
 	} catch(event) {
 		// panorama not loaded
 	}
@@ -521,6 +505,10 @@ function render() {
 
 function renderInit() {
 	try {
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		renderer.init(haov * Math.PI / 180,vaov * Math.PI / 180,voffset * Math.PI / 180);
+		
 		render();
 		
 		if(!isTimedOut) {
@@ -614,7 +602,6 @@ function zoomIn(amount) {
 	if(loaded) {
 		if( fov >= 40 ) {
 			fov -= amount;
-			camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
 			render();
 		}
 		// keep field of view within bounds
@@ -630,7 +617,6 @@ function zoomOut(amount) {
 	if(loaded) {
 		if(fov <= 100) {
 			fov += amount;
-			camera.projectionMatrix = THREE.Matrix4.makePerspective(fov, window.innerWidth / window.innerHeight, 1, 1100);
 			render();
 		}
 		// keep field of view within bounds
