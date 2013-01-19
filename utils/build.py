@@ -3,6 +3,7 @@
 import os
 import tempfile
 import sys
+import urllib
 
 JS = [
 'js/libpannellum.js',
@@ -93,11 +94,11 @@ def build(files, css, html, filename):
 	print "=" * 40
 	
 	css = merge(css)
-	css = css.replace("'img/grab.png'","'data:image/png;base64," + read('css/img/grab.png').encode('base64').replace('\n', '') + "'")
-	css = css.replace("'img/grabbing.png'","'data:image/png;base64," + read('css/img/grabbing.png').encode('base64').replace('\n', '') + "'")
-	css = css.replace("'img/loading.svg'","'data:image/svg+xml;base64," + read('css/img/loading.svg').encode('base64').replace('\n', '') + "'")
+	css = css.replace("'img/grab.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/grab.svg'),'') + "'")
+	css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/grabbing.svg'),'') + "'")
+	css = css.replace("'img/loading.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/loading.svg'),'') + "'")
 	css = cssCompress(css)
-	css = css.replace("'img/sprites.png'","'data:image/svg+xml;base64," + read('css/img/sprites.svg').encode('base64').replace('\n', '') + "'")
+	css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/sprites.svg'),'') + "'")
 	
 	print "=" * 40
 	print "Compiling", htmlfilename
