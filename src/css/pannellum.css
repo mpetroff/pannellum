@@ -313,3 +313,11 @@ body {
 #about a:hover, #about a:active {
 	color:#eee;
 }
+
+.hotspot {
+	position:absolute;
+	height:20px;
+	width:20px;
+	background:rgba(0,0,0,0.8);
+	display:none;
+}

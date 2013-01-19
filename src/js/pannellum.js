@@ -483,6 +483,7 @@ function onDocumentResize() {
 
 function animate() {
 	render();
+	
 	if(isUserInteracting) {
 		requestAnimationFrame(animate);
 	}
@@ -498,6 +499,8 @@ function render() {
 		
 		lat = Math.max(-85,Math.min(85,lat));
 		renderer.render(lat * Math.PI / 180,lon * Math.PI / 180,fov * Math.PI / 180);
+		
+		renderHotSpots();
 	} catch(event) {
 		// panorama not loaded
 	}
@@ -526,6 +529,40 @@ function renderInit() {
 			anError();
 		}
 	}
+}
+
+var hotspots = new Array();
+//hotspots[0] = new hotspot(10, 20);
+//hotspots[1] = new hotspot(10, -30);
+function hotspot(lat, lon) {
+    var div = document.createElement('div');
+    div.setAttribute('class', 'hotspot');
+    document.getElementById('page').appendChild(div);
+    this.div = div;
+    this.lat = lat;
+    this.lon = lon;
+}
+
+function renderHotSpots() {
+	hotspots.forEach(function(hs) {
+	    var z = Math.sin(hs.lat * Math.PI / 180) * Math.sin(lat * Math.PI /
+	        180) + Math.cos(hs.lat * Math.PI / 180) * Math.cos((hs.lon + lon) *
+	        Math.PI / 180) * Math.cos(lat * Math.PI / 180);
+    	if((hs.lon <= 90 && hs.lon > -90 && z <= 0) ||
+    	  (hs.lon > 90 || hs.lon <= -90 && z <= 0)) {
+	        hs.div.style.display = 'none';
+	    } else {
+    	    hs.div.style.display = 'inline';
+    	    hs.div.style.top = -canvas.height / Math.tan(fov * Math.PI / 360) *
+    	        (Math.sin(hs.lat * Math.PI / 180) * Math.cos(lat * Math.PI /
+    	        180) - Math.cos(hs.lat * Math.PI / 180) * Math.cos((hs.lon +
+    	        lon) * Math.PI / 180) * Math.sin(lat * Math.PI / 180)) / z /
+    	        2 + canvas.height / 2 - 10 + 'px';
+    	    hs.div.style.left = -canvas.height / Math.tan(fov * Math.PI / 360) *
+    	        Math.sin((hs.lon + lon) * Math.PI / 180) * Math.cos(hs.lat *
+    	        Math.PI / 180) / z / 2 + canvas.width / 2 - 10 + 'px';
+    	}
+	});
 }
 
 function getURLParameter(name) {
