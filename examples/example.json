@@ -1,0 +1,17 @@
+{
+    "hotSpots": [
+        {
+            "pitch": 20,
+            "yaw": -30,
+            "type": "info",
+            "text": "This is some text."
+        },
+        {
+            "pitch": -10,
+            "yaw": 50,
+            "type": "link",
+            "text": "This is a link.",
+            "URL": "http://www.google.com/"
+        }
+    ]
+}

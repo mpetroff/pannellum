@@ -27,6 +27,18 @@ try {
 	// Lack of "about" display is not a big deal
 }
 
+var config;
+if(getURLParameter('config')) {
+    // Get JSON configuration file
+    var request = new XMLHttpRequest();
+    request.open("GET", getURLParameter('config'), false);
+    request.send();
+    config = JSON.parse(request.responseText);
+    
+    // Create hot spots
+    createHotSpots();
+}
+
 if(getURLParameter('logo') == 'yes') {
 	document.getElementById('pannellum_logo').style.display = 'inline';
 }
@@ -531,20 +543,17 @@ function renderInit() {
 	}
 }
 
-var hotspots = new Array();
-//hotspots[0] = new hotspot(10, 20);
-//hotspots[1] = new hotspot(10, -30);
-function hotspot(pitch, yaw) {
-    var div = document.createElement('div');
-    div.setAttribute('class', 'hotspot');
-    document.getElementById('page').appendChild(div);
-    this.div = div;
-    this.pitch = pitch;
-    this.yaw = yaw;
+function createHotSpots() {
+    config.hotSpots.forEach(function(hs) {
+        var div = document.createElement('div');
+        div.setAttribute('class', 'hotspot');
+        document.getElementById('page').appendChild(div);
+        hs.div = div;
+    });
 }
 
 function renderHotSpots() {
-	hotspots.forEach(function(hs) {
+	config.hotSpots.forEach(function(hs) {
 	    var z = Math.sin(hs.pitch * Math.PI / 180) * Math.sin(pitch * Math.PI /
 	        180) + Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw + yaw) *
 	        Math.PI / 180) * Math.cos(pitch * Math.PI / 180);
