@@ -71,29 +71,29 @@ if(getURLParameter('preview')) {
 	document.body.style.backgroundSize = "auto";
 }
 
-var fov = 70, lat = 0, lon = 0, haov = 360, vaov = 180, voffset = 0;
-if(getURLParameter('fov')) {
-	fov = parseFloat(getURLParameter('fov'));
+var hfov = 70, pitch = 0, yaw = 0, haov = 360, vaov = 180, voffset = 0;
+if(getURLParameter('hfov')) {
+	hfov = parseFloat(getURLParameter('hfov'));
 	
 	// keep field of view within bounds
-	if(fov < 40) {
-		fov = 40;
-	} else if(fov > 100) {
-		fov = 100;
+	if(hfov < 40) {
+		hfov = 40;
+	} else if(hfov > 100) {
+		hfov = 100;
 	}
 }
-if(getURLParameter('lat')) {
-	lat = parseFloat(getURLParameter('lat'));
+if(getURLParameter('pitch')) {
+	pitch = parseFloat(getURLParameter('pitch'));
 	
-	// keep lat within bounds
-	if(lat < -85) {
-		lat = -85;
-	} else if(lat > 85) {
-		lat = 85;
+	// keep pitch within bounds
+	if(pitch < -85) {
+		pitch = -85;
+	} else if(pitch > 85) {
+		pitch = 85;
 	}
 }
-if(getURLParameter('lon')) {
-	lon = parseFloat(getURLParameter('lon'));
+if(getURLParameter('yaw')) {
+	yaw = parseFloat(getURLParameter('yaw'));
 }
 if(getURLParameter('haov')) {
 	haov = parseFloat(getURLParameter('haov'));
@@ -110,7 +110,7 @@ var camera, scene, renderer, renderGL;
 var texture_placeholder,
 isUserInteracting = false,
 onMouseDownMouseX = 0, onMouseDownMouseY = 0,
-onMouseDownLon = 0, onMouseDownLat = 0,
+onMouseDownYaw = 0, onMouseDownPitch = 0,
 phi = 0, theta = 0;
 
 var keysDown = new Array(10);
@@ -219,16 +219,16 @@ function onDocumentMouseDown(event) {
 	onPointerDownPointerX = event.clientX;
 	onPointerDownPointerY = event.clientY;
 	
-	onPointerDownLon = lon;
-	onPointerDownLat = lat;	
+	onPointerDownYaw = yaw;
+	onPointerDownPitch = pitch;	
 	
 	document.getElementById('page').className = 'grabbing';
 }
 
 function onDocumentMouseMove(event) {
 	if (isUserInteracting) {		
-		lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
-		lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+		yaw = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownYaw;
+		pitch = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
 		animate();
 	}
 }
@@ -242,16 +242,16 @@ function onDocumentTouchStart(event) {
 	onPointerDownPointerX = event.targetTouches[0].clientX;
 	onPointerDownPointerY = event.targetTouches[0].clientY;
 	
-	onPointerDownLon = lon;
-	onPointerDownLat = lat;
+	onPointerDownYaw = yaw;
+	onPointerDownPitch = pitch;
 }
 
 function onDocumentTouchMove(event) {
 	// override default action
 	event.preventDefault();
 		
-	lon = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownLon;
-	lat = (event.targetTouches[0].clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+	yaw = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownYaw;
+	pitch = (event.targetTouches[0].clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
 	animate();
 }
 
@@ -261,24 +261,24 @@ function onDocumentTouchEnd(event) {
 
 function onDocumentMouseWheel(event) {
 	event.preventDefault();
-	if (fov >= 35 && fov <= 105) {
+	if (hfov >= 35 && hfov <= 105) {
 		if (event.wheelDeltaY) {
 			// WebKit
-			fov -= event.wheelDeltaY * 0.05;
+			hfov -= event.wheelDeltaY * 0.05;
 		} else if (event.wheelDelta) {
 			// Opera / Explorer 9
-			fov -= event.wheelDelta * 0.05;
+			hfov -= event.wheelDelta * 0.05;
 		} else if (event.detail) {
 			// Firefox
-			fov += event.detail * 1.5;
+			hfov += event.detail * 1.5;
 		}
 	}
 	
 	// keep field of view within bounds
-	if(fov < 35) {
-		fov = 35;
-	} else if(fov > 105) {
-		fov = 105;
+	if(hfov < 35) {
+		hfov = 35;
+	} else if(hfov > 105) {
+		hfov = 105;
 	}
 	render();
 }
@@ -429,42 +429,42 @@ function keyRepeat() {
 	// if up arrow or "w" is down
 	if(keysDown[2] == true || keysDown[6] == true) {
 		// pan up
-		lat += 1;
+		pitch += 1;
 		animate();
 	}
 	
 	// if down arrow or "s" is down
 	if(keysDown[3] == true || keysDown[7] == true) {
 		// pan down
-		lat -= 1;
+		pitch -= 1;
 		animate();
 	}
 	
 	// if left arrow or "a" is down
 	if(keysDown[4] == true || keysDown[8] == true) {
 		// pan left
-		lon -= 1;
+		yaw -= 1;
 		animate();
 	}
 	
 	// if right arrow or "d" is down
 	if(keysDown[5] == true || keysDown[9] == true) {
 		// pan right
-		lon += 1;
+		yaw += 1;
 		animate();
 	}
 	
 	// if clockwise auto-rotate
 	if(autoRotate == 'cw') {
 		// pan left
-		lon -= .25;
+		yaw -= .25;
 		animate();
 	}
 	
 	// if counter-clockwise auto-rotate
 	if(autoRotate == 'ccw') {
 		// pan right
-		lon += .25;
+		yaw += .25;
 		animate();
 	}
 }
@@ -491,14 +491,14 @@ function animate() {
 
 function render() {
 	try {
-		if(lon > 180) {
-		    lon -= 360;
-		} else if(lon < -180) {
-		    lon += 360;
+		if(yaw > 180) {
+		    yaw -= 360;
+		} else if(yaw < -180) {
+		    yaw += 360;
 		}
 		
-		lat = Math.max(-85,Math.min(85,lat));
-		renderer.render(lat * Math.PI / 180,lon * Math.PI / 180,fov * Math.PI / 180);
+		pitch = Math.max(-85,Math.min(85,pitch));
+		renderer.render(pitch * Math.PI / 180,yaw * Math.PI / 180,hfov * Math.PI / 180);
 		
 		renderHotSpots();
 	} catch(event) {
@@ -534,32 +534,32 @@ function renderInit() {
 var hotspots = new Array();
 //hotspots[0] = new hotspot(10, 20);
 //hotspots[1] = new hotspot(10, -30);
-function hotspot(lat, lon) {
+function hotspot(pitch, yaw) {
     var div = document.createElement('div');
     div.setAttribute('class', 'hotspot');
     document.getElementById('page').appendChild(div);
     this.div = div;
-    this.lat = lat;
-    this.lon = lon;
+    this.pitch = pitch;
+    this.yaw = yaw;
 }
 
 function renderHotSpots() {
 	hotspots.forEach(function(hs) {
-	    var z = Math.sin(hs.lat * Math.PI / 180) * Math.sin(lat * Math.PI /
-	        180) + Math.cos(hs.lat * Math.PI / 180) * Math.cos((hs.lon + lon) *
-	        Math.PI / 180) * Math.cos(lat * Math.PI / 180);
-    	if((hs.lon <= 90 && hs.lon > -90 && z <= 0) ||
-    	  (hs.lon > 90 || hs.lon <= -90 && z <= 0)) {
+	    var z = Math.sin(hs.pitch * Math.PI / 180) * Math.sin(pitch * Math.PI /
+	        180) + Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw + yaw) *
+	        Math.PI / 180) * Math.cos(pitch * Math.PI / 180);
+    	if((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
+    	  (hs.yaw > 90 || hs.yaw <= -90 && z <= 0)) {
 	        hs.div.style.display = 'none';
 	    } else {
     	    hs.div.style.display = 'inline';
-    	    hs.div.style.top = -canvas.height / Math.tan(fov * Math.PI / 360) *
-    	        (Math.sin(hs.lat * Math.PI / 180) * Math.cos(lat * Math.PI /
-    	        180) - Math.cos(hs.lat * Math.PI / 180) * Math.cos((hs.lon +
-    	        lon) * Math.PI / 180) * Math.sin(lat * Math.PI / 180)) / z /
+    	    hs.div.style.top = -canvas.height / Math.tan(hfov * Math.PI / 360) *
+    	        (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(pitch * Math.PI /
+    	        180) - Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw +
+    	        yaw) * Math.PI / 180) * Math.sin(pitch * Math.PI / 180)) / z /
     	        2 + canvas.height / 2 - 10 + 'px';
-    	    hs.div.style.left = -canvas.height / Math.tan(fov * Math.PI / 360) *
-    	        Math.sin((hs.lon + lon) * Math.PI / 180) * Math.cos(hs.lat *
+    	    hs.div.style.left = -canvas.height / Math.tan(hfov * Math.PI / 360) *
+    	        Math.sin((hs.yaw + yaw) * Math.PI / 180) * Math.cos(hs.pitch *
     	        Math.PI / 180) / z / 2 + canvas.width / 2 - 10 + 'px';
     	}
 	});
@@ -637,30 +637,30 @@ function fullScreenError() {
 
 function zoomIn(amount) {
 	if(loaded) {
-		if( fov >= 40 ) {
-			fov -= amount;
+		if( hfov >= 40 ) {
+			hfov -= amount;
 			render();
 		}
 		// keep field of view within bounds
-		if(fov < 40) {
-			fov = 40;
-		} else if(fov > 100) {
-			fov = 100;
+		if(hfov < 40) {
+			hfov = 40;
+		} else if(hfov > 100) {
+			hfov = 100;
 		}
 	}
 }
 
 function zoomOut(amount) {
 	if(loaded) {
-		if(fov <= 100) {
-			fov += amount;
+		if(hfov <= 100) {
+			hfov += amount;
 			render();
 		}
 		// keep field of view within bounds
-		if(fov < 40) {
-			fov = 40;
-		} else if(fov > 100) {
-			fov = 100;
+		if(hfov < 40) {
+			hfov = 40;
+		} else if(hfov > 100) {
+			hfov = 100;
 		}
 	}
 }

@@ -105,13 +105,13 @@ function Renderer(canvas, image) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
     }
     
-    this.render = function(lat, lon, hfov) {
+    this.render = function(pitch, yaw, hfov) {
         // Calculate focal length from horizontal angle of view
         var focal = 1 / Math.tan(hfov / 2);
         
         // Pass psi, theta, and focal length
-        gl.uniform1f(program.psi, lon);
-        gl.uniform1f(program.theta, lat);
+        gl.uniform1f(program.psi, yaw);
+        gl.uniform1f(program.theta, pitch);
         gl.uniform1f(program.f, focal);
         
         // Draw using current buffer

@@ -39,14 +39,14 @@
 					if(form.fallback_url.value != '') {
 						embed_code.innerHTML += '&amp;amp;fallback=' + escape(form.fallback_url.value);
 					}
-					if(form.fov.value != 0) {
-						embed_code.innerHTML += '&amp;amp;fov=' + escape(form.fov.value);
+					if(form.hfov.value != 0) {
+						embed_code.innerHTML += '&amp;amp;hfov=' + escape(form.hfov.value);
 					}
-					if(form.lat.value != 0) {
-						embed_code.innerHTML += '&amp;amp;lat=' + escape(form.lat.value);
+					if(form.pitch.value != 0) {
+						embed_code.innerHTML += '&amp;amp;pitch=' + escape(form.pitch.value);
 					}
-					if(form.lon.value != 0) {
-						embed_code.innerHTML += '&amp;amp;lon=' + escape(form.lon.value);
+					if(form.yaw.value != 0) {
+						embed_code.innerHTML += '&amp;amp;yaw=' + escape(form.yaw.value);
 					}
 					if(form.preview_url.value != '') {
 						embed_code.innerHTML += '&amp;amp;preview=' + escape(form.preview_url.value);
@@ -91,7 +91,7 @@
 			Embed Size:<br>
 			<input name="embed_width" type="number" min="200" placeholder="Width" required> <input name="embed_height" type="number" min="150" placeholder="Height" required><p>
 			Initial Parameters (degrees) (optional):<br>
-			<input name="fov" type="number" min="40" max="100" placeholder="Field of View"> <input name="lat" type="number" min="-85" max="85" placeholder="Lat"> <input name="lon" type="number" min="-180" max="180" placeholder="Lon"><p>
+			<input name="hfov" type="number" min="40" max="100" placeholder="Horizontal Field of View"> <input name="pitch" type="number" min="-85" max="85" placeholder="Pitch"> <input name="yaw" type="number" min="-180" max="180" placeholder="Yaw"><p>
 			Include Pannellum Logo: <input name="use_logo" type="checkbox"><p>
 			Auto Load: <input name="autoload" type="checkbox"><p>
 			Auto Rotate:
