@@ -15,6 +15,12 @@ body {
 	background-image: -o-linear-gradient(-45deg, #999 24%, #666 26%, #666 49%, #999 51%, #999 74%, #666 76%, #666);
 	background-image: linear-gradient(-45deg, #999 24%, #666 26%, #666 49%, #999 51%, #999 74%, #666 76%, #666);
 	background-size:20px 20px;
+	-webkit-user-select:none;
+	-khtml-user-select:none;
+	-moz-user-select:none;
+	-o-user-select:none;
+	-ms-user-select:none;
+	user-select:none;
 }
 
 .grab {
@@ -27,15 +33,6 @@ body {
 
 .sprite {
 	background-image:url('img/sprites.svg');
-}
-
-.noselect {
-	-webkit-user-select:none;
-	-khtml-user-select:none;
-	-moz-user-select:none;
-	-o-user-select:none;
-	-ms-user-select:none;
-	user-select:none;
 }
 
 #container {
@@ -316,8 +313,49 @@ body {
 
 .hotspot {
 	position:absolute;
-	height:20px;
-	width:20px;
-	background:rgba(0,0,0,0.8);
-	display:none;
+	height:27px;
+	width:27px;
+	visibility:hidden;
+	cursor:default;
+}
+.hotspot.info {
+    background-position:-54px -81px;
+}
+.hotspot.info:hover {
+    background-position:-54px -108px;
+}
+.hotspot.link {
+    background-position:-54px -27px;
+}
+.hotspot.link:hover {
+    background-position:-54px -54px;
+}
+
+div.tooltip span {
+    visibility:hidden;
+    position:absolute;
+    border-radius: 10px;
+    background-color:rgba(0,0,0,0.7);
+    color:#fff;
+    text-align:center;
+    max-width:200px;
+    z-index:10;
+    padding:5px 10px;
+    margin-top:-41px;
+    margin-left:-220px;
+    cursor:default;
+}
+div.tooltip:hover span{
+   visibility:visible;
+}
+div.tooltip:hover:after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-width: 10px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.7) transparent transparent transparent;
+      top: -12px;
+      left: 4px;
 }

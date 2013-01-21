@@ -546,8 +546,23 @@ function renderInit() {
 function createHotSpots() {
     config.hotSpots.forEach(function(hs) {
         var div = document.createElement('div');
-        div.setAttribute('class', 'hotspot');
-        document.getElementById('page').appendChild(div);
+        var span = document.createElement('span');
+        div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+        if(hs.URL) {
+            var a = document.createElement('a');
+            a.setAttribute('href', hs.URL);
+            document.getElementById('page').appendChild(a);
+            div.style.cursor = 'pointer';
+            span.style.cursor = 'pointer';
+            a.appendChild(div);
+        } else {
+            document.getElementById('page').appendChild(div);
+        }
+        span.innerHTML = hs.text;
+        div.appendChild(span);
+        span.style.width = span.scrollWidth - 20 + 'px';
+        span.style.marginLeft = -(span.scrollWidth - 20) / 2 + 'px';
+        span.style.marginTop = -span.scrollHeight - 12 + 'px';
         hs.div = div;
     });
 }
@@ -559,17 +574,17 @@ function renderHotSpots() {
 	        Math.PI / 180) * Math.cos(pitch * Math.PI / 180);
     	if((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
     	  (hs.yaw > 90 || hs.yaw <= -90 && z <= 0)) {
-	        hs.div.style.display = 'none';
+	        hs.div.style.visibility = 'hidden';
 	    } else {
-    	    hs.div.style.display = 'inline';
+    	    hs.div.style.visibility = 'visible';
     	    hs.div.style.top = -canvas.height / Math.tan(hfov * Math.PI / 360) *
     	        (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(pitch * Math.PI /
     	        180) - Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw +
     	        yaw) * Math.PI / 180) * Math.sin(pitch * Math.PI / 180)) / z /
-    	        2 + canvas.height / 2 - 10 + 'px';
+    	        2 + canvas.height / 2 - 13.5 + 'px';
     	    hs.div.style.left = -canvas.height / Math.tan(hfov * Math.PI / 360) *
     	        Math.sin((hs.yaw + yaw) * Math.PI / 180) * Math.cos(hs.pitch *
-    	        Math.PI / 180) / z / 2 + canvas.width / 2 - 10 + 'px';
+    	        Math.PI / 180) / z / 2 + canvas.width / 2 - 13.5 + 'px';
     	}
 	});
 }
