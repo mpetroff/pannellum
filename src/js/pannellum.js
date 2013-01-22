@@ -27,7 +27,14 @@ try {
 	// Lack of "about" display is not a big deal
 }
 
-var config;
+var config, popoutmode = false, hfov = 70, pitch = 0, yaw = 0, haov = 360,
+    vaov = 180, voffset = 0, renderer, isUserInteracting = false,
+    onMouseDownMouseX = 0, onMouseDownMouseY = 0, onMouseDownYaw = 0,
+    onMouseDownPitch = 0, phi = 0, theta = 0, keysDown = new Array(10),
+    fullWindowActive = false, loaded = false, error = false, isTimedOut = false,
+    about_box = document.getElementById('about_box'), autoRotate = false,
+    canvas = document.getElementById('canvas');
+
 if(getURLParameter('config')) {
     // Get JSON configuration file
     var request = new XMLHttpRequest();
@@ -67,8 +74,6 @@ if(getURLParameter('license')) {
 	license.width = '80px';
 }
 
-var popoutmode = false;
-
 if(getURLParameter('popout') == 'yes') {
 	document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
 	popoutmode = true;
@@ -83,7 +88,6 @@ if(getURLParameter('preview')) {
 	document.body.style.backgroundSize = "auto";
 }
 
-var hfov = 70, pitch = 0, yaw = 0, haov = 360, vaov = 180, voffset = 0;
 if(getURLParameter('hfov')) {
 	hfov = parseFloat(getURLParameter('hfov'));
 	
@@ -94,6 +98,7 @@ if(getURLParameter('hfov')) {
 		hfov = 100;
 	}
 }
+
 if(getURLParameter('pitch')) {
 	pitch = parseFloat(getURLParameter('pitch'));
 	
@@ -104,35 +109,22 @@ if(getURLParameter('pitch')) {
 		pitch = 85;
 	}
 }
+
 if(getURLParameter('yaw')) {
 	yaw = parseFloat(getURLParameter('yaw'));
 }
+
 if(getURLParameter('haov')) {
 	haov = parseFloat(getURLParameter('haov'));
 }
+
 if(getURLParameter('vaov')) {
 	vaov = parseFloat(getURLParameter('vaov'));
 }
+
 if(getURLParameter('voffset')) {
     voffset = parseFloat(getURLParameter('voffset'));
 }
-
-var camera, scene, renderer, renderGL;
-
-var texture_placeholder,
-isUserInteracting = false,
-onMouseDownMouseX = 0, onMouseDownMouseY = 0,
-onMouseDownYaw = 0, onMouseDownPitch = 0,
-phi = 0, theta = 0;
-
-var keysDown = new Array(10);
-
-var fullWindowActive = false;
-var loaded = false;
-var error = false;
-var isTimedOut = false;
-
-var about_box = document.getElementById('about_box');
 
 if(getURLParameter('autoload') == 'yes' || getURLParameter('popoutautoload') == 'yes') {
 	if(getURLParameter('popoutautoload') != 'yes') {
@@ -147,16 +139,13 @@ if(getURLParameter('autoload') == 'yes' || getURLParameter('popoutautoload') == 
 	document.getElementById('load_button').style.display = 'table';
 }
 
-var autoRotate = false;
-
 if(getURLParameter('autorotate') == 'cw') {
     autoRotate = 'cw';
 }
+
 if(getURLParameter('autorotate') == 'ccw') {
     autoRotate = 'ccw';
 }
-
-var canvas = document.getElementById('canvas');
 
 function init() {
 	var panoimage = new Image()
@@ -647,12 +636,7 @@ function fullScreenError() {
 		// open new window instead
 		var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
 		var windowlocation = window.location.href + '&popout=yes';
-		try {
-			camera.aspect = window.innerWidth / window.innerHeight;
-			windowlocation += '&popoutautoload=yes';
-		} catch(event) {
-			// panorama not loaded
-		}
+		windowlocation += '&popoutautoload=yes';
 		window.open(windowlocation,null,windowspecs)
 	} else {
 		window.close();
