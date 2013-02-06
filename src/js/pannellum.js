@@ -148,10 +148,20 @@ if(getURLParameter('autorotate') == 'ccw') {
 }
 
 function init() {
-	var panoimage = new Image()
-	panoimage.onload = function() {
+	var panotype = getURLParameter('panotype');
+	if( panotype == '' ) panotype = "equirectangular";
+	var panoimage;
+  
+	if( panotype != "cubemap" ){
+        panoimage = new Image();
+    }else{
+        panoimage = new Array();
+        for( var i=0; i < 6; i++ )panoimage.push( new Image() );
+    }
+
+    function finishloadimage() {
 		try {
-			renderer = new libpannellum.renderer(canvas, panoimage);
+			renderer = new libpannellum.renderer(canvas, panoimage, panotype);
 		} catch (event) {
 			// show error message if WebGL is not supported
 			anError();
@@ -180,11 +190,29 @@ function init() {
 		
 		renderInit();
 		var t=setTimeout('isTimedOut = true',500);
-		
+
 		setInterval('keyRepeat()',10);
-	};
-	panoimage.src = getURLParameter('panorama');
+	}
 	
+	//set event handlers
+    if( panotype != "cubemap" ){
+        panoimage.onload = finishloadimage;
+        panoimage.src = getURLParameter('panorama');
+    }else{
+        //quick loading counter for syncronous loading
+        var itemstoload = 6;
+        function loadCounter(){
+            itemstoload --;
+            if( itemstoload == 0 ){
+                finishloadimage();
+            }
+        }
+        //set the onload and src
+        for(var i=0; i < panoimage.length; i++){
+            panoimage[i].onload = loadCounter;
+            panoimage[i].src = getURLParameter('panorama' + i.toString());
+        }
+    }
 	document.getElementById('page').className = 'grab';
 }
 
@@ -515,7 +543,7 @@ function renderInit() {
 		
 		render();
 		
-		if(!isTimedOut) {
+		if(false) {
 			requestAnimationFrame(renderInit);
 		} else {
 			// hide loading display
