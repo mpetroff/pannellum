@@ -255,9 +255,10 @@ function onDocumentMouseDown(event) {
 }
 
 function onDocumentMouseMove(event) {
-	if (isUserInteracting) {		
-		yaw = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownYaw;
-		pitch = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
+	if (isUserInteracting) {
+        //TODO: This should not only be FOV scaled but scaled to canvas size
+		yaw = (onPointerDownPointerX - event.clientX) * 0.0029 * hfov + onPointerDownYaw;
+		pitch = (event.clientY - onPointerDownPointerY) * 0.0029 * hfov + onPointerDownPitch;
 		animate();
 	}
 }
@@ -543,7 +544,7 @@ function renderInit() {
 		
 		render();
 		
-		if(false) {
+		if(!isTimedOut) {
 			requestAnimationFrame(renderInit);
 		} else {
 			// hide loading display
