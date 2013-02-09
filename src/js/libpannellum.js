@@ -22,21 +22,33 @@
  */
 
 window.libpannellum = (function(window, document, undefined) {
-function Renderer(canvas, image) {
+/* Image Type argument can be that of "equirectangular", "cubemap"
+ * If "cubemap" is used, the image argument should be an array of images
+ * instead of a single image.  They should be the order of:
+ * +x -x +y -y +z -z
+ */
+function Renderer(canvas, image, imageType) {
     this.canvas = canvas;
     this.image = image;
-    
+
+    //Default argument for image type
+    this.imageType = "equirectangular";
+    if( typeof imageType != "undefined" ){
+        this.imageType = imageType;
+    }
+
     var program, gl;
-    
+
     this.init = function(haov, vaov, voffset) {
         // Enable WebGL on canvas
         gl = this.canvas.getContext('experimental-webgl');
-        
+        var glBindType = gl.TEXTURE_2D;
+
         // Create viewport for entire canvas and clear canvas
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);	
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        
+
         // Create vertex shader
         var vs = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vs, v);
@@ -44,7 +56,12 @@ function Renderer(canvas, image) {
         
         // Create fragment shader
         var fs = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fs, f);
+        var fragmentSrc = fragEquirectangular;
+        if( this.imageType == "cubemap"){
+            glBindType = gl.TEXTURE_CUBE_MAP
+            fragmentSrc = fragCube;
+        }
+        gl.shaderSource(fs, fragmentSrc);
         gl.compileShader(fs);
         
         // Link WebGL program
@@ -90,21 +107,32 @@ function Renderer(canvas, image) {
         gl.uniform1f(program.h, haov / (Math.PI * 2.0));
         gl.uniform1f(program.v, vaov / Math.PI);
         gl.uniform1f(program.vo, voffset / Math.PI);
-        
+
         // Create texture
         program.texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, program.texture);
-        
+        gl.bindTexture(glBindType, program.texture);
+
+        //upload images to texture depending on type
+        if( this.imageType == "cubemap" ){
+            //Load all 6 sides of the cube map
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[0]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[1]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[2]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[3]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[4]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[5]);
+        }else{
+            // Upload image to the texture
+            gl.texImage2D(glBindType, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+        }
+
         // Set parameters for rendering any size
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        
-        // Upload image to texture
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+        gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(glBindType, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     }
-    
+
     this.render = function(pitch, yaw, hfov) {
         // Calculate focal length from horizontal angle of view
         var focal = 1 / Math.tan(hfov / 2);
@@ -117,7 +145,7 @@ function Renderer(canvas, image) {
         // Draw using current buffer
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
-    
+
     this.setImage = function(image) {
         this.image = image;
         this.init();
@@ -144,7 +172,52 @@ var v = [
 ].join('');
 
 // Fragment shader
-var f = [
+var fragCube = [
+'precision mediump float;',
+
+'uniform float u_aspectRatio;',
+'uniform float u_psi;',
+'uniform float u_theta;',
+'uniform float u_f;',
+'uniform float u_h;',
+'uniform float u_v;',
+'uniform float u_vo;',
+
+'const float PI = 3.14159265358979323846264;',
+
+// Texture
+'uniform samplerCube u_image;',
+
+// Coordinates passed in from vertex shader
+'varying vec2 v_texCoord;',
+
+'void main() {',
+    // Find the vector of focal point to view plane
+    'vec3 planePos = vec3(v_texCoord.xy, 0.0);',
+    'planePos.x *= u_aspectRatio;',
+    'vec3 viewVector = planePos - vec3(0.0,0.0,-u_f);',
+
+    //rotate vector for psi (yaw) and theta (pitch)
+    'float sinpsi = sin(-u_psi);',
+    'float cospsi = cos(-u_psi);',
+    'float sintheta = sin(u_theta);',
+    'float costheta = cos(u_theta);',
+    
+    //now apply the rotations
+    'vec3 viewVectorTheta = viewVector;',
+    'viewVectorTheta.z = viewVector.z * costheta - viewVector.y * sintheta;',
+    'viewVectorTheta.y = viewVector.z * sintheta + viewVector.y * costheta;',
+    'vec3 viewVectorPsi = viewVectorTheta;',
+    'viewVectorPsi.x = viewVectorTheta.x * cospsi - viewVectorTheta.z * sinpsi;',
+    'viewVectorPsi.z = viewVectorTheta.x * sinpsi + viewVectorTheta.z * cospsi;',
+
+    //lookup the color
+    'gl_FragColor = textureCube(u_image, viewVectorPsi);',
+'}'
+].join('\n');
+
+// Fragment shader
+var fragEquirectangular = [
 'precision mediump float;',
 
 'uniform float u_aspectRatio;',
@@ -173,7 +246,7 @@ var f = [
     'float root = sqrt(x * x + a * a);',
     'float lambda = atan(x / root, a / root) + u_psi;',
     'float phi = atan((y * costheta + u_f * sintheta) / root);',
-    
+
     // Wrap image
     'if(lambda > PI)',
         'lambda = lambda - PI * 2.0;',
@@ -193,8 +266,8 @@ var f = [
 ].join('\n');
 
 return {
-    renderer: function(canvas, image) {
-        return new Renderer(canvas, image);
+    renderer: function(canvas, image, imagetype) {
+        return new Renderer(canvas, image, imagetype);
     }
 }
 
