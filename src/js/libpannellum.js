@@ -45,7 +45,7 @@ function Renderer(canvas, image, imageType) {
         var glBindType = gl.TEXTURE_2D;
 
         // Create viewport for entire canvas and clear canvas
-        gl.viewport(0, 0, this.canvas.width, this.canvas.height);	
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);   
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
 

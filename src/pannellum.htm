@@ -1,45 +1,45 @@
 <!DOCTYPE HTML>
 <html>
-	<head>
-		<title>pannellum</title>
-		<meta charset="utf-8">
-		<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />
-	</head>
-	
-	<body>
-		<div id="page">
-		
-		<div id="container"><canvas id="canvas"></div>
-		
-		<noscript><div id="nojavascript"><p>Javascript is required to view this panorama.<br>(It could be worse; you could need a plugin.)</p></div></noscript>
-		
-		<div id="panorama_info">
-			<div id="title_box"></div>
-			<div id="author_box"></div>
-		</div>
-		
-		<div id="zoomcontrols">
-			<div id="zoom_in" onclick="zoomIn(5)" class="sprite"></div>
-			<div id="zoom_out" onclick="zoomOut(5)" class="sprite"></div>
-		</div>
-		
-		<div id="pannellum_logo" class="sprite"><a href="https://github.com/mpetroff/pannellum" target="_blank"></a></div>
-		
-		<div id="fullwindowtoggle_button" onclick="toggleFullWindow()" class="sprite fullwindowtoggle_button_inactive"></div>
-		
-		<div id="load_box"><p>Loading...<div id="load_indicator"></div></div>
-		
-		<div id="load_button" onclick="load()"><p>Click to<br>Load<br>Panorama<p></div>
-		
-		<div id="nocanvas"><p>Your browser does not have the necessary WebGL support to display this panorama.</p></div>
-		
-		<span id="about" style="display: none;"><a href="https://github.com/mpetroff/pannellum" target="_blank">Pannellum</a></span>
-		
-		<script type="text/javascript" src="js/libpannellum.js"></script>
-		<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
-		
-		<script type="text/javascript" src="js/pannellum.js"></script>
-		
-		</div>
-	</body>
+    <head>
+        <title>pannellum</title>
+        <meta charset="utf-8">
+        <link type="text/css" rel="Stylesheet" href="css/pannellum.css" />
+    </head>
+    
+    <body>
+        <div id="page">
+        
+        <div id="container"><canvas id="canvas"></div>
+        
+        <noscript><div id="nojavascript"><p>Javascript is required to view this panorama.<br>(It could be worse; you could need a plugin.)</p></div></noscript>
+        
+        <div id="panorama_info">
+            <div id="title_box"></div>
+            <div id="author_box"></div>
+        </div>
+        
+        <div id="zoomcontrols">
+            <div id="zoom_in" onclick="zoomIn(5)" class="sprite"></div>
+            <div id="zoom_out" onclick="zoomOut(5)" class="sprite"></div>
+        </div>
+        
+        <div id="pannellum_logo" class="sprite"><a href="https://github.com/mpetroff/pannellum" target="_blank"></a></div>
+        
+        <div id="fullwindowtoggle_button" onclick="toggleFullWindow()" class="sprite fullwindowtoggle_button_inactive"></div>
+        
+        <div id="load_box"><p>Loading...<div id="load_indicator"></div></div>
+        
+        <div id="load_button" onclick="load()"><p>Click to<br>Load<br>Panorama<p></div>
+        
+        <div id="nocanvas"><p>Your browser does not have the necessary WebGL support to display this panorama.</p></div>
+        
+        <span id="about" style="display: none;"><a href="https://github.com/mpetroff/pannellum" target="_blank">Pannellum</a></span>
+        
+        <script type="text/javascript" src="js/libpannellum.js"></script>
+        <script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
+        
+        <script type="text/javascript" src="js/pannellum.js"></script>
+        
+        </div>
+    </body>
 </html>
