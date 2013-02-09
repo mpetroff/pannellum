@@ -152,11 +152,13 @@ function init() {
     if( panotype == '' ) panotype = "equirectangular";
     var panoimage;
   
-    if( panotype != "cubemap" ){
+    if(panotype != "cubemap") {
         panoimage = new Image();
-    }else{
+    } else {
         panoimage = new Array();
-        for( var i=0; i < 6; i++ )panoimage.push( new Image() );
+        for(var i = 0; i < 6; i++) {
+            panoimage.push(new Image());
+        }
     }
 
     function finishloadimage() {

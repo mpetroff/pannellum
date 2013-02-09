@@ -31,9 +31,9 @@ function Renderer(canvas, image, imageType) {
     this.canvas = canvas;
     this.image = image;
 
-    //Default argument for image type
+    // Default argument for image type
     this.imageType = "equirectangular";
-    if( typeof imageType != "undefined" ){
+    if(typeof imageType != "undefined"){
         this.imageType = imageType;
     }
 
@@ -57,8 +57,8 @@ function Renderer(canvas, image, imageType) {
         // Create fragment shader
         var fs = gl.createShader(gl.FRAGMENT_SHADER);
         var fragmentSrc = fragEquirectangular;
-        if( this.imageType == "cubemap"){
-            glBindType = gl.TEXTURE_CUBE_MAP
+        if(this.imageType == "cubemap") {
+            glBindType = gl.TEXTURE_CUBE_MAP;
             fragmentSrc = fragCube;
         }
         gl.shaderSource(fs, fragmentSrc);
@@ -112,16 +112,16 @@ function Renderer(canvas, image, imageType) {
         program.texture = gl.createTexture();
         gl.bindTexture(glBindType, program.texture);
 
-        //upload images to texture depending on type
-        if( this.imageType == "cubemap" ){
-            //Load all 6 sides of the cube map
+        // Upload images to texture depending on type
+        if(this.imageType == "cubemap") {
+            // Load all six sides of the cube map
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[0]);
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[1]);
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[2]);
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[3]);
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[4]);
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[5]);
-        }else{
+        } else {
             // Upload image to the texture
             gl.texImage2D(glBindType, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
@@ -197,13 +197,13 @@ var fragCube = [
     'planePos.x *= u_aspectRatio;',
     'vec3 viewVector = planePos - vec3(0.0,0.0,-u_f);',
 
-    //rotate vector for psi (yaw) and theta (pitch)
+    // Rotate vector for psi (yaw) and theta (pitch)
     'float sinpsi = sin(-u_psi);',
     'float cospsi = cos(-u_psi);',
     'float sintheta = sin(u_theta);',
     'float costheta = cos(u_theta);',
     
-    //now apply the rotations
+    // Now apply the rotations
     'vec3 viewVectorTheta = viewVector;',
     'viewVectorTheta.z = viewVector.z * costheta - viewVector.y * sintheta;',
     'viewVectorTheta.y = viewVector.z * sintheta + viewVector.y * costheta;',
@@ -211,7 +211,7 @@ var fragCube = [
     'viewVectorPsi.x = viewVectorTheta.x * cospsi - viewVectorTheta.z * sinpsi;',
     'viewVectorPsi.z = viewVectorTheta.x * sinpsi + viewVectorTheta.z * cospsi;',
 
-    //lookup the color
+    // Look up color from texture
     'gl_FragColor = textureCube(u_image, viewVectorPsi);',
 '}'
 ].join('\n');
