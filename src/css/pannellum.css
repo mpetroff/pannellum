@@ -174,7 +174,7 @@ body {
     text-align:center;
     font-family:serif;
     font-size:20px;
-    display:none;
+    display:table;
     color:#fff;
     cursor:pointer;
 }

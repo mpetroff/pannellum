@@ -22,150 +22,39 @@
  */
 
 try {
-    document.addEventListener('contextmenu',onRightClick, false);
+    document.addEventListener('contextmenu', onRightClick, false);
 } catch(event) {
     // Lack of "about" display is not a big deal
 }
 
-var config, popoutmode = false, hfov = 70, pitch = 0, yaw = 0, haov = 360,
+var config, popoutMode = false, hfov = 70, pitch = 0, yaw = 0, haov = 360,
     vaov = 180, voffset = 0, renderer, isUserInteracting = false,
     onMouseDownMouseX = 0, onMouseDownMouseY = 0, onMouseDownYaw = 0,
     onMouseDownPitch = 0, phi = 0, theta = 0, keysDown = new Array(10),
     fullWindowActive = false, loaded = false, error = false, isTimedOut = false,
     about_box = document.getElementById('about_box'), autoRotate = false,
-    canvas = document.getElementById('canvas');
+    canvas = document.getElementById('canvas'), panoType = 'equirectangular',
+    panoImage, panoSrc;
 
-if(getURLParameter('config')) {
-    // Get JSON configuration file
-    var request = new XMLHttpRequest();
-    request.open("GET", getURLParameter('config'), false);
-    request.send();
-    config = JSON.parse(request.responseText);
-    
-    // Create hot spots
-    createHotSpots();
-}
-
-if(getURLParameter('logo') == 'yes') {
-    document.getElementById('pannellum_logo').style.display = 'inline';
-}
-
-if(getURLParameter('title')) {
-    document.getElementById('title_box').innerHTML = getURLParameter('title');
-}
-
-if(getURLParameter('author')) {
-    document.getElementById('author_box').innerHTML = 'by ' + getURLParameter('author');
-}
-
-if(getURLParameter('license')) {
-    var licenseType;
-    switch(parseInt(getURLParameter('license'))) {
-        case 0: licenseType = 'by'; break;
-        case 1: licenseType = 'by-sa'; break;
-        case 2: licenseType = 'by-nd'; break;
-        case 3: licenseType = 'by-nc'; break;
-        case 4: licenseType = 'by-nc-sa'; break;
-        case 5: licenseType = 'by-nc-nd'; break;
-    }
-    document.getElementById('author_box').innerHTML += '<a rel="license" target="_blank" href="//creativecommons.org/licenses/' + licenseType + '/3.0/"><div id="license"></div></a>';
-    var license = document.getElementById('license').style;
-    license.backgroundImage = "url('//i.creativecommons.org/l/" + licenseType + "/3.0/80x15.png')";
-    license.width = '80px';
-}
-
-if(getURLParameter('popout') == 'yes') {
-    document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
-    popoutmode = true;
-}
-
-if(getURLParameter('fallback')) {
-    document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + getURLParameter('fallback') + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
-}
-
-if(getURLParameter('preview')) {
-    document.body.style.backgroundImage = "url('" + getURLParameter('preview') + "')";
-    document.body.style.backgroundSize = "auto";
-}
-
-if(getURLParameter('hfov')) {
-    hfov = parseFloat(getURLParameter('hfov'));
-    
-    // keep field of view within bounds
-    if(hfov < 40) {
-        hfov = 40;
-    } else if(hfov > 100) {
-        hfov = 100;
-    }
-}
-
-if(getURLParameter('pitch')) {
-    pitch = parseFloat(getURLParameter('pitch'));
-    
-    // keep pitch within bounds
-    if(pitch < -85) {
-        pitch = -85;
-    } else if(pitch > 85) {
-        pitch = 85;
-    }
-}
-
-if(getURLParameter('yaw')) {
-    yaw = parseFloat(getURLParameter('yaw'));
-}
-
-if(getURLParameter('haov')) {
-    haov = parseFloat(getURLParameter('haov'));
-}
-
-if(getURLParameter('vaov')) {
-    vaov = parseFloat(getURLParameter('vaov'));
-}
-
-if(getURLParameter('voffset')) {
-    voffset = parseFloat(getURLParameter('voffset'));
-}
-
-if(getURLParameter('autoload') == 'yes' || getURLParameter('popoutautoload') == 'yes') {
-    if(getURLParameter('popoutautoload') != 'yes') {
-        // show loading box
-        document.getElementById('load_box').style.display = 'inline';
-    }
-    // initialize
-    init();
-    animate();
-} else {
-    // show load button
-    document.getElementById('load_button').style.display = 'table';
-}
-
-if(getURLParameter('autorotate') == 'cw') {
-    autoRotate = 'cw';
-}
-
-if(getURLParameter('autorotate') == 'ccw') {
-    autoRotate = 'ccw';
-}
+// Process options
+parseURLParameters();
+processOptions();
 
 function init() {
-    var panotype = getURLParameter('panotype');
-    if( panotype == '' ) panotype = "equirectangular";
-    var panoimage;
-  
-    if(panotype != "cubemap") {
-        panoimage = new Image();
-    } else {
-        panoimage = new Array();
+    if(panoType == 'cubemap') {
+        panoImage = new Array();
         for(var i = 0; i < 6; i++) {
-            panoimage.push(new Image());
+            panoImage.push(new Image());
         }
+    } else {
+        panoImage = new Image();
     }
 
-    function finishloadimage() {
+    function onImageLoad() {
         try {
-            renderer = new libpannellum.renderer(canvas, panoimage, panotype);
+            renderer = new libpannellum.renderer(canvas, panoImage, panoType);
         } catch (event) {
-            // show error message if WebGL is not supported
+            // Show error message if WebGL is not supported
             anError();
         }
         
@@ -191,30 +80,31 @@ function init() {
         document.addEventListener('touchend',onDocumentTouchEnd,false);
         
         renderInit();
-        var t=setTimeout('isTimedOut = true',500);
-
-        setInterval('keyRepeat()',10);
+        var t = setTimeout('isTimedOut = true', 500);
+        
+        setInterval('keyRepeat()', 10);
     }
     
-    //set event handlers
-    if( panotype != "cubemap" ){
-        panoimage.onload = finishloadimage;
-        panoimage.src = getURLParameter('panorama');
-    }else{
-        //quick loading counter for syncronous loading
-        var itemstoload = 6;
-        function loadCounter(){
-            itemstoload --;
-            if( itemstoload == 0 ){
-                finishloadimage();
+    // Set event handlers
+    if(panoType == "cubemap") {
+        // Quick loading counter for syncronous loading
+        var itemsToLoad = 6;
+        function loadCounter() {
+            itemsToLoad--;
+            if(itemsToLoad == 0) {
+                onImageLoad();
             }
         }
-        //set the onload and src
-        for(var i=0; i < panoimage.length; i++){
-            panoimage[i].onload = loadCounter;
-            panoimage[i].src = getURLParameter('panorama' + i.toString());
+        // Set the onload and src
+        for(var i = 0; i < panoImage.length; i++) {
+            panoImage[i].onload = loadCounter;
+            panoImage[i].src = config.cubeMap[i];
         }
+    } else {
+        panoImage.onload = onImageLoad;
+        panoImage.src = panoSrc;
     }
+    
     document.getElementById('page').className = 'grab';
 }
 
@@ -237,12 +127,12 @@ function onRightClick(event) {
 }
 
 function onDocumentMouseDown(event) {
-    // override default action
+    // Override default action
     event.preventDefault();
-    // but not all of it
+    // But not all of it
     window.focus();
     
-    // turn off auto-rotation if enabled
+    // Turn off auto-rotation if enabled
     autoRotate = false;
     
     isUserInteracting = true;
@@ -279,7 +169,7 @@ function onDocumentTouchStart(event) {
 }
 
 function onDocumentTouchMove(event) {
-    // override default action
+    // Override default action
     event.preventDefault();
         
     yaw = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownYaw;
@@ -288,199 +178,147 @@ function onDocumentTouchMove(event) {
 }
 
 function onDocumentTouchEnd(event) {
-    // do nothing for now
+    // Do nothing for now
 }
 
 function onDocumentMouseWheel(event) {
     event.preventDefault();
-    if (hfov >= 35 && hfov <= 105) {
-        if (event.wheelDeltaY) {
-            // WebKit
-            hfov -= event.wheelDeltaY * 0.05;
-        } else if (event.wheelDelta) {
-            // Opera / Explorer 9
-            hfov -= event.wheelDelta * 0.05;
-        } else if (event.detail) {
-            // Firefox
-            hfov += event.detail * 1.5;
-        }
-    }
     
-    // keep field of view within bounds
-    if(hfov < 35) {
-        hfov = 35;
-    } else if(hfov > 105) {
-        hfov = 105;
+    if (event.wheelDeltaY) {
+        // WebKit
+        setHfov(hfov -= event.wheelDeltaY * 0.05);
+    } else if (event.wheelDelta) {
+        // Opera / Explorer 9
+        setHfov(hfov -= event.wheelDelta * 0.05);
+    } else if (event.detail) {
+        // Firefox
+        setHfov(hfov += event.detail * 1.5);
     }
-    render();
 }
 
 function onDocumentKeyPress(event) {
-    // override default action
+    // Override default action
     event.preventDefault();
     
-    // turn off auto-rotation if enabled
+    // Turn off auto-rotation if enabled
     autoRotate = false;
     
-    // record key pressed
+    // Record key pressed
     keynumber = event.keycode;
     if(event.which) {
         keynumber = event.which;
     }
     
-    // if minus key is pressed
-    if(keynumber == 109 || keynumber == 189 || keynumber == 17) {
-        keysDown[0] = true;
-    }
-    
-    // if plus key is pressed
-    if(keynumber == 107 || keynumber == 187 || keynumber == 16) {
-        keysDown[1] = true;
-    }
-    
-    // if escape key is pressed
+    // If escape key is pressed
     if(keynumber == 27) {
         // if in full window / popout mode
-        if(fullWindowActive == true || popoutmode == true) {
+        if(fullWindowActive || popoutMode) {
             toggleFullWindow();
         }
-    }
-    
-    // if up arrow is pressed
-    if(keynumber == 38) {
-        keysDown[2] = true;
-    }
-    // if "w" is pressed
-    if(keynumber == 87) {
-        keysDown[6] = true;
-    }
-    
-    // if down arrow is pressed
-    if(keynumber == 40) {
-        keysDown[3] = true;
-    }
-    // if "s" is pressed
-    if(keynumber == 83) {
-        keysDown[7] = true;
-    }
-    
-    // if left arrow is pressed
-    if(keynumber == 37) {
-        keysDown[4] = true;
-    }
-    // if "a" is pressed
-    if(keynumber == 65) {
-        keysDown[8] = true;
-    }
-    
-    // if right arrow is pressed
-    if(keynumber == 39) {
-        keysDown[5] = true;
-    }
-    // if "d" is pressed
-    if(keynumber == 68) {
-        keysDown[9] = true;
+    } else {
+        // Change key
+        changeKey(keynumber, true);
     }
 }
 
 function clearKeys() {
-    for(i=0;i<10;i++) {
+    for(i = 0; i < 10; i++) {
         keysDown[i] = false;
     }
 }
 
 function onDocumentKeyUp(event) {
-    // override default action
+    // Override default action
     event.preventDefault();
     
-    // record key released
+    // Record key released
     keynumber = event.keycode;
     if(event.which) {
         keynumber = event.which;
     }
     
-    // if minus key is released
-    if(keynumber == 109 || keynumber == 189 || keynumber == 17) {
-        keysDown[0] = false;
-    }
-    
-    // if plus key is released
-    if(keynumber == 107 || keynumber == 187 || keynumber == 16) {
-        keysDown[1] = false;
-    }
-    
-    // if up arrow is released
-    if(keynumber == 38) {
-        keysDown[2] = false;
-    }
-    // if "w" is released
-    if(keynumber == 87) {
-        keysDown[6] = false;
-    }
-    
-    // if down arrow is released
-    if(keynumber == 40) {
-        keysDown[3] = false;
-    }
-    // if "s" is released
-    if(keynumber == 83) {
-        keysDown[7] = false;
-    }
-    
-    // if left arrow is released
-    if(keynumber == 37) {
-        //alert('left arrow released');
-        keysDown[4] = false;
-    }
-    // if "a" is released
-    if(keynumber == 65) {
-        keysDown[8] = false;
-    }
-    
-    // if right arrow is released
-    if(keynumber == 39) {
-        keysDown[5] = false;
-    }
-    // if "d" is released
-    if(keynumber == 68) {
-        keysDown[9] = false;
+    // Change key
+    changeKey(keynumber, false);
+}
+
+function changeKey(keynumber, value) {
+    switch(keynumber) {
+        // If minus key is released
+        case 109: case 189: case 17:
+            keysDown[0] = value; break;
+        
+        // If plus key is released
+        case 107: case 187: case 16:
+            keysDown[1] = value; break;
+        
+        // If up arrow is released
+        case 38:
+            keysDown[2] = value; break;
+        
+        // If "w" is released
+        case 87:
+            keysDown[6] = value; break;
+        
+        // If down arrow is released
+        case 40:
+            keysDown[3] = value; break;
+        
+        // If "s" is released
+        case 83:
+            keysDown[7] = value; break;
+        
+        // If left arrow is released
+        case 37:
+            keysDown[4] = value; break;
+        
+        // If "a" is released
+        case 65:
+            keysDown[8] = value; break;
+        
+        // If right arrow is released
+        case 39:
+            keysDown[5] = value; break;
+        
+        // If "d" is released
+        case 68:
+            keysDown[9] = value;
     }
 }
 
 function keyRepeat() {
     // if minus key is down
-    if(keysDown[0] == true) {
+    if(keysDown[0]) {
         zoomOut(1);
     }
     
     // if plus key is down
-    if(keysDown[1] == true) {
+    if(keysDown[1]) {
         zoomIn(1);
     }
     
     // if up arrow or "w" is down
-    if(keysDown[2] == true || keysDown[6] == true) {
+    if(keysDown[2] || keysDown[6]) {
         // pan up
         pitch += 1;
         animate();
     }
     
     // if down arrow or "s" is down
-    if(keysDown[3] == true || keysDown[7] == true) {
+    if(keysDown[3] || keysDown[7]) {
         // pan down
         pitch -= 1;
         animate();
     }
     
     // if left arrow or "a" is down
-    if(keysDown[4] == true || keysDown[8] == true) {
+    if(keysDown[4] || keysDown[8]) {
         // pan left
         yaw -= 1;
         animate();
     }
     
     // if right arrow or "d" is down
-    if(keysDown[5] == true || keysDown[9] == true) {
+    if(keysDown[5] || keysDown[9]) {
         // pan right
         yaw += 1;
         animate();
@@ -502,14 +340,14 @@ function keyRepeat() {
 }
 
 function onDocumentResize() {
-    // reset panorama renderer
+    // Reset panorama renderer
     try {
         renderInit();
         
         // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
         onFullScreenChange();
     } catch(event) {
-        // panorama not loaded
+        // Panorama not loaded
     }
 }
 
@@ -609,21 +447,163 @@ function renderHotSpots() {
     });
 }
 
-function getURLParameter(name) {
-    name = name.replace(/[\[]/,'\\\[').replace(/[\]]/,'\\\]');
-    var regexS = '[\\?&]'+name+'=([^&#]*)';
-    var regex = new RegExp(regexS);
-    var results = regex.exec(unescape(window.location.href))
-    if(results == null) {
-        return '';
-    } else {
-        return results[1];
+function parseURLParameters() {
+    var URL = unescape(window.location.href).split('?');
+    URL.shift();
+    URL = URL[0].split('&');
+    var json = '{';
+    for(var i = 0; i < URL.length; i++) {
+        var option = URL[i].split('=')[0];
+        var value = URL[i].split('=')[1];
+        json += '"' + option + '":';
+        switch(option) {
+            case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
+            case 'voffset': case 'license':
+                json += value;
+                break;
+            default:
+                json += '"' + value + '"';
+        }
+        if(i < URL.length - 1) {
+            json += ',';
+        }
     }
+    json += '}';
+    config = JSON.parse(json);
+    
+    // Check for JSON configuration file
+    for(var key in config) {
+        if(key == 'config') {
+            // Get JSON configuration file
+            var request = new XMLHttpRequest();
+            request.open('GET', config[key], false);
+            request.send();
+            var c = JSON.parse(request.responseText);
+            
+            // Merge options
+            for(var k in c) {
+                if(!config[k]) {
+                    config[k] = c[k];
+                }
+            }
+        }
+    }
+}
+
+function processOptions() {
+    for(var key in config) {
+        switch(key) {
+            case 'logo':
+                if(config[key] == 'yes') {
+                    document.getElementById('pannellum_logo').style.display = 'inline';
+                }
+                break;
+            
+            case 'title':
+                document.getElementById('title_box').innerHTML = config[key];
+                break;
+            
+            case 'author':
+                document.getElementById('author_box').innerHTML = 'by ' + config[key];
+                break;
+            
+            case 'popout':
+                if(config[key] == 'yes') {
+                    document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
+                    popoutMode = true;
+                }
+                break;
+            
+            case 'fallback':
+                document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + config[key] + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
+                break;
+            
+            case 'preview':
+                document.body.style.backgroundImage = "url('" + config[key] + "')";
+                document.body.style.backgroundSize = "auto";
+                break;
+            
+            case 'hfov':
+                setHfov(config[key]);
+                break;
+            
+            case 'pitch':
+                pitch = config[key];
+                // keep pitch within bounds
+                if(pitch < -85) {
+                    pitch = -85;
+                } else if(pitch > 85) {
+                    pitch = 85;
+                }
+                break;
+            
+            case 'yaw':
+                yaw = config[key];
+                break;
+            
+            case 'haov':
+                haov = config[key];
+                break;
+            
+            case 'vaov':
+                vaov = config[key];
+                break;
+            
+            case 'voffset':
+                voffset = config[key];
+                break;
+            
+            case 'autoload':
+                if(config[key] == 'yes') {
+                    // Show loading box
+                    document.getElementById('load_box').style.display = 'inline';
+                }
+            case 'popoutautoload':
+                // Hide load button
+                document.getElementById('load_button').style.display = 'none';
+                // Initialize
+                init();
+                animate();
+                break;
+            
+            case 'autorotate':
+                if(config[key] == 'cw' || config[key] == 'ccw') {
+                    autoRotate = options[i][1];
+                }
+                break;
+            
+            case 'license':
+                var licenseType;
+                switch(config[key]) {
+                    case 0: licenseType = 'by'; break;
+                    case 1: licenseType = 'by-sa'; break;
+                    case 2: licenseType = 'by-nd'; break;
+                    case 3: licenseType = 'by-nc'; break;
+                    case 4: licenseType = 'by-nc-sa'; break;
+                    case 5: licenseType = 'by-nc-nd'; break;
+                }
+                document.getElementById('author_box').innerHTML += '<a rel="license" target="_blank" href="//creativecommons.org/licenses/' + licenseType + '/3.0/"><div id="license"></div></a>';
+                var license = document.getElementById('license').style;
+                license.backgroundImage = "url('//i.creativecommons.org/l/" + licenseType + "/3.0/80x15.png')";
+                license.width = '80px';
+                break;
+            
+            case 'type':
+                panoType = config[key];
+                break;
+            
+            case 'panorama':
+                panoSrc = config[key];
+        }
+    }
+    
+    // Create hot spots
+    createHotSpots();
 }
 
 function toggleFullWindow() {
     if(loaded && !error) {
-        if(!fullWindowActive && !popoutmode) {
+        if(!fullWindowActive && !popoutMode) {
             try {
                 var page = document.getElementById('page');
                 if (page.requestFullscreen) {
@@ -645,7 +625,7 @@ function toggleFullWindow() {
                 document.webkitCancelFullScreen();
             }
             
-            if(getURLParameter('popout') == 'yes') {
+            if(popoutMode) {
                 window.close();
             }
         }
@@ -663,11 +643,11 @@ function onFullScreenChange() {
 }
 
 function fullScreenError() {
-    if(getURLParameter('popout') != 'yes') {
+    if(!popoutMode) {
         // open new window instead
         var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
         var windowlocation = window.location.href + '&popout=yes';
-        windowlocation += '&popoutautoload=yes';
+        windowlocation += '&popoutautoload';
         window.open(windowlocation,null,windowspecs)
     } else {
         window.close();
@@ -676,32 +656,27 @@ function fullScreenError() {
 
 function zoomIn(amount) {
     if(loaded) {
-        if( hfov >= 40 ) {
-            hfov -= amount;
-            render();
-        }
-        // keep field of view within bounds
-        if(hfov < 40) {
-            hfov = 40;
-        } else if(hfov > 100) {
-            hfov = 100;
-        }
+        setHfov(hfov -= amount);
     }
 }
 
 function zoomOut(amount) {
     if(loaded) {
-        if(hfov <= 100) {
-            hfov += amount;
-            render();
-        }
-        // keep field of view within bounds
-        if(hfov < 40) {
-            hfov = 40;
-        } else if(hfov > 100) {
-            hfov = 100;
-        }
+        setHfov(hfov += amount);
     }
+}
+
+function setHfov(i) {
+    // Keep field of view within bounds
+    if(i < 40) {
+        hfov = 40;
+    } else if(i > 100) {
+        hfov = 100;
+    } else {
+        hfov = i;
+    }
+    
+    render();
 }
 
 function load() {

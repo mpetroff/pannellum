@@ -32,8 +32,8 @@ function Renderer(canvas, image, imageType) {
     this.image = image;
 
     // Default argument for image type
-    this.imageType = "equirectangular";
-    if(typeof imageType != "undefined"){
+    this.imageType = 'equirectangular';
+    if(typeof imageType != 'undefined'){
         this.imageType = imageType;
     }
 
@@ -57,7 +57,7 @@ function Renderer(canvas, image, imageType) {
         // Create fragment shader
         var fs = gl.createShader(gl.FRAGMENT_SHADER);
         var fragmentSrc = fragEquirectangular;
-        if(this.imageType == "cubemap") {
+        if(this.imageType == 'cubemap') {
             glBindType = gl.TEXTURE_CUBE_MAP;
             fragmentSrc = fragCube;
         }
@@ -107,25 +107,25 @@ function Renderer(canvas, image, imageType) {
         gl.uniform1f(program.h, haov / (Math.PI * 2.0));
         gl.uniform1f(program.v, vaov / Math.PI);
         gl.uniform1f(program.vo, voffset / Math.PI);
-
+        
         // Create texture
         program.texture = gl.createTexture();
         gl.bindTexture(glBindType, program.texture);
-
+        
         // Upload images to texture depending on type
         if(this.imageType == "cubemap") {
             // Load all six sides of the cube map
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[0]);
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[1]);
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[2]);
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[3]);
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[4]);
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[5]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[1]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[3]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[4]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[5]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[0]);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image[2]);
         } else {
             // Upload image to the texture
             gl.texImage2D(glBindType, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
-
+        
         // Set parameters for rendering any size
         gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(glBindType, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

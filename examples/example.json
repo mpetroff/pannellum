@@ -1,4 +1,25 @@
 {
+    "logo": "yes",
+    
+    "title": "Jordan Pond",
+    
+    "author": "Matthew Petroff",
+    
+    "license": 1,
+    
+    "preview": "../examples/examplepano-preview.jpg",
+    
+    "type": "cubemap",
+    
+    "cubeMap": [
+        "../examples/examplepanocube0.jpg",
+        "../examples/examplepanocube1.jpg",
+        "../examples/examplepanocube2.jpg",
+        "../examples/examplepanocube3.jpg",
+        "../examples/examplepanocube4.jpg",
+        "../examples/examplepanocube5.jpg"
+    ],
+    
     "hotSpots": [
         {
             "pitch": -12,
