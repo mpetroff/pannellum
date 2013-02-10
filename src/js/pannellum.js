@@ -21,12 +21,10 @@
  * THE SOFTWARE.
  */
 
-try {
-    document.addEventListener('contextmenu', onRightClick, false);
-} catch(event) {
-    // Lack of "about" display is not a big deal
-}
+// Display about information on right click
+document.addEventListener('contextmenu', onRightClick, false);
 
+// Declare variables
 var config, popoutMode = false, hfov = 70, pitch = 0, yaw = 0, haov = 360,
     vaov = 180, voffset = 0, renderer, isUserInteracting = false,
     onMouseDownMouseX = 0, onMouseDownMouseY = 0, onMouseDownYaw = 0,
@@ -40,6 +38,7 @@ var config, popoutMode = false, hfov = 70, pitch = 0, yaw = 0, haov = 360,
 parseURLParameters();
 processOptions();
 
+// Initialize viewer
 function init() {
     if(panoType == 'cubemap') {
         panoImage = new Array();
@@ -58,26 +57,26 @@ function init() {
             anError();
         }
         
-        document.addEventListener('mousedown',onDocumentMouseDown,false);
-        document.addEventListener('mousemove',onDocumentMouseMove,false);
-        document.addEventListener('mouseup',onDocumentMouseUp,false);
-        document.addEventListener('mousewheel',onDocumentMouseWheel,false);
-        document.addEventListener('DOMMouseScroll',onDocumentMouseWheel,false);
-        document.addEventListener('onresize',onDocumentResize,false);
-        document.addEventListener('mozfullscreenchange',onFullScreenChange,false);
-        document.addEventListener('webkitfullscreenchange',onFullScreenChange,false);
-        document.addEventListener('fullscreenchange',onFullScreenChange,false);
-        document.addEventListener('mozfullscreenerror',fullScreenError,false);
-        document.addEventListener('webkitfullscreenerror',fullScreenError,false);
-        document.addEventListener('fullscreenerror',fullScreenError,false);
-        window.addEventListener('resize',onDocumentResize,false);
-        document.addEventListener('keydown',onDocumentKeyPress,false);
-        document.addEventListener('keyup',onDocumentKeyUp,false);
-        window.addEventListener('blur',clearKeys,false);
-        document.addEventListener('mouseout',onDocumentMouseUp,false);
-        document.addEventListener('touchstart',onDocumentTouchStart,false);
-        document.addEventListener('touchmove',onDocumentTouchMove,false);
-        document.addEventListener('touchend',onDocumentTouchEnd,false);
+        document.addEventListener('mousedown', onDocumentMouseDown, false);
+        document.addEventListener('mousemove', onDocumentMouseMove, false);
+        document.addEventListener('mouseup', onDocumentMouseUp, false);
+        document.addEventListener('mousewheel', onDocumentMouseWheel, false);
+        document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+        document.addEventListener('onresize', onDocumentResize, false);
+        document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+        document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+        document.addEventListener('fullscreenchange', onFullScreenChange, false);
+        document.addEventListener('mozfullscreenerror', fullScreenError, false);
+        document.addEventListener('webkitfullscreenerror', fullScreenError, false);
+        document.addEventListener('fullscreenerror', fullScreenError, false);
+        window.addEventListener('resize', onDocumentResize, false);
+        document.addEventListener('keydown', onDocumentKeyPress, false);
+        document.addEventListener('keyup', onDocumentKeyUp, false);
+        window.addEventListener('blur', clearKeys, false);
+        document.addEventListener('mouseout', onDocumentMouseUp, false);
+        document.addEventListener('touchstart', onDocumentTouchStart, false);
+        document.addEventListener('touchmove', onDocumentTouchMove, false);
+        document.addEventListener('touchend', onDocumentTouchEnd, false);
         
         renderInit();
         var t = setTimeout('isTimedOut = true', 500);
@@ -85,9 +84,9 @@ function init() {
         setInterval('keyRepeat()', 10);
     }
     
-    // Set event handlers
+    // Configure image loading
     if(panoType == "cubemap") {
-        // Quick loading counter for syncronous loading
+        // Quick loading counter for synchronous loading
         var itemsToLoad = 6;
         function loadCounter() {
             itemsToLoad--;
@@ -95,7 +94,7 @@ function init() {
                 onImageLoad();
             }
         }
-        // Set the onload and src
+        
         for(var i = 0; i < panoImage.length; i++) {
             panoImage[i].onload = loadCounter;
             panoImage[i].src = config.cubeMap[i];
@@ -121,8 +120,8 @@ function onRightClick(event) {
     clearTimeout(onRightClick.t2);
     document.getElementById('about').style.display = 'block';
     document.getElementById('about').style.opacity = 1;
-    onRightClick.t1 = setTimeout(function(){document.getElementById('about').style.opacity = 0;},2000);
-    onRightClick.t2 = setTimeout(function(){document.getElementById('about').style.display = 'none';},2500);
+    onRightClick.t1 = setTimeout(function(){document.getElementById('about').style.opacity = 0;}, 2000);
+    onRightClick.t2 = setTimeout(function(){document.getElementById('about').style.display = 'none';}, 2500);
     event.preventDefault();
 }
 
@@ -211,7 +210,7 @@ function onDocumentKeyPress(event) {
     
     // If escape key is pressed
     if(keynumber == 27) {
-        // if in full window / popout mode
+        // If in full window / popout mode
         if(fullWindowActive || popoutMode) {
             toggleFullWindow();
         }
@@ -286,54 +285,54 @@ function changeKey(keynumber, value) {
 }
 
 function keyRepeat() {
-    // if minus key is down
+    // If minus key is down
     if(keysDown[0]) {
         zoomOut(1);
     }
     
-    // if plus key is down
+    // If plus key is down
     if(keysDown[1]) {
         zoomIn(1);
     }
     
-    // if up arrow or "w" is down
+    // If up arrow or "w" is down
     if(keysDown[2] || keysDown[6]) {
-        // pan up
+        // Pan up
         pitch += 1;
         animate();
     }
     
-    // if down arrow or "s" is down
+    // If down arrow or "s" is down
     if(keysDown[3] || keysDown[7]) {
-        // pan down
+        // Pan down
         pitch -= 1;
         animate();
     }
     
-    // if left arrow or "a" is down
+    // If left arrow or "a" is down
     if(keysDown[4] || keysDown[8]) {
-        // pan left
+        // Pan left
         yaw -= 1;
         animate();
     }
     
-    // if right arrow or "d" is down
+    // If right arrow or "d" is down
     if(keysDown[5] || keysDown[9]) {
-        // pan right
+        // Pan right
         yaw += 1;
         animate();
     }
     
-    // if clockwise auto-rotate
+    // If clockwise auto-rotate
     if(autoRotate == 'cw') {
-        // pan left
+        // Pan left
         yaw -= .25;
         animate();
     }
     
-    // if counter-clockwise auto-rotate
+    // If counter-clockwise auto-rotate
     if(autoRotate == 'ccw') {
-        // pan right
+        // Pan right
         yaw += .25;
         animate();
     }
@@ -341,14 +340,10 @@ function keyRepeat() {
 
 function onDocumentResize() {
     // Reset panorama renderer
-    try {
-        renderInit();
+    renderInit();
         
-        // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
-        onFullScreenChange();
-    } catch(event) {
-        // Panorama not loaded
-    }
+    // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
+    onFullScreenChange();
 }
 
 function animate() {
@@ -360,19 +355,17 @@ function animate() {
 }
 
 function render() {
-    try {
+    if(loaded) {
         if(yaw > 180) {
             yaw -= 360;
         } else if(yaw < -180) {
             yaw += 360;
         }
         
-        pitch = Math.max(-85,Math.min(85,pitch));
-        renderer.render(pitch * Math.PI / 180,yaw * Math.PI / 180,hfov * Math.PI / 180);
+        pitch = Math.max(-85, Math.min(85, pitch));
+        renderer.render(pitch * Math.PI / 180, yaw * Math.PI / 180, hfov * Math.PI / 180);
         
         renderHotSpots();
-    } catch(event) {
-        // panorama not loaded
     }
 }
 
@@ -380,22 +373,22 @@ function renderInit() {
     try {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        renderer.init(haov * Math.PI / 180,vaov * Math.PI / 180,voffset * Math.PI / 180);
+        renderer.init(haov * Math.PI / 180, vaov * Math.PI / 180, voffset * Math.PI / 180);
         
-        render();
+        animate();
         
         if(!isTimedOut) {
             requestAnimationFrame(renderInit);
         } else {
-            // hide loading display
+            // Hide loading display
             document.getElementById('load_box').style.display = 'none';
             loaded = true;
         }
     } catch(event) {
-        // panorama not loaded
+        // Panorama not loaded
         
-        // display error if there is a bad texture
-        if(event == "bad texture") {
+        // Display error if there is a bad texture
+        if(event == 'bad texture') {
             anError();
         }
     }
@@ -529,7 +522,7 @@ function processOptions() {
             
             case 'pitch':
                 pitch = config[key];
-                // keep pitch within bounds
+                // Keep pitch within bounds
                 if(pitch < -85) {
                     pitch = -85;
                 } else if(pitch > 85) {
@@ -568,7 +561,7 @@ function processOptions() {
             
             case 'autorotate':
                 if(config[key] == 'cw' || config[key] == 'ccw') {
-                    autoRotate = options[i][1];
+                    autoRotate = config[key];
                 }
                 break;
             
@@ -644,7 +637,7 @@ function onFullScreenChange() {
 
 function fullScreenError() {
     if(!popoutMode) {
-        // open new window instead
+        // Open new window instead
         var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
         var windowlocation = window.location.href + '&popout=yes';
         windowlocation += '&popoutautoload';
@@ -676,7 +669,7 @@ function setHfov(i) {
         hfov = i;
     }
     
-    render();
+    animate();
 }
 
 function load() {

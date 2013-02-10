@@ -22,10 +22,10 @@
  */
 
 window.libpannellum = (function(window, document, undefined) {
-/* Image Type argument can be that of "equirectangular", "cubemap"
+/* Image Type argument can be that of "equirectangular" or "cubemap".
  * If "cubemap" is used, the image argument should be an array of images
  * instead of a single image.  They should be the order of:
- * +x -x +y -y +z -z
+ * +z, +x, -z, -x, +y, -y.
  */
 function Renderer(canvas, image, imageType) {
     this.canvas = canvas;
