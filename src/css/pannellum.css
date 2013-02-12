@@ -322,6 +322,13 @@ body {
 .hotspot.link:hover {
     background-position:-54px -54px;
 }
+/*TODO: add custom icon to the scene loader hotspot*/
+.hotspot.scene {
+    background-position:-54px -27px;
+}
+.hotspot.scene:hover {
+    background-position:-54px -54px;
+}
 
 div.tooltip span {
     visibility:hidden;
