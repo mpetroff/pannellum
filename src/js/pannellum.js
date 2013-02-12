@@ -399,6 +399,10 @@ function renderInit() {
 }
 
 function createHotSpots() {
+	//Fix if there are no hotspots
+	if(!config.hotSpots){
+		config.hotSpots = [];
+	}
     config.hotSpots.forEach(function(hs) {
         var div = document.createElement('div');
         var span = document.createElement('span');
@@ -415,7 +419,7 @@ function createHotSpots() {
             a.setAttribute('href', 'javascript:void(0);');
 			//a.setAttribute('onClick', 'loadScene(' + hs.sceneId + '); return false;');
 			a.onclick = function(){
-				var id = sceneId;
+				var id = hs.sceneId;
 				loadScene(id);
 				return false;
             };
@@ -433,6 +437,18 @@ function createHotSpots() {
         span.style.marginTop = -span.scrollHeight - 12 + 'px';
         hs.div = div;
     });
+}
+
+function destroyHotSpots() {
+	if(config.hotSpots){
+		config.hotSpots.forEach(function(hs) {
+			var current = hs.div;
+			while(current.parentNode.id != 'page'){
+				current = current.parentNode;
+			}
+			document.getElementById('page').removeChild(current);
+		});
+	}
 }
 
 function renderHotSpots() {
@@ -515,8 +531,6 @@ function parseURLParameters() {
 			}else{
 				loadSceneData(null);
 			}
-            //TODO: URL-bõl jövõ cuccokat külön változóba
-			//load: config=urlbackup, merge global, merge scene
         }
     }
 }
@@ -526,13 +540,14 @@ function loadSceneData(sceneId){
 	config = tour.configFromUrl;
 	// Merge global options
     for(var k in tour.global){
-        config[k] = c[k];
+        config[k] = tour.global[k];
     }
 	// Merge scene options
 	if((sceneId != null) && (sceneId != '') && (tour.scenes) && (tour.scenes[sceneId]))
 	{
 		for(var k in tour.scenes[sceneId]){
-			config[k] = c[k];
+			var scene = tour.scenes[sceneId];
+			config[k] = scene[k];
 		}
 		config.activeScene = sceneId;
 	}
@@ -736,7 +751,11 @@ function load() {
 
 function loadScene(sceneId){
 	loaded = false;
+	// Destroy hotspots from previous scene
+	destroyHotSpots();
+	// Create the new config for the scene
 	loadSceneData(sceneId);
+	// Reload scene
 	processOptions();
 	load();
 }
