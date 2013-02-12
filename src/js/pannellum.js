@@ -25,11 +25,11 @@
 document.addEventListener('contextmenu', onRightClick, false);
 
 // Declare variables
-var config, popoutMode = false, hfov = 70, pitch = 0, yaw = 0, haov = 360,
+var config, tour, popoutMode = false, hfov = 70, pitch = 0, yaw = 0, haov = 360,
     vaov = 180, voffset = 0, renderer, isUserInteracting = false,
     onMouseDownMouseX = 0, onMouseDownMouseY = 0, onMouseDownYaw = 0,
     onMouseDownPitch = 0, phi = 0, theta = 0, keysDown = new Array(10),
-    fullWindowActive = false, loaded = false, error = false, isTimedOut = false,
+    fullWindowActive = false, loaded = false, error = false, isTimedOut = false, eventsadded = false,
     about_box = document.getElementById('about_box'), autoRotate = false,
     canvas = document.getElementById('canvas'), panoType = 'equirectangular',
     panoImage, panoSrc;
@@ -57,31 +57,35 @@ function init() {
             anError();
         }
         
-        document.addEventListener('mousedown', onDocumentMouseDown, false);
-        document.addEventListener('mousemove', onDocumentMouseMove, false);
-        document.addEventListener('mouseup', onDocumentMouseUp, false);
-        document.addEventListener('mousewheel', onDocumentMouseWheel, false);
-        document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
-        document.addEventListener('onresize', onDocumentResize, false);
-        document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-        document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-        document.addEventListener('fullscreenchange', onFullScreenChange, false);
-        document.addEventListener('mozfullscreenerror', fullScreenError, false);
-        document.addEventListener('webkitfullscreenerror', fullScreenError, false);
-        document.addEventListener('fullscreenerror', fullScreenError, false);
-        window.addEventListener('resize', onDocumentResize, false);
-        document.addEventListener('keydown', onDocumentKeyPress, false);
-        document.addEventListener('keyup', onDocumentKeyUp, false);
-        window.addEventListener('blur', clearKeys, false);
-        document.addEventListener('mouseout', onDocumentMouseUp, false);
-        document.addEventListener('touchstart', onDocumentTouchStart, false);
-        document.addEventListener('touchmove', onDocumentTouchMove, false);
-        document.addEventListener('touchend', onDocumentTouchEnd, false);
+		//do not add again the events
+		if(!eventsadded){
+			eventsadded = true;
+			document.addEventListener('mousedown', onDocumentMouseDown, false);
+			document.addEventListener('mousemove', onDocumentMouseMove, false);
+			document.addEventListener('mouseup', onDocumentMouseUp, false);
+			document.addEventListener('mousewheel', onDocumentMouseWheel, false);
+			document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+			document.addEventListener('onresize', onDocumentResize, false);
+			document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+			document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+			document.addEventListener('fullscreenchange', onFullScreenChange, false);
+			document.addEventListener('mozfullscreenerror', fullScreenError, false);
+			document.addEventListener('webkitfullscreenerror', fullScreenError, false);
+			document.addEventListener('fullscreenerror', fullScreenError, false);
+			window.addEventListener('resize', onDocumentResize, false);
+			document.addEventListener('keydown', onDocumentKeyPress, false);
+			document.addEventListener('keyup', onDocumentKeyUp, false);
+			window.addEventListener('blur', clearKeys, false);
+			document.addEventListener('mouseout', onDocumentMouseUp, false);
+			document.addEventListener('touchstart', onDocumentTouchStart, false);
+			document.addEventListener('touchmove', onDocumentTouchMove, false);
+			document.addEventListener('touchend', onDocumentTouchEnd, false);
+			setInterval('keyRepeat()', 10);
+		}
         
         renderInit();
-        var t = setTimeout('isTimedOut = true', 500);
+        var t = setTimeout('isTimedOut = true', 500);        
         
-        setInterval('keyRepeat()', 10);
     }
     
     // Configure image loading
@@ -406,6 +410,19 @@ function createHotSpots() {
             div.style.cursor = 'pointer';
             span.style.cursor = 'pointer';
             a.appendChild(div);
+		} else if(hs.sceneId) {
+			var a = document.createElement('a');
+            a.setAttribute('href', 'javascript:void(0);');
+			//a.setAttribute('onClick', 'loadScene(' + hs.sceneId + '); return false;');
+			a.onclick = function(){
+				var id = sceneId;
+				loadScene(id);
+				return false;
+            };
+            document.getElementById('page').appendChild(a);
+            div.style.cursor = 'pointer';
+            span.style.cursor = 'pointer';
+            a.appendChild(div);
         } else {
             document.getElementById('page').appendChild(div);
         }
@@ -481,6 +498,44 @@ function parseURLParameters() {
             }
         }
     }
+	
+	// Check for virtual tour configuration file
+    for(var key in config) {
+        if(key == 'tour') {
+            // Get JSON configuration file
+            var request = new XMLHttpRequest();
+            request.open('GET', config[key], false);
+            request.send();
+            tour = JSON.parse(request.responseText);
+			// Back up parameters readed from config file and URL for future use
+			tour.configFromUrl = config;
+			// Activating first scene if specified
+            if(tour.global.defaultScene){
+				loadSceneData(tour.global.defaultScene);
+			}else{
+				loadSceneData(null);
+			}
+            //TODO: URL-bõl jövõ cuccokat külön változóba
+			//load: config=urlbackup, merge global, merge scene
+        }
+    }
+}
+
+function loadSceneData(sceneId){
+	// Merge data loaded from URL and config file + global data from tour file + scene specific data
+	config = tour.configFromUrl;
+	// Merge global options
+    for(var k in tour.global){
+        config[k] = c[k];
+    }
+	// Merge scene options
+	if((sceneId != null) && (sceneId != '') && (tour.scenes) && (tour.scenes[sceneId]))
+	{
+		for(var k in tour.scenes[sceneId]){
+			config[k] = c[k];
+		}
+		config.activeScene = sceneId;
+	}
 }
 
 function processOptions() {
@@ -677,4 +732,11 @@ function load() {
     document.getElementById('load_box').style.display = 'inline';
     init();
     animate();
+}
+
+function loadScene(sceneId){
+	loaded = false;
+	loadSceneData(sceneId);
+	processOptions();
+	load();
 }
