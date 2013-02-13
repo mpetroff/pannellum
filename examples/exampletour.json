@@ -1,9 +1,9 @@
-{
+﻿{
 	"global": {
 		"license": 1,
 		"logo": "yes",
 		"author": "Matthew Petroff",
-		"defaultScene": "pond"
+		"firstScene": "pond"
 	},
 	"scenes": {
 		"pondcube": {    
