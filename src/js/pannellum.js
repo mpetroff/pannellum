@@ -25,28 +25,26 @@
 document.addEventListener('contextmenu', onRightClick, false);
 
 // Declare variables
-var config, tourConfig = {}, configFromUrl, popoutMode = false, renderer, isUserInteracting = false,
-    onMouseDownMouseX = 0, onMouseDownMouseY = 0, onMouseDownYaw = 0,
-    onMouseDownPitch = 0, phi = 0, theta = 0, keysDown = new Array(10),
-    fullWindowActive = false, loaded = false, error = false, isTimedOut = false, eventsadded = false,
-    about_box = document.getElementById('about_box'), 
-    canvas = document.getElementById('canvas'), 
-    panoImage, panoSrc;
+var config, tourConfig = {}, configFromURL, popoutMode = false, renderer,
+    isUserInteracting = false, onMouseDownMouseX = 0, onMouseDownMouseY = 0,
+    onMouseDownYaw = 0, onMouseDownPitch = 0, phi = 0, theta = 0,
+    keysDown = new Array(10), fullWindowActive = false, loaded = false,
+    error = false, isTimedOut = false, listenersAdded = false,
+    about_box = document.getElementById('about_box'),
+    canvas = document.getElementById('canvas'), panoImage;
 
 var defaultConfig = {
-	hfov: 70, pitch: 0, yaw: 0, haov: 360,
-    vaov: 180, voffset: 0, autoRotate: false,
-	panoType: 'equirectangular', title: '',
-	author: ''
-};	
-	
+    hfov: 70, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
+    autoRotate: false, type: 'equirectangular'
+};
+
 // Process options
 parseURLParameters();
 processOptions();
 
 // Initialize viewer
 function init() {
-    if(config.panoType == 'cubemap') {
+    if(config.type == 'cubemap') {
         panoImage = new Array();
         for(var i = 0; i < 6; i++) {
             panoImage.push(new Image());
@@ -54,48 +52,47 @@ function init() {
     } else {
         panoImage = new Image();
     }
-
+    
     function onImageLoad() {
         try {
-            renderer = new libpannellum.renderer(canvas, panoImage, config.panoType);
+            renderer = new libpannellum.renderer(canvas, panoImage, config.type);
         } catch (event) {
             // Show error message if WebGL is not supported
             anError();
         }
         
-		//do not add again the events
-		if(!eventsadded){
-			eventsadded = true;
-			document.addEventListener('mousedown', onDocumentMouseDown, false);
-			document.addEventListener('mousemove', onDocumentMouseMove, false);
-			document.addEventListener('mouseup', onDocumentMouseUp, false);
-			document.addEventListener('mousewheel', onDocumentMouseWheel, false);
-			document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
-			document.addEventListener('onresize', onDocumentResize, false);
-			document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-			document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-			document.addEventListener('fullscreenchange', onFullScreenChange, false);
-			document.addEventListener('mozfullscreenerror', fullScreenError, false);
-			document.addEventListener('webkitfullscreenerror', fullScreenError, false);
-			document.addEventListener('fullscreenerror', fullScreenError, false);
-			window.addEventListener('resize', onDocumentResize, false);
-			document.addEventListener('keydown', onDocumentKeyPress, false);
-			document.addEventListener('keyup', onDocumentKeyUp, false);
-			window.addEventListener('blur', clearKeys, false);
-			document.addEventListener('mouseout', onDocumentMouseUp, false);
-			document.addEventListener('touchstart', onDocumentTouchStart, false);
-			document.addEventListener('touchmove', onDocumentTouchMove, false);
-			document.addEventListener('touchend', onDocumentTouchEnd, false);
-			setInterval('keyRepeat()', 10);
-		}
+        // Only add event listeners once
+        if(!listenersAdded) {
+            listenersAdded = true;
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            document.addEventListener('mouseup', onDocumentMouseUp, false);
+            document.addEventListener('mousewheel', onDocumentMouseWheel, false);
+            document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            document.addEventListener('onresize', onDocumentResize, false);
+            document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+            document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+            document.addEventListener('fullscreenchange', onFullScreenChange, false);
+            document.addEventListener('mozfullscreenerror', fullScreenError, false);
+            document.addEventListener('webkitfullscreenerror', fullScreenError, false);
+            document.addEventListener('fullscreenerror', fullScreenError, false);
+            window.addEventListener('resize', onDocumentResize, false);
+            document.addEventListener('keydown', onDocumentKeyPress, false);
+            document.addEventListener('keyup', onDocumentKeyUp, false);
+            window.addEventListener('blur', clearKeys, false);
+            document.addEventListener('mouseout', onDocumentMouseUp, false);
+            document.addEventListener('touchstart', onDocumentTouchStart, false);
+            document.addEventListener('touchmove', onDocumentTouchMove, false);
+            document.addEventListener('touchend', onDocumentTouchEnd, false);
+            setInterval('keyRepeat()', 10);
+        }
         
         renderInit();
-        var t = setTimeout('isTimedOut = true', 500);        
-        
+        var t = setTimeout('isTimedOut = true', 500);
     }
     
     // Configure image loading
-    if(config.panoType == "cubemap") {
+    if(config.type == "cubemap") {
         // Quick loading counter for synchronous loading
         var itemsToLoad = 6;
         function loadCounter() {
@@ -111,7 +108,7 @@ function init() {
         }
     } else {
         panoImage.onload = onImageLoad;
-        panoImage.src = panoSrc;
+        panoImage.src = config.panorama;
     }
     
     document.getElementById('page').className = 'grab';
@@ -130,8 +127,8 @@ function onRightClick(event) {
     clearTimeout(onRightClick.t2);
     document.getElementById('about').style.display = 'block';
     document.getElementById('about').style.opacity = 1;
-    onRightClick.t1 = setTimeout(function(){document.getElementById('about').style.opacity = 0;}, 2000);
-    onRightClick.t2 = setTimeout(function(){document.getElementById('about').style.display = 'none';}, 2500);
+    onRightClick.t1 = setTimeout(function() {document.getElementById('about').style.opacity = 0;}, 2000);
+    onRightClick.t2 = setTimeout(function() {document.getElementById('about').style.display = 'none';}, 2500);
     event.preventDefault();
 }
 
@@ -150,7 +147,7 @@ function onDocumentMouseDown(event) {
     onPointerDownPointerY = event.clientY;
     
     onPointerDownYaw = config.yaw;
-    onPointerDownPitch = config.pitch; 
+    onPointerDownPitch = config.pitch;
     
     document.getElementById('page').className = 'grabbing';
 }
@@ -180,7 +177,7 @@ function onDocumentTouchStart(event) {
 function onDocumentTouchMove(event) {
     // Override default action
     event.preventDefault();
-        
+    
     config.yaw = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownYaw;
     config.pitch = (event.targetTouches[0].clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
     animate();
@@ -351,7 +348,7 @@ function keyRepeat() {
 function onDocumentResize() {
     // Reset panorama renderer
     renderInit();
-        
+    
     // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
     onFullScreenChange();
 }
@@ -365,7 +362,7 @@ function animate() {
 }
 
 function render() {
-    if(loaded) {
+    try {
         if(config.yaw > 180) {
             config.yaw -= 360;
         } else if(config.yaw < -180) {
@@ -376,6 +373,8 @@ function render() {
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180);
         
         renderHotSpots();
+    } catch(event) {
+        // Panorama not loaded
     }
 }
 
@@ -393,7 +392,6 @@ function renderInit() {
             // Hide loading display
             document.getElementById('load_box').style.display = 'none';
             loaded = true;
-			render();
         }
     } catch(event) {
         // Panorama not loaded
@@ -406,56 +404,52 @@ function renderInit() {
 }
 
 function createHotSpots() {
-	//Fix if there are no hotspots
-	if(!config.hotSpots){
-		config.hotSpots = [];
-	}
-    config.hotSpots.forEach(function(hs) {
-        var div = document.createElement('div');
-        var span = document.createElement('span');
-        div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
-        if(hs.URL) {
-            var a = document.createElement('a');
-            a.setAttribute('href', hs.URL);
-            document.getElementById('page').appendChild(a);
-            div.style.cursor = 'pointer';
-            span.style.cursor = 'pointer';
-            a.appendChild(div);
-		} else if(hs.sceneId) {
-			var a = document.createElement('a');
-            a.setAttribute('href', 'javascript:void(0);');
-			//a.setAttribute('onClick', 'loadScene(' + hs.sceneId + '); return false;');
-			a.onclick = function(){
-				var id = hs.sceneId;
-				loadScene(id);
-				return false;
-            };
-            document.getElementById('page').appendChild(a);
-            div.style.cursor = 'pointer';
-            span.style.cursor = 'pointer';
-            a.appendChild(div);
-        } else {
-            document.getElementById('page').appendChild(div);
-        }
-        span.innerHTML = hs.text;
-        div.appendChild(span);
-        span.style.width = span.scrollWidth - 20 + 'px';
-        span.style.marginLeft = -(span.scrollWidth - 20) / 2 + 'px';
-        span.style.marginTop = -span.scrollHeight - 12 + 'px';
-        hs.div = div;
-    });
+    if(!config.hotSpots) {
+        config.hotSpots = [];
+    } else {
+        config.hotSpots.forEach(function(hs) {
+            var div = document.createElement('div');
+            var span = document.createElement('span');
+            div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+            if(hs.URL) {
+                var a = document.createElement('a');
+                a.setAttribute('href', hs.URL);
+                a.setAttribute('target', '_blank');
+                document.getElementById('page').appendChild(a);
+                div.style.cursor = 'pointer';
+                span.style.cursor = 'pointer';
+                a.appendChild(div);
+            } else {
+                if(hs.sceneId) {
+                    div.onclick = function() {
+                        loadScene(hs.sceneId);
+                        return false;
+                    };
+                    div.style.cursor = 'pointer';
+                    span.style.cursor = 'pointer';
+                }
+                document.getElementById('page').appendChild(div);
+            }
+            span.innerHTML = hs.text;
+            div.appendChild(span);
+            span.style.width = span.scrollWidth - 20 + 'px';
+            span.style.marginLeft = -(span.scrollWidth - 20) / 2 + 'px';
+            span.style.marginTop = -span.scrollHeight - 12 + 'px';
+            hs.div = div;
+        });
+    }
 }
 
 function destroyHotSpots() {
-	if(config.hotSpots){
-		config.hotSpots.forEach(function(hs) {
-			var current = hs.div;
-			while(current.parentNode.id != 'page'){
-				current = current.parentNode;
-			}
-			document.getElementById('page').removeChild(current);
-		});
-	}
+    if(config.hotSpots) {
+        config.hotSpots.forEach(function(hs) {
+            var current = hs.div;
+            while(current.parentNode.id != 'page') {
+                current = current.parentNode;
+            }
+            document.getElementById('page').removeChild(current);
+        });
+    }
 }
 
 function renderHotSpots() {
@@ -502,67 +496,70 @@ function parseURLParameters() {
         }
     }
     json += '}';
-    configFromUrl = JSON.parse(json);
+    configFromURL = JSON.parse(json);
     
     // Check for JSON configuration file
-    if(configFromUrl.config) {
+    if(configFromURL.config) {
         // Get JSON configuration file
         var request = new XMLHttpRequest();
-        request.open('GET', configFromUrl.config, false);
+        request.open('GET', configFromURL.config, false);
         request.send();
         var c = JSON.parse(request.responseText);
-            
+        
         // Merge options
         for(var k in c) {
-            if(!configFromUrl[k]) {
-                configFromUrl[k] = c[k];
+            if(!configFromURL[k]) {
+                configFromURL[k] = c[k];
             }
         }
     }
-	
-	var firstScene = null;
-	// Check for virtual tour configuration file
-    if(configFromUrl.tour) {
+    
+    // Check for virtual tour JSON configuration file
+    var firstScene = null;
+    if(configFromURL.tour) {
         // Get JSON configuration file
         var request = new XMLHttpRequest();
-        request.open('GET', configFromUrl.tour, false);
+        request.open('GET', configFromURL.tour, false);
         request.send();
         tourConfig = JSON.parse(request.responseText);
-		// Activating first scene if specified
-        if(tourConfig.global.firstScene) {
-			firstScene = tourConfig.global.firstScene;
-		}
-		if(configFromUrl.firstScene) {
-			firstScene = configFromUrl.firstScene;
-		}
+        
+        // Activate first scene if specified
+        if(tourConfig.default.firstScene) {
+            firstScene = tourConfig.default.firstScene;
+        }
+        if(configFromURL.firstScene) {
+            firstScene = configFromURL.firstScene;
+        }
     }
-	
-	mergeConfig(firstScene);
+    
+    mergeConfig(firstScene);
 }
 
-function mergeConfig(sceneId){
-	// Merge config: default config + global scene + selected scene + from url and cofig file
-	config = {};
-	// Merge default config
-    for(var k in defaultConfig){
+function mergeConfig(sceneId) {
+    config = {};
+    
+    // Merge default config
+    for(var k in defaultConfig) {
         config[k] = defaultConfig[k];
     }
-	// Merge global config
-    for(var k in tourConfig.global){
-        config[k] = tourConfig.global[k];
+    
+    // Merge default scene config
+    for(var k in tourConfig.default) {
+        config[k] = tourConfig.default[k];
     }
-	// Merge current scene config
-	if((sceneId != null) && (sceneId != '') && (tourConfig.scenes) && (tourConfig.scenes[sceneId]))
-	{
-		var scene = tourConfig.scenes[sceneId];
-		for(var k in scene){			
-			config[k] = scene[k];
-		}
-		config.activeScene = sceneId;
-	}
-	// Merge url and config file
-    for(var k in configFromUrl){
-        config[k] = configFromUrl[k];
+    
+    // Merge current scene config
+    if((sceneId != null) && (sceneId != '') && (tourConfig.scenes) && (tourConfig.scenes[sceneId])) {
+        var scene = tourConfig.scenes[sceneId];
+        for(var k in scene) {
+            config[k] = scene[k];
+        }
+        config.activeScene = sceneId;
+    }
+    
+    // Merge URL and config file
+    for(var k in configFromURL) {
+        config[k] = configFromURL[k];
     }
 }
 
@@ -573,8 +570,8 @@ function processOptions() {
                 if(config[key] == 'yes') {
                     document.getElementById('pannellum_logo').style.display = 'inline';
                 } else {
-					document.getElementById('pannellum_logo').style.display = 'none';
-				}
+                    document.getElementById('pannellum_logo').style.display = 'none';
+                }
                 break;
             
             case 'title':
@@ -627,7 +624,6 @@ function processOptions() {
                 animate();
                 break;
             
-			// Accept both "autorotate" and "autoRotate" in config for compatibility
             case 'autorotate':
                 if(config[key] == 'cw' || config[key] == 'ccw') {
                     config.autoRotate = config[key];
@@ -648,15 +644,6 @@ function processOptions() {
                 var license = document.getElementById('license').style;
                 license.backgroundImage = "url('//i.creativecommons.org/l/" + licenseType + "/3.0/80x15.png')";
                 license.width = '80px';
-                break;
-            
-			// Accept both "type" and "panoType" in config for compatibility
-            case 'type':
-                config.panoType = config[key];
-                break;
-            
-            case 'panorama':
-                panoSrc = config[key];
         }
     }
     
@@ -687,7 +674,7 @@ function toggleFullWindow() {
             } else if (document.webkitCancelFullScreen) {
                 document.webkitCancelFullScreen();
             }
-            
+
             if(popoutMode) {
                 window.close();
             }
@@ -749,13 +736,16 @@ function load() {
     animate();
 }
 
-function loadScene(sceneId){
-	loaded = false;
-	// Destroy hotspots from previous scene
-	destroyHotSpots();
-	// Create the new config for the scene
-	mergeConfig(sceneId);
-	// Reload scene
-	processOptions();
-	load();
+function loadScene(sceneId) {
+    loaded = false;
+    
+    // Destroy hot spots from previous scene
+    destroyHotSpots();
+    
+    // Create the new config for the scene
+    mergeConfig(sceneId);
+    
+    // Reload scene
+    processOptions();
+    load();
 }

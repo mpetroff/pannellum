@@ -30,7 +30,7 @@
         {
             "pitch": -10,
             "yaw": 50,
-            "type": "link",
+            "type": "info",
             "text": "This is a link.",
             "URL": "https://github.com/mpetroff/pannellum"
         }

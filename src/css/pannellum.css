@@ -316,13 +316,6 @@ body {
 .hotspot.info:hover {
     background-position:-54px -108px;
 }
-.hotspot.link {
-    background-position:-54px -27px;
-}
-.hotspot.link:hover {
-    background-position:-54px -54px;
-}
-/*TODO: add custom icon to the scene loader hotspot*/
 .hotspot.scene {
     background-position:-54px -27px;
 }
