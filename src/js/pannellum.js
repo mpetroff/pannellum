@@ -48,9 +48,11 @@ function init() {
         panoImage = new Array();
         for(var i = 0; i < 6; i++) {
             panoImage.push(new Image());
+            panoImage[i].crossOrigin = "anonymous";
         }
     } else {
         panoImage = new Image();
+        panoImage.crossOrigin = "anonymous";
     }
     
     function onImageLoad() {
