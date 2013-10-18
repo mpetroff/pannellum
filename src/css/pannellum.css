@@ -151,14 +151,44 @@ body {
     display:none;
 }
 
-#load_indicator {
+.lbox {
     position:absolute;
     top:50%;
     left:50%;
     width:20px;
     height:20px;
     margin:-10px 0px 0px -10px;
-    background-image:url('img/loading.svg');
+}
+
+.loading {
+    animation-duration: 1.5s;
+    -webkit-animation-duration: 1.5s;
+    animation-name: mv;
+    -webkit-animation-name: mv;
+    animation-iteration-count: infinite;
+    -webkit-animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    -webkit-animation-timing-function: linear;
+    height:10px;
+    width:10px;
+    background-color:#000;
+    position:relative;
+}
+
+@keyframes mv {
+    from {left:0;top:0;}
+    25% {left:10px;top:0;}
+    50% {left:10px;top:10px;}
+    75% {left:0;top:10px;}
+    to {left:0;top:0;}
+}
+
+@-webkit-keyframes mv {
+    from {left:0;top:0;}
+    25% {left:10px;top:0;}
+    50% {left:10px;top:10px;}
+    75% {left:0;top:10px;}
+    to {left:0;top:0;}
 }
 
 #load_button {

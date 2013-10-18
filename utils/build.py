@@ -96,7 +96,6 @@ def build(files, css, html, filename):
 	css = merge(css)
 	css = css.replace("'img/grab.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/grab.svg'),'') + "'")
 	css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/grabbing.svg'),'') + "'")
-	css = css.replace("'img/loading.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/loading.svg'),'') + "'")
 	css = cssCompress(css)
 	css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/sprites.svg'),'') + "'")
 	
