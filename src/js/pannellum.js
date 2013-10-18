@@ -74,9 +74,11 @@ function init() {
             document.addEventListener('onresize', onDocumentResize, false);
             document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
             document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+            document.addEventListener('msfullscreenchange', onFullScreenChange, false);
             document.addEventListener('fullscreenchange', onFullScreenChange, false);
             document.addEventListener('mozfullscreenerror', fullScreenError, false);
             document.addEventListener('webkitfullscreenerror', fullScreenError, false);
+            document.addEventListener('msfullscreenerror', fullScreenError, false);
             document.addEventListener('fullscreenerror', fullScreenError, false);
             window.addEventListener('resize', onDocumentResize, false);
             document.addEventListener('keydown', onDocumentKeyPress, false);
@@ -662,6 +664,8 @@ function toggleFullWindow() {
                     page.requestFullscreen();
                 } else if (page.mozRequestFullScreen) {
                     page.mozRequestFullScreen();
+                } else if (page.msRequestFullscreen) {
+                    page.msRequestFullscreen();
                 } else {
                     page.webkitRequestFullScreen();
                 }
@@ -675,6 +679,8 @@ function toggleFullWindow() {
                 document.mozCancelFullScreen();
             } else if (document.webkitCancelFullScreen) {
                 document.webkitCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
             }
 
             if(popoutMode) {
@@ -685,7 +691,7 @@ function toggleFullWindow() {
 }
 
 function onFullScreenChange() {
-    if(document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen) {
+    if(document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
         document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
         fullWindowActive = true;
     } else {
