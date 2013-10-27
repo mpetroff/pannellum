@@ -50,6 +50,8 @@ function init() {
             panoImage.push(new Image());
             panoImage[i].crossOrigin = "anonymous";
         }
+    } else if(config.type == 'multires') {
+        panoImage = config.multiRes;
     } else {
         panoImage = new Image();
         panoImage.crossOrigin = "anonymous";
@@ -110,6 +112,8 @@ function init() {
             panoImage[i].onload = loadCounter;
             panoImage[i].src = config.cubeMap[i];
         }
+    } else if(config.type == "multires") {
+        onImageLoad();
     } else {
         panoImage.onload = onImageLoad;
         panoImage.src = config.panorama;
@@ -390,13 +394,10 @@ function renderInit() {
         
         animate();
         
-        if(!isTimedOut) {
-            requestAnimationFrame(renderInit);
-        } else {
-            // Hide loading display
-            document.getElementById('load_box').style.display = 'none';
-            loaded = true;
-        }
+        // Hide loading display
+        document.getElementById('load_box').style.display = 'none';
+        loaded = true;
+        
     } catch(event) {
         // Panorama not loaded
         

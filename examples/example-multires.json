@@ -1,0 +1,17 @@
+{
+    "logo": "yes",
+    
+    "title": "Jordan Pond",
+    
+    "author": "Matthew Petroff",
+    
+    "license": 1,
+    
+    "type": "multires",
+    
+    "multiRes": {
+        "path": "../examples/multires/",
+        "tileResolution": 256,
+        "maxSubdivisions": 8
+    }
+}
