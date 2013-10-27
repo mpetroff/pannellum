@@ -63,7 +63,7 @@ def htmlCompress(text):
 	with os.fdopen(in_tuple[0], 'w') as handle:
 		handle.write(text)
 	out_tuple = tempfile.mkstemp()
-	os.system("java -jar htmlcompressor-1.5.3.jar --remove-intertag-spaces --remove-quotes --compress-js --js-compressor closure -o %s %s" % (out_tuple[1], in_tuple[1]))
+	os.system("java -jar htmlcompressor-1.5.3.jar --remove-intertag-spaces --remove-quotes -o %s %s" % (out_tuple[1], in_tuple[1]))
 	with os.fdopen(out_tuple[0], 'r') as handle:
 		compressed = handle.read()
 	os.unlink(in_tuple[1])
