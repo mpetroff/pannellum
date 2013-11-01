@@ -90,7 +90,7 @@ function init() {
             document.addEventListener('touchstart', onDocumentTouchStart, false);
             document.addEventListener('touchmove', onDocumentTouchMove, false);
             document.addEventListener('touchend', onDocumentTouchEnd, false);
-            setInterval('keyRepeat()', 10);
+            setInterval('keyRepeat()', 16.67);
         }
         
         renderInit();
@@ -338,17 +338,10 @@ function keyRepeat() {
         animate();
     }
     
-    // If clockwise auto-rotate
-    if(config.autoRotate == 'cw') {
-        // Pan left
-        config.yaw -= .25;
-        animate();
-    }
-    
-    // If counter-clockwise auto-rotate
-    if(config.autoRotate == 'ccw') {
-        // Pan right
-        config.yaw += .25;
+    // If auto-rotate
+    if(config.autoRotate) {
+        // Pan
+        config.yaw -= config.autoRotate / 60;
         animate();
     }
 }
@@ -630,9 +623,8 @@ function processOptions() {
                 break;
             
             case 'autorotate':
-                if(config[key] == 'cw' || config[key] == 'ccw') {
-                    config.autoRotate = config[key];
-                }
+                // Rotation speed in degrees/second (+ccw, -cw)
+                config.autoRotate = config[key];
                 break;
             
             case 'license':
