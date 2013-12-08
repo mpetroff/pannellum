@@ -210,6 +210,8 @@ function Renderer(canvas, image, imageType) {
                             if (!program.texArray[program.subdivisions][index]) {
                                 this.processNextTile(index, pitch, yaw, hfov);
                                 return;
+                            } else if (!program.texLoadedArray[program.subdivisions][index]) {
+                                return;
                             }
                             // Bind texture and draw tile
                             gl.bindTexture(gl.TEXTURE_2D, program.texArray[program.subdivisions][index]); // Bind program.texArray[program.subdivisions][index] to TEXTURE0
@@ -460,11 +462,13 @@ function Renderer(canvas, image, imageType) {
         if (!program.imageArray) {
             program.imageArray = [];
             program.texArray = [];
+            program.texLoadedArray = [];
             program.tileNameArray = [];
         }
         if (!program.imageArray[program.subdivisions]) {
             program.imageArray[program.subdivisions] = [];
             program.texArray[program.subdivisions] = [];
+            program.texLoadedArray[program.subdivisions] = [];
             program.tileNameArray[program.subdivisions] = [];
         }
         var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
@@ -496,6 +500,7 @@ function Renderer(canvas, image, imageType) {
         var self = this;
         program.imageArray[program.subdivisions][index].onload = function() {
             self.processLoadedTexture(program.imageArray[program.subdivisions][index], program.texArray[program.subdivisions][index]);
+            program.texLoadedArray[program.subdivisions][index] = true;
             self.render(pitch, yaw, hfov);
         }
         program.imageArray[program.subdivisions][index].src = program.tileNameArray[program.subdivisions][index];
@@ -559,8 +564,8 @@ function Renderer(canvas, image, imageType) {
     
     this.checkSquareInView = function(m, v) {
         // Check if at least one vertex is on canvas
-        if ( this.checkInView(m, v.slice(0, 3)) || this.checkInView(m, v.slice(3, 6)) || this.checkInView(m, v.slice(6, 9)) || this.checkInView(m, v.slice(9, 12)) )
-            return true;
+        if ( !( this.checkInView(m, v.slice(0, 3)) || this.checkInView(m, v.slice(3, 6)) || this.checkInView(m, v.slice(6, 9)) || this.checkInView(m, v.slice(9, 12)) ) )
+            return false;
         
         var vpp = this.applyRotPerspToVec(m, v.slice(0, 3));
         var w1 = Object(), w2 = Object(), w3 = Object, w4 = Object();
@@ -584,7 +589,7 @@ function Renderer(canvas, image, imageType) {
         if ( (w1.z < 0 || w1.z > 1) && (w2.z < 0 || w2.z > 1) && (w3.z < 0 || w3.z > 1) && (w4.z < 0 || w4.z > 1) )
             return false;
         
-        return false;
+        return true;
     }
 }
 
