@@ -479,7 +479,7 @@ function Renderer(canvas, image, imageType) {
                 for ( var j = 0; j < program.subdivisions; j++ ) {
                     var index = s*program.subdivisions*program.subdivisions + i*program.subdivisions + j;
                     
-                    program.tileNameArray[program.subdivisions][index] = this.image.path + program.subdivisions + "/" + sides[s] + i + j + ".png";
+                    program.tileNameArray[program.subdivisions][index] = this.image.path + program.subdivisions + "/" + sides[s] + i + j + "." + this.image.extension;
                 }
             }
         }
@@ -518,7 +518,7 @@ function Renderer(canvas, image, imageType) {
         
         // Find optimal subdivisions
         var newSubdiv = 1;
-        while ( this.canvas.width > (newSubdiv * this.image.tileResolution) / f && newSubdiv <= this.image.maxSubdivisions ) {
+        while ( this.canvas.width > (newSubdiv * this.image.tileResolution) / f && newSubdiv < this.image.maxSubdivisions ) {
             newSubdiv++;
         }
         

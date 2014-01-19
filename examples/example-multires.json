@@ -11,6 +11,7 @@
     
     "multiRes": {
         "path": "../examples/multires/",
+        "extension": "png",
         "tileResolution": 256,
         "maxSubdivisions": 8
     }
