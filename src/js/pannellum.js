@@ -158,6 +158,8 @@ function onDocumentMouseDown(event) {
     onPointerDownPitch = config.pitch;
     
     document.getElementById('page').className = 'grabbing';
+    
+    animate();
 }
 
 function onDocumentMouseMove(event) {
@@ -165,7 +167,6 @@ function onDocumentMouseMove(event) {
         //TODO: This should not only be FOV scaled but scaled to canvas size
         config.yaw = (onPointerDownPointerX - event.clientX) * 0.0029 * config.hfov + onPointerDownYaw;
         config.pitch = (event.clientY - onPointerDownPointerY) * 0.0029 * config.hfov + onPointerDownPitch;
-        animate();
     }
 }
 
