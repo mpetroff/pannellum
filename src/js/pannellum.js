@@ -31,7 +31,7 @@ var config, tourConfig = {}, configFromURL, popoutMode = false, renderer,
     keysDown = new Array(10), fullWindowActive = false, loaded = false,
     error = false, isTimedOut = false, listenersAdded = false,
     about_box = document.getElementById('about_box'),
-    canvas = document.getElementById('canvas'), panoImage;
+    canvas = document.getElementById('canvas'), panoImage, prevTime;
 
 var defaultConfig = {
     hfov: 70, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
@@ -90,7 +90,6 @@ function init() {
             document.addEventListener('touchstart', onDocumentTouchStart, false);
             document.addEventListener('touchmove', onDocumentTouchMove, false);
             document.addEventListener('touchend', onDocumentTouchEnd, false);
-            setInterval('keyRepeat()', 16.67);
         }
         
         renderInit();
@@ -257,94 +256,110 @@ function onDocumentKeyUp(event) {
 }
 
 function changeKey(keynumber, value) {
+    var keyChanged = false;
     switch(keynumber) {
         // If minus key is released
         case 109: case 189: case 17:
+            if(keysDown[0] != value) { keyChanged = true; }
             keysDown[0] = value; break;
         
         // If plus key is released
         case 107: case 187: case 16:
+            if(keysDown[1] != value) { keyChanged = true; }
             keysDown[1] = value; break;
         
         // If up arrow is released
         case 38:
+            if(keysDown[2] != value) { keyChanged = true; }
             keysDown[2] = value; break;
         
         // If "w" is released
         case 87:
+            if(keysDown[6] != value) { keyChanged = true; }
             keysDown[6] = value; break;
         
         // If down arrow is released
         case 40:
+            if(keysDown[3] != value) { keyChanged = true; }
             keysDown[3] = value; break;
         
         // If "s" is released
         case 83:
+            if(keysDown[7] != value) { keyChanged = true; }
             keysDown[7] = value; break;
         
         // If left arrow is released
         case 37:
+            if(keysDown[4] != value) { keyChanged = true; }
             keysDown[4] = value; break;
         
         // If "a" is released
         case 65:
+            if(keysDown[8] != value) { keyChanged = true; }
             keysDown[8] = value; break;
         
         // If right arrow is released
         case 39:
+            if(keysDown[5] != value) { keyChanged = true; }
             keysDown[5] = value; break;
         
         // If "d" is released
         case 68:
+            if(keysDown[9] != value) { keyChanged = true; }
             keysDown[9] = value;
+    }
+    
+    if(keyChanged && value) {
+        prevTime = Date.now();
+        requestAnimationFrame(animate);
     }
 }
 
 function keyRepeat() {
+    var newTime = Date.now();
+    var diff = (newTime - prevTime) / 16.67;
+    
     // If minus key is down
     if(keysDown[0]) {
-        zoomOut(1);
+        zoomOut(diff);
     }
     
     // If plus key is down
     if(keysDown[1]) {
-        zoomIn(1);
+        zoomIn(diff);
     }
     
     // If up arrow or "w" is down
     if(keysDown[2] || keysDown[6]) {
         // Pan up
-        config.pitch += 1;
-        animate();
+        config.pitch += diff;
     }
     
     // If down arrow or "s" is down
     if(keysDown[3] || keysDown[7]) {
         // Pan down
-        config.pitch -= 1;
-        animate();
+        config.pitch -= diff;
     }
     
     // If left arrow or "a" is down
     if(keysDown[4] || keysDown[8]) {
         // Pan left
-        config.yaw -= 1;
-        animate();
+        config.yaw -= diff;
     }
     
     // If right arrow or "d" is down
     if(keysDown[5] || keysDown[9]) {
         // Pan right
-        config.yaw += 1;
-        animate();
+        config.yaw += diff;
     }
     
     // If auto-rotate
     if(config.autoRotate) {
         // Pan
-        config.yaw -= config.autoRotate / 60;
-        animate();
+        config.yaw -= config.autoRotate / (60 * diff);
     }
+    
+    prevTime = newTime;
 }
 
 function onDocumentResize() {
@@ -359,6 +374,11 @@ function animate() {
     render();
     
     if(isUserInteracting) {
+        requestAnimationFrame(animate);
+    } else if(keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
+      || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7]
+      || keysDown[8] || keysDown[9] || config.autoRotate) {
+        keyRepeat();
         requestAnimationFrame(animate);
     }
 }
@@ -727,8 +747,6 @@ function setHfov(i) {
     } else {
         config.hfov = i;
     }
-    
-    animate();
 }
 
 function load() {
