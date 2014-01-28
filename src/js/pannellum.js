@@ -356,7 +356,9 @@ function keyRepeat() {
     // If auto-rotate
     if(config.autoRotate) {
         // Pan
-        config.yaw -= config.autoRotate / (60 * diff);
+        if(diff > 0.000001) {
+            config.yaw -= config.autoRotate / 60 * diff;
+        }
     }
     
     prevTime = newTime;
