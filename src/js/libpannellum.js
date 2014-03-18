@@ -552,43 +552,33 @@ function Renderer(canvas, image, imageType) {
     
     this.checkInView = function(m, v) {
         var vpp = this.applyRotPerspToVec(m, v);
-        var winX = this.canvas.width * ( vpp[0]/vpp[3] + 1 ) / 2;
-        var winY = this.canvas.height * ( vpp[1]/vpp[3] + 1 ) / 2;
+        var winX = ( vpp[0]/vpp[3] + 1 ) / 2;
+        var winY = ( vpp[1]/vpp[3] + 1 ) / 2;
         var winZ = ( vpp[2]/vpp[3] + 1 ) / 2;
+        var ret = [0, 0, 0];
+        
+        if ( winX < 0 )
+            ret[0] = -1;
+        if ( winX > 1 )
+            ret[0] = 1;
+        if ( winY < 0 )
+            ret[1] = -1;
+        if ( winY > 1 )
+            ret[1] = 1;
         if ( winZ < 0 || winZ > 1 )
-            return false;
-        if ( winX < 0 || winX > this.canvas.width )
-            return false;
-        if ( winY < 0 || winY > this.canvas.height )
-            return false;
-        return true;
+            ret[2] = 1;
+        return ret;
     }
     
     this.checkSquareInView = function(m, v) {
-        // Check if at least one vertex is on canvas
-        if ( !( this.checkInView(m, v.slice(0, 3)) || this.checkInView(m, v.slice(3, 6)) || this.checkInView(m, v.slice(6, 9)) || this.checkInView(m, v.slice(9, 12)) ) )
-            return false;
-        
-        var vpp = this.applyRotPerspToVec(m, v.slice(0, 3));
-        var w1 = Object(), w2 = Object(), w3 = Object, w4 = Object();
-        w1.x = this.canvas.width * ( vpp[0]/vpp[3] + 1 ) / 2;
-        w1.y = this.canvas.height * ( vpp[1]/vpp[3] + 1 ) / 2;
-        w1.z = ( vpp[2]/vpp[3] + 1 ) / 2;
-        vpp = this.applyRotPerspToVec(m, v.slice(3, 6));
-        w2.x = this.canvas.width * ( vpp[0]/vpp[3] + 1 ) / 2;
-        w2.y = this.canvas.height * ( vpp[1]/vpp[3] + 1 ) / 2;
-        w2.z = ( vpp[2]/vpp[3] + 1 ) / 2;
-        vpp = this.applyRotPerspToVec(m, v.slice(6, 9));
-        w3.x = this.canvas.width * ( vpp[0]/vpp[3] + 1 ) / 2;
-        w3.y = this.canvas.height * ( vpp[1]/vpp[3] + 1 ) / 2;
-        w3.z = ( vpp[2]/vpp[3] + 1 ) / 2;
-        vpp = this.applyRotPerspToVec(m, v.slice(9, 12));
-        w4.x = this.canvas.width * ( vpp[0]/vpp[3] + 1 ) / 2;
-        w4.y = this.canvas.height * ( vpp[1]/vpp[3] + 1 ) / 2;
-        w4.z = ( vpp[2]/vpp[3] + 1 ) / 2;
-        
-        // Throw away tiles with vertices behind window plane
-        if ( (w1.z < 0 || w1.z > 1) && (w2.z < 0 || w2.z > 1) && (w3.z < 0 || w3.z > 1) && (w4.z < 0 || w4.z > 1) )
+        var check1 = this.checkInView(m, v.slice(0, 3));
+        var check2 = this.checkInView(m, v.slice(3, 6));
+        var check3 = this.checkInView(m, v.slice(6, 9));
+        var check4 = this.checkInView(m, v.slice(9, 12));
+        var testX = check1[0] + check2[0] + check3[0] + check4[0];
+        var testY = check1[1] + check2[1] + check3[1] + check4[1];
+        var testZ = check1[2] + check2[2] + check3[2] + check4[2];
+        if ( testX == -4 || testX == 4 || testY == -4 || testY == 4 || testZ == 4 )
             return false;
         
         return true;
