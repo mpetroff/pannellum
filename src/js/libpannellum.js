@@ -144,11 +144,14 @@ function Renderer(canvas, image, imageType) {
             program.vertPosLocation = gl.getAttribLocation(program, "a_vertCoord");
             gl.enableVertexAttribArray(program.vertPosLocation);
             
-            program.subdivisions = -1;
+            program.level = -1;
+            
+            program.currentNodes = [];
         }
     }
 
     this.render = function(pitch, yaw, hfov) {
+        //console.log('render');
         if(this.imageType != 'multires') {
             // Calculate focal length from horizontal angle of view
             var focal = 1 / Math.tan(hfov / 2);
@@ -163,7 +166,7 @@ function Renderer(canvas, image, imageType) {
         
         } else {
             // Clear canvas
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             
             // Create perspective matrix
             var perspMatrix = this.makePersp(hfov, this.canvas.width / this.canvas.height, 0.1, 100.0);
@@ -177,47 +180,150 @@ function Renderer(canvas, image, imageType) {
             matrix = this.rotateMatrix(matrix, yaw, 'y');
             matrix = this.makeMatrix4(matrix);
             
-            // Bind square verticies
-            gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
-            gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
-            
-            // Bind square indicies
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
-            
             // Set matrix uniforms
             var perspUniform = gl.getUniformLocation(program, "u_perspMatrix");
             gl.uniformMatrix4fv(perspUniform, false, new Float32Array(this.transposeMatrix4(perspMatrix)));
             var cubeUniform = gl.getUniformLocation(program, "u_cubeMatrix");
             gl.uniformMatrix4fv(cubeUniform, false, new Float32Array(this.transposeMatrix4(matrix)));
             
-            // Prep for texture
-            gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
-            gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
-            gl.activeTexture(gl.TEXTURE0);  // Make TEXTURE0 the active texture
-            gl.uniform1i(gl.getUniformLocation(program, "u_sampler"), 0);   // Tell shader to use TEXTURE0
-            
+            // Find current nodes
             var rotPersp = this.rotatePersp(perspMatrix, matrix);
-            // Draw cube
+            program.oldNodes = program.currentNodes;
+            program.currentNodes = [];
+            var vertices = this.createCube();
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
-            // side
             for ( var s = 0; s < 6; s++ ) {
-                // row
-                for ( var i = 0; i < program.subdivisions; i++ ) {
-                    // column
-                    for ( var j = 0; j < program.subdivisions; j++ ) {
-                        var index = s*program.subdivisions*program.subdivisions + i*program.subdivisions + j;
-                        if(this.checkSquareInView(rotPersp, program.vertices.slice(index * 12, index * 12 + 12))) {
-                            if (!program.texArray[program.subdivisions][index]) {
-                                this.processNextTile(index, pitch, yaw, hfov);
-                                return;
-                            } else if (!program.texLoadedArray[program.subdivisions][index]) {
-                                return;
-                            }
-                            // Bind texture and draw tile
-                            gl.bindTexture(gl.TEXTURE_2D, program.texArray[program.subdivisions][index]); // Bind program.texArray[program.subdivisions][index] to TEXTURE0
-                            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, index * 12);
-                        }
-                    }
+                var vtmp = vertices.slice(s * 12, s * 12 + 12)
+                var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
+                this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
+            }
+            program.currentNodes.sort(this.MultiresNodeSort);
+            
+            // Draw tiles
+            this.multiresDraw()
+        }
+    }
+    
+    this.multiresDraw = function() {
+        if (!program.drawInProgress) {
+            program.drawInProgress = true;
+            //console.log(program.currentNodes.length);
+            for ( var i = 0; i < program.currentNodes.length; i++ ) {
+                //var color = program.currentNodes[i].color;
+                //gl.uniform4f(gl.getUniformLocation(program, "u_color"), color[0], color[1], color[2], 1.0);
+                
+                // Create and bind vertex buffer
+                program.cubeVertBuf = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
+                
+                // Create cube vertices
+                program.vertices = program.currentNodes[i].vertices;
+                
+                // Pass vertices to WebGL
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(program.vertices), gl.STATIC_DRAW);
+                
+                // Create and bind texture buffer
+                program.cubeVertTexCoordBuf = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
+                
+                // Generate texture coordinates and pass to WebGL
+                var texCoords = [0, 0, 1, 0, 1, 1, 0, 1];
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+                
+                // Create and bind square index buffer
+                program.cubeVertIndBuf = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
+                
+                // Generate indicies and pass to WebGL
+                var cubeVertInd = [0,1,2,0,2,3];
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertInd), gl.STATIC_DRAW);
+                
+                // Bind square vertices
+                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
+                gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
+                
+                // Bind square indicies
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
+                
+                // Prep for texture
+                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
+                gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+                gl.activeTexture(gl.TEXTURE0);  // Make TEXTURE0 the active texture
+                gl.uniform1i(gl.getUniformLocation(program, "u_sampler"), 0);   // Tell shader to use TEXTURE0
+                
+                // Bind texture and draw tile
+                if (program.currentNodes[i].textureLoaded) {
+                gl.bindTexture(gl.TEXTURE_2D, program.currentNodes[i].texture); // Bind program.currentNodes[i].texture to TEXTURE0
+                gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+                }
+            }
+        }
+        program.drawInProgress = false;
+    }
+
+    function MultiresNode(vertices, face, level, x, y, path) {
+        this.vertices = vertices;
+        this.face = face;
+        this.level = level;
+        this.x = x;
+        this.y = y;
+        this.path = path + level + '/' + face + x + y;
+    }
+
+    this.testMultiresNode = function(rotPersp, node, pitch, yaw, hfov) {
+        //console.log(node);
+        if (this.checkSquareInView(rotPersp, node.vertices)) {
+            //console.log('Tile ' + node.level + '/' + node.face + node.x + node.y);
+            
+            var inCurrent = false;
+            for (var i = 0; i < program.oldNodes.length; i++) {
+                if (program.oldNodes[i].path == node.path) {
+                    inCurrent = true;
+                    program.currentNodes.push(program.oldNodes[i]);
+                    break;
+                }
+            }
+            if (!inCurrent) {
+                node.color = [Math.random(), Math.random(), Math.random()];
+                this.processNextTile(node, pitch, yaw, hfov);
+                program.currentNodes.push(node);
+            }
+            
+            // TODO: Test error
+            if (node.level < program.level) {
+                var children = [];
+                var v = node.vertices;
+                var vtmp, ntmp;
+                vtmp = [         v[0],           v[1],           v[2],
+                        (v[0]+v[3])/2,  (v[1]+v[4])/2,  (v[2]+v[5])/2,
+                        (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
+                        (v[0]+v[9])/2, (v[1]+v[10])/2, (v[2]+v[11])/2
+                ];
+                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2, node.y*2, this.image.path);
+                children.push(ntmp);
+                vtmp = [(v[0]+v[3])/2,  (v[1]+v[4])/2,  (v[2]+v[5])/2,
+                                 v[3],           v[4],           v[5],
+                        (v[3]+v[6])/2,  (v[4]+v[7])/2,  (v[5]+v[8])/2,
+                        (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2
+                ];
+                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2+1, node.y*2, this.image.path);
+                children.push(ntmp);
+                vtmp = [(v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
+                        (v[3]+v[6])/2,  (v[4]+v[7])/2,  (v[5]+v[8])/2,
+                                 v[6],           v[7],           v[8],
+                        (v[9]+v[6])/2, (v[10]+v[7])/2, (v[11]+v[8])/2
+                ];
+                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2+1, node.y*2+1, this.image.path);
+                children.push(ntmp);
+                vtmp = [(v[0]+v[9])/2, (v[1]+v[10])/2, (v[2]+v[11])/2,
+                        (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
+                        (v[9]+v[6])/2, (v[10]+v[7])/2, (v[11]+v[8])/2,
+                                 v[9],          v[10],          v[11],
+                ];
+                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2, node.y*2+1, this.image.path);
+                children.push(ntmp);
+                for (var i = 0; i < 4; i++) {
+                    this.testMultiresNode(rotPersp, children[i], pitch, yaw, hfov);
                 }
             }
         }
@@ -233,173 +339,14 @@ function Renderer(canvas, image, imageType) {
         this.init();
     }
     
-    this.initBuffers = function() {
-        // Create and bind vertex buffer
-        program.cubeVertBuf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
-        
-        // Create cube vertices
-        program.vertices = this.createCube(program.subdivisions);
-        
-        // Pass vertices to WebGL
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(program.vertices), gl.STATIC_DRAW);
-        
-        // Create and bind texture buffer
-        program.cubeVertTexCoordBuf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
-        
-        // Generate texture coordinates and pass to WebGL
-        var texCoords = this.createCubeVertexTextureCoords(program.subdivisions);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
-        
-        // Create and bind square index buffer
-        program.cubeVertIndBuf = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
-        
-        // Generate indicies and pass to WebGL
-        var cubeVertInd = this.createCubeVertexIndices(program.subdivisions);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertInd), gl.STATIC_DRAW);
-    }
-    
-    this.createCube = function(subdiv) {
-        var increment = 2.0 / subdiv;
-        
-        var v = [];
-        // Front face
-        for (var j = 1.0, k = 0; k < subdiv; j -= increment, k++ ) {
-            for (var i = -1.0, l = 0; l < subdiv; i += increment, l++) {
-                v[v.length] = i;
-                v[v.length] = j;
-                v[v.length] = -1.0;
-                v[v.length] = i + increment;
-                v[v.length] = j;
-                v[v.length] = -1.0;
-                v[v.length] = i + increment;
-                v[v.length] = j - increment;
-                v[v.length] = -1.0;
-                v[v.length] = i;
-                v[v.length] = j - increment;
-                v[v.length] = -1.0;
-            }
-        }
-        
-        // Back face
-        for (var j = 1.0, k = 0; k < subdiv; j -= increment, k++ ) {
-            for (var i = 1.0, l = 0; l < subdiv; i -= increment, l++ ) {
-                v[v.length] = i;
-                v[v.length] = j;
-                v[v.length] = 1.0;
-                v[v.length] = i - increment;
-                v[v.length] = j;
-                v[v.length] = 1.0;
-                v[v.length] = i - increment;
-                v[v.length] = j - increment;
-                v[v.length] = 1.0;
-                v[v.length] = i;
-                v[v.length] = j - increment;
-                v[v.length] = 1.0;
-            }
-        }
-        
-        // Up face
-        for (var j = 1.0, k = 0; k < subdiv; j -= increment, k++ ) {
-            for (var i = -1.0, l = 0; l < subdiv; i += increment, l++ ) {
-                v[v.length] = i;
-                v[v.length] = 1.0;
-                v[v.length] = j;
-                v[v.length] = i + increment;
-                v[v.length] = 1.0;
-                v[v.length] = j;
-                v[v.length] = i + increment;
-                v[v.length] = 1.0;
-                v[v.length] = j - increment;
-                v[v.length] = i;
-                v[v.length] = 1.0;
-                v[v.length] = j - increment;
-            }
-        }
-        
-        // Down face
-        for (var j = -1.0, k = 0; k < subdiv; j += increment, k++ ) {
-            for (var i = -1.0, l = 0; l < subdiv; i += increment, l++ ) {
-                v[v.length] = i;
-                v[v.length] = -1.0;
-                v[v.length] = j;
-                v[v.length] = i + increment;
-                v[v.length] = -1.0;
-                v[v.length] = j;
-                v[v.length] = i + increment;
-                v[v.length] = -1.0;
-                v[v.length] = j + increment;
-                v[v.length] = i;
-                v[v.length] = -1.0;
-                v[v.length] = j + increment;
-            }
-        }
-        
-        // Left face
-        for (var j = 1.0, k = 0; k < subdiv; j -= increment, k++ ) {
-            for (var i = 1.0, l = 0; l < subdiv; i -= increment, l++ ) {
-                v[v.length] = -1.0;
-                v[v.length] = j;
-                v[v.length] = i;
-                v[v.length] = -1.0;
-                v[v.length] = j;
-                v[v.length] = i - increment;
-                v[v.length] = -1.0;
-                v[v.length] = j - increment;
-                v[v.length] = i - increment;
-                v[v.length] = -1.0;
-                v[v.length] = j - increment;
-                v[v.length] = i;
-            }
-        }
-        
-        // Right face
-        for (var j = 1.0, k = 0; k < subdiv; j -= increment, k++ ) {
-            for (var i = -1.0, l = 0; l < subdiv; i += increment, l++ ) {
-                v[v.length] = 1.0;
-                v[v.length] = j;
-                v[v.length] = i;
-                v[v.length] = 1.0;
-                v[v.length] = j;
-                v[v.length] = i + increment;
-                v[v.length] = 1.0;
-                v[v.length] = j - increment;
-                v[v.length] = i + increment;
-                v[v.length] = 1.0;
-                v[v.length] = j - increment;
-                v[v.length] = i;
-            }
-        }
-        
-        return v;
-    }
-    
-    this.createCubeVertexIndices = function(subdiv) {
-        var ind = [];
-        
-        // subdivisions^2 * side of cube * triangles per side * verticies per side
-        for ( var i = 0; i < subdiv * subdiv * 6 * 2 * 4; i += 4 ) {
-            ind[ind.length] = i;
-            ind[ind.length] = i + 1;
-            ind[ind.length] = i + 2;
-            ind[ind.length] = i;
-            ind[ind.length] = i + 2;
-            ind[ind.length] = i + 3;
-        }
-        
-        return ind;
-    }
-    
-    this.createCubeVertexTextureCoords = function(subdiv) {
-        var r = [];
-        
-        for ( var i = 0; i < subdiv * subdiv * 6; i++ ) {
-            r = r.concat([0, 0, 1, 0, 1, 1, 0, 1]);
-        }
-        
-        return r;
+    this.createCube = function() {
+        return [-1,  1, -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, // Front face
+                 1,  1,  1, -1,  1,  1, -1, -1,  1,  1, -1,  1, // Back face
+                -1,  1,  1,  1,  1,  1,  1,  1, -1, -1,  1, -1, // Up face
+                -1, -1, -1,  1, -1, -1,  1, -1,  1, -1, -1,  1, // Down face
+                -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, -1,  1, // Left face
+                 1,  1, -1,  1,  1,  1,  1, -1,  1,  1, -1, -1  // Right face
+        ];
     }
     
     this.identityMatrix3 = function() {
@@ -458,33 +405,6 @@ function Renderer(canvas, image, imageType) {
         ];
     }
     
-    this.initTextures = function() {
-        if (!program.imageArray) {
-            program.imageArray = [];
-            program.texArray = [];
-            program.texLoadedArray = [];
-            program.tileNameArray = [];
-        }
-        if (!program.imageArray[program.subdivisions]) {
-            program.imageArray[program.subdivisions] = [];
-            program.texArray[program.subdivisions] = [];
-            program.texLoadedArray[program.subdivisions] = [];
-            program.tileNameArray[program.subdivisions] = [];
-        }
-        var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
-        for ( var s = 0; s < 6; s++ ) {
-            // rows
-            for ( var i = 0; i < program.subdivisions; i++ ) {
-                // columns
-                for ( var j = 0; j < program.subdivisions; j++ ) {
-                    var index = s*program.subdivisions*program.subdivisions + i*program.subdivisions + j;
-                    
-                    program.tileNameArray[program.subdivisions][index] = this.image.path + program.subdivisions + "/" + sides[s] + i + j + "." + this.image.extension;
-                }
-            }
-        }
-    }
-    
     this.processLoadedTexture = function(img, tex) {
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
@@ -496,16 +416,18 @@ function Renderer(canvas, image, imageType) {
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
     
-    this.processNextTile = function(index, pitch, yaw, hfov) {
-        program.texArray[program.subdivisions][index] = gl.createTexture();
-        program.imageArray[program.subdivisions][index] = new Image();
+    this.processNextTile = function(node, pitch, yaw, hfov) {
+        if (!node.texture) {
+        node.texture = gl.createTexture();
+        node.image = new Image();
         var self = this;
-        program.imageArray[program.subdivisions][index].onload = function() {
-            self.processLoadedTexture(program.imageArray[program.subdivisions][index], program.texArray[program.subdivisions][index]);
-            program.texLoadedArray[program.subdivisions][index] = true;
-            self.render(pitch, yaw, hfov);
+        node.image.onload = function() {
+            self.processLoadedTexture(node.image, node.texture);
+            node.textureLoaded = true;
+            self.multiresDraw();
         }
-        program.imageArray[program.subdivisions][index].src = program.tileNameArray[program.subdivisions][index];
+        node.image.src = node.path + '.' + this.image.extension;
+        }
     }
     
     this.checkZoom = function(hfov) {
@@ -516,18 +438,14 @@ function Renderer(canvas, image, imageType) {
         if (f < 0.00001)
             f = 0.00001;
         
-        // Find optimal subdivisions
-        var newSubdiv = 1;
-        while ( this.canvas.width > (newSubdiv * this.image.tileResolution) / f && newSubdiv < this.image.maxSubdivisions ) {
-            newSubdiv++;
+        // Find optimal level
+        var newLevel = 1;
+        while ( this.canvas.width > (Math.pow(2, newLevel - 1) * this.image.tileResolution) / f && newLevel < this.image.maxLevel ) {
+            newLevel++;
         }
         
-        // Apply if there is a change
-        if ( newSubdiv != program.subdivisions ) {
-            program.subdivisions = newSubdiv;
-            this.initTextures();
-            this.initBuffers();
-        }
+        // Apply change
+        program.level = newLevel;
     }
     
     // perspective matrix, rotation matrix
@@ -716,10 +634,12 @@ var fragEquirectangular = [
 var fragMulti = [
 'varying highp vec2 v_texCoord;',
 'uniform sampler2D u_sampler;',
+//'uniform highp vec4 u_color;',
 
 'void main(void) {',
     // Look up color from texture
     'gl_FragColor = texture2D(u_sampler, v_texCoord);',
+//    'gl_FragColor = u_color;',
 '}'
 ].join('');
 

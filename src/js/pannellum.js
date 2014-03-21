@@ -742,7 +742,7 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if(i < 40) {
+    if(i < 40 && config.type != 'multires') { // TODO: proper check for multires
         config.hfov = 40;
     } else if(i > 100) {
         config.hfov = 100;
