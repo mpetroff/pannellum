@@ -13,6 +13,6 @@
         "path": "../examples/multires/",
         "extension": "png",
         "tileResolution": 256,
-        "maxSubdivisions": 8
+        "maxLevel": 4
     }
 }
