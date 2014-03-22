@@ -3,7 +3,7 @@
 import os
 import tempfile
 import sys
-import urllib
+import urllib.parse
 
 JS = [
 'js/libpannellum.js',
@@ -27,11 +27,11 @@ def merge(files):
 	return "".join(buffer)
 
 def read(filename):
-	with open(os.path.join('..','src',filename), 'rb') as f:
+	with open(os.path.join('..','src',filename), 'r') as f:
 		return f.read()
 
 def output(text, filename):
-	with open(os.path.join('..', 'build', filename), 'wb') as f:
+	with open(os.path.join('..', 'build', filename), 'w') as f:
 		f.write(text)
 
 def JScompress(text):
@@ -51,7 +51,7 @@ def cssCompress(text):
 	with os.fdopen(in_tuple[0], 'w') as handle:
 		handle.write(text)
 	out_tuple = tempfile.mkstemp()
-	os.system("java -jar yuicompressor-2.4.8.jar %s --type css -o %s --charset utf-8 -v" % (in_tuple[1], out_tuple[1]))
+	os.system("java -jar yuicompressor-2.4.7.jar %s --type css -o %s --charset utf-8 -v" % (in_tuple[1], out_tuple[1]))
 	with os.fdopen(out_tuple[0], 'r') as handle:
 		compressed = handle.read()
 	os.unlink(in_tuple[1])
@@ -77,31 +77,32 @@ def addHeader(text):
 
 def build(files, css, html, filename):
 	folder = ''
+	os.makedirs('../build', exist_ok=True)
 	
 	cssfilename = filename + '.css'
 	htmlfilename = filename + '.htm'
 	filename = filename + '.js'
 	
-	print "=" * 40
-	print "Compiling", filename
-	print "=" * 40
+	print('=' * 40)
+	print('Compiling', filename)
+	print('=' * 40)
 	
 	js = merge(files)
 	js = JScompress(js)
 	
-	print "=" * 40
-	print "Compiling", cssfilename
-	print "=" * 40
+	print('=' * 40)
+	print('Compiling', cssfilename)
+	print('=' * 40)
 	
 	css = merge(css)
-	css = css.replace("'img/grab.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/grab.svg'),'') + "'")
-	css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/grabbing.svg'),'') + "'")
+	css = css.replace("'img/grab.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grab.svg'),'') + "'")
+	css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grabbing.svg'),'') + "'")
 	css = cssCompress(css)
-	css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.quote(read('css/img/sprites.svg'),'') + "'")
+	css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
 	
-	print "=" * 40
-	print "Compiling", htmlfilename
-	print "=" * 40
+	print('=' * 40)
+	print('Compiling', htmlfilename)
+	print('=' * 40)
 	
 	html = merge(html)
 	html = html.replace('<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />','<style type="text/css">' + css + '</style>')
