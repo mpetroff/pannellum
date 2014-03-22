@@ -208,6 +208,8 @@ function onDocumentMouseWheel(event) {
         // Firefox
         setHfov(config.hfov += event.detail * 1.5);
     }
+    
+    requestAnimationFrame(animate);
 }
 
 function onDocumentKeyPress(event) {
