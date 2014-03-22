@@ -147,6 +147,8 @@ function Renderer(canvas, image, imageType) {
             program.level = -1;
             
             program.currentNodes = [];
+            program.nodeCache = [];
+            program.nodeCacheTimestamp = 0;
         }
     }
 
@@ -188,7 +190,12 @@ function Renderer(canvas, image, imageType) {
             
             // Find current nodes
             var rotPersp = this.rotatePersp(perspMatrix, matrix);
-            program.oldNodes = program.currentNodes;
+            program.nodeCache.sort(this.multiresNodeSort);
+            if (program.nodeCache.length > 200
+                && program.nodeCache.length > program.currentNodes.length + 50) {
+                // Remove older nodes from cache
+                program.nodeCache.splice(200, program.nodeCache.length - 200);
+            }
             program.currentNodes = [];
             var vertices = this.createCube();
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
@@ -197,11 +204,15 @@ function Renderer(canvas, image, imageType) {
                 var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
                 this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
-            program.currentNodes.sort(this.MultiresNodeSort);
             
             // Draw tiles
             this.multiresDraw()
         }
+    }
+    
+    this.multiresNodeSort = function(a, b) {
+        // Higher timestamp first
+        return b.timestamp - a.timestamp;
     }
     
     this.multiresDraw = function() {
@@ -276,17 +287,20 @@ function Renderer(canvas, image, imageType) {
             //console.log('Tile ' + node.level + '/' + node.side + node.x + node.y);
             
             var inCurrent = false;
-            for (var i = 0; i < program.oldNodes.length; i++) {
-                if (program.oldNodes[i].path == node.path) {
+            for (var i = 0; i < program.nodeCache.length; i++) {
+                if (program.nodeCache[i].path == node.path) {
                     inCurrent = true;
-                    program.currentNodes.push(program.oldNodes[i]);
+                    program.nodeCache[i].timestamp = program.nodeCacheTimestamp++;
+                    program.currentNodes.push(program.nodeCache[i]);
                     break;
                 }
             }
             if (!inCurrent) {
-                node.color = [Math.random(), Math.random(), Math.random()];
+                //node.color = [Math.random(), Math.random(), Math.random()];
+                node.timestamp = program.nodeCacheTimestamp++;
                 this.processNextTile(node, pitch, yaw, hfov);
                 program.currentNodes.push(node);
+                program.nodeCache.push(node);
             }
             
             // TODO: Test error
