@@ -220,6 +220,17 @@ function Renderer(canvas, image, imageType) {
         }
     }
     
+    this.isLoading = function() {
+        if (this.imageType == 'multires') {
+            for ( var i = 0; i < program.currentNodes.length; i++ ) {
+                if (!program.currentNodes[i].textureLoaded) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     this.multiresNodeSort = function(a, b) {
         // Higher timestamp first
         return b.timestamp - a.timestamp;
@@ -415,7 +426,6 @@ function Renderer(canvas, image, imageType) {
         node.image.onload = function() {
             self.processLoadedTexture(node.image, node.texture);
             node.textureLoaded = true;
-            self.multiresDraw();
         }
         node.image.src = node.path + '.' + this.image.extension;
         }

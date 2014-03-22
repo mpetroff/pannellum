@@ -158,7 +158,7 @@ function onDocumentMouseDown(event) {
     
     document.getElementById('page').className = 'grabbing';
     
-    animate();
+    requestAnimationFrame(animate);
 }
 
 function onDocumentMouseMove(event) {
@@ -312,14 +312,23 @@ function changeKey(keynumber, value) {
     }
     
     if(keyChanged && value) {
-        prevTime = Date.now();
+        if (performance.now()) {
+            prevTime = performance.now();
+        } else {
+            prevTime = Date.now();
+        }
         requestAnimationFrame(animate);
     }
 }
 
 function keyRepeat() {
-    var newTime = Date.now();
-    var diff = (newTime - prevTime) / 16.67;
+    var newTime;
+    if (performance.now()) {
+        newTime = performance.now();
+    } else {
+        newTime = Date.now();
+    }
+    var diff = (newTime - prevTime) * config.hfov / 1700;
     
     // If minus key is down
     if(keysDown[0]) {
@@ -376,8 +385,7 @@ function onDocumentResize() {
 
 function animate() {
     render();
-    
-    if(isUserInteracting) {
+    if(isUserInteracting || (renderer && renderer.isLoading())) {
         requestAnimationFrame(animate);
     } else if(keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
       || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7]
