@@ -10,7 +10,7 @@
     "type": "multires",
     
     "multiRes": {
-        "path": "../examples/multires/",
+        "path": "../examples/multires/%l/%s%x%y",
         "extension": "png",
         "tileResolution": 256,
         "maxLevel": 4

@@ -261,19 +261,19 @@ function Renderer(canvas, image, imageType) {
         program.drawInProgress = false;
     }
 
-    function MultiresNode(vertices, face, level, x, y, path) {
+    function MultiresNode(vertices, side, level, x, y, path) {
         this.vertices = vertices;
-        this.face = face;
+        this.side = side;
         this.level = level;
         this.x = x;
         this.y = y;
-        this.path = path + level + '/' + face + x + y;
+        this.path = path.replace('%s',side).replace('%l',level).replace('%x',x).replace('%y',y);
     }
 
     this.testMultiresNode = function(rotPersp, node, pitch, yaw, hfov) {
         //console.log(node);
         if (this.checkSquareInView(rotPersp, node.vertices)) {
-            //console.log('Tile ' + node.level + '/' + node.face + node.x + node.y);
+            //console.log('Tile ' + node.level + '/' + node.side + node.x + node.y);
             
             var inCurrent = false;
             for (var i = 0; i < program.oldNodes.length; i++) {
@@ -299,28 +299,28 @@ function Renderer(canvas, image, imageType) {
                         (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
                         (v[0]+v[9])/2, (v[1]+v[10])/2, (v[2]+v[11])/2
                 ];
-                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2, node.y*2, this.image.path);
+                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, this.image.path);
                 children.push(ntmp);
                 vtmp = [(v[0]+v[3])/2,  (v[1]+v[4])/2,  (v[2]+v[5])/2,
                                  v[3],           v[4],           v[5],
                         (v[3]+v[6])/2,  (v[4]+v[7])/2,  (v[5]+v[8])/2,
                         (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2
                 ];
-                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2+1, node.y*2, this.image.path);
+                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.path);
                 children.push(ntmp);
                 vtmp = [(v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
                         (v[3]+v[6])/2,  (v[4]+v[7])/2,  (v[5]+v[8])/2,
                                  v[6],           v[7],           v[8],
                         (v[9]+v[6])/2, (v[10]+v[7])/2, (v[11]+v[8])/2
                 ];
-                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2+1, node.y*2+1, this.image.path);
+                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, this.image.path);
                 children.push(ntmp);
                 vtmp = [(v[0]+v[9])/2, (v[1]+v[10])/2, (v[2]+v[11])/2,
                         (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
                         (v[9]+v[6])/2, (v[10]+v[7])/2, (v[11]+v[8])/2,
                                  v[9],          v[10],          v[11],
                 ];
-                ntmp = new MultiresNode(vtmp, node.face, node.level + 1, node.x*2, node.y*2+1, this.image.path);
+                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, this.image.path);
                 children.push(ntmp);
                 for (var i = 0; i < 4; i++) {
                     this.testMultiresNode(rotPersp, children[i], pitch, yaw, hfov);
