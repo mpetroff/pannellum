@@ -44,10 +44,8 @@ function Renderer(canvas, image, imageType) {
         gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         var glBindType = gl.TEXTURE_2D;
 
-        // Create viewport for entire canvas and clear canvas
+        // Create viewport for entire canvas
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);   
-        gl.clearColor(0, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT);
 
         // Create vertex shader
         var vs = gl.createShader(gl.VERTEX_SHADER);
@@ -171,7 +169,6 @@ function Renderer(canvas, image, imageType) {
     }
 
     this.render = function(pitch, yaw, hfov) {
-        //console.log('render');
         if(this.imageType != 'multires') {
             // Calculate focal length from horizontal angle of view
             var focal = 1 / Math.tan(hfov / 2);
@@ -231,7 +228,6 @@ function Renderer(canvas, image, imageType) {
     this.multiresDraw = function() {
         if (!program.drawInProgress) {
             program.drawInProgress = true;
-            //console.log(program.currentNodes.length);
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (program.currentNodes[i].textureLoaded) {
                     //var color = program.currentNodes[i].color;
@@ -265,10 +261,8 @@ function Renderer(canvas, image, imageType) {
     }
 
     this.testMultiresNode = function(rotPersp, node, pitch, yaw, hfov) {
-        //console.log(node);
         if (this.checkSquareInView(rotPersp, node.vertices)) {
-            //console.log('Tile ' + node.level + '/' + node.side + node.x + node.y);
-            
+            // Add node to current nodes and load texture if needed
             var inCurrent = false;
             for (var i = 0; i < program.nodeCache.length; i++) {
                 if (program.nodeCache[i].path == node.path) {
@@ -287,6 +281,7 @@ function Renderer(canvas, image, imageType) {
             }
             
             // TODO: Test error
+            // Create child nodes
             if (node.level < program.level) {
                 var children = [];
                 var v = node.vertices;
