@@ -41,7 +41,7 @@ function Renderer(canvas, image, imageType) {
 
     this.init = function(haov, vaov, voffset) {
         // Enable WebGL on canvas
-        gl = this.canvas.getContext('experimental-webgl');
+        gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         var glBindType = gl.TEXTURE_2D;
 
         // Create viewport for entire canvas and clear canvas
@@ -144,6 +144,24 @@ function Renderer(canvas, image, imageType) {
             program.vertPosLocation = gl.getAttribLocation(program, "a_vertCoord");
             gl.enableVertexAttribArray(program.vertPosLocation);
             
+            // Create buffers
+            program.cubeVertBuf = gl.createBuffer();
+            program.cubeVertTexCoordBuf = gl.createBuffer();
+            program.cubeVertIndBuf = gl.createBuffer();
+            
+            // Bind texture coordinate buffer and pass coordinates to WebGL
+            gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
+            
+            // Bind square index buffer and pass indicies to WebGL
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
+            
+            // Find uniforms
+            program.perspUniform = gl.getUniformLocation(program, "u_perspMatrix");
+            program.cubeUniform = gl.getUniformLocation(program, "u_cubeMatrix");
+            //program.colorUniform = gl.getUniformLocation(program, "u_color");
+            
             program.level = -1;
             
             program.currentNodes = [];
@@ -167,9 +185,6 @@ function Renderer(canvas, image, imageType) {
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         
         } else {
-            // Clear canvas
-            //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            
             // Create perspective matrix
             var perspMatrix = this.makePersp(hfov, this.canvas.width / this.canvas.height, 0.1, 100.0);
             
@@ -183,10 +198,8 @@ function Renderer(canvas, image, imageType) {
             matrix = this.makeMatrix4(matrix);
             
             // Set matrix uniforms
-            var perspUniform = gl.getUniformLocation(program, "u_perspMatrix");
-            gl.uniformMatrix4fv(perspUniform, false, new Float32Array(this.transposeMatrix4(perspMatrix)));
-            var cubeUniform = gl.getUniformLocation(program, "u_cubeMatrix");
-            gl.uniformMatrix4fv(cubeUniform, false, new Float32Array(this.transposeMatrix4(matrix)));
+            gl.uniformMatrix4fv(program.perspUniform, false, new Float32Array(this.transposeMatrix4(perspMatrix)));
+            gl.uniformMatrix4fv(program.cubeUniform, false, new Float32Array(this.transposeMatrix4(matrix)));
             
             // Find current nodes
             var rotPersp = this.rotatePersp(perspMatrix, matrix);
@@ -220,52 +233,22 @@ function Renderer(canvas, image, imageType) {
             program.drawInProgress = true;
             //console.log(program.currentNodes.length);
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
-                //var color = program.currentNodes[i].color;
-                //gl.uniform4f(gl.getUniformLocation(program, "u_color"), color[0], color[1], color[2], 1.0);
-                
-                // Create and bind vertex buffer
-                program.cubeVertBuf = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
-                
-                // Create cube vertices
-                program.vertices = program.currentNodes[i].vertices;
-                
-                // Pass vertices to WebGL
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(program.vertices), gl.STATIC_DRAW);
-                
-                // Create and bind texture buffer
-                program.cubeVertTexCoordBuf = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
-                
-                // Generate texture coordinates and pass to WebGL
-                var texCoords = [0, 0, 1, 0, 1, 1, 0, 1];
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
-                
-                // Create and bind square index buffer
-                program.cubeVertIndBuf = gl.createBuffer();
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
-                
-                // Generate indicies and pass to WebGL
-                var cubeVertInd = [0,1,2,0,2,3];
-                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertInd), gl.STATIC_DRAW);
-                
-                // Bind square vertices
-                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
-                gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
-                
-                // Bind square indicies
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
-                
-                // Prep for texture
-                gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
-                gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
-                gl.activeTexture(gl.TEXTURE0);  // Make TEXTURE0 the active texture
-                gl.uniform1i(gl.getUniformLocation(program, "u_sampler"), 0);   // Tell shader to use TEXTURE0
-                
-                // Bind texture and draw tile
                 if (program.currentNodes[i].textureLoaded) {
-                gl.bindTexture(gl.TEXTURE_2D, program.currentNodes[i].texture); // Bind program.currentNodes[i].texture to TEXTURE0
-                gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+                    //var color = program.currentNodes[i].color;
+                    //gl.uniform4f(program.colorUniform, color[0], color[1], color[2], 1.0);
+                    
+                    // Bind vertex buffer and pass vertices to WebGL
+                    gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(program.currentNodes[i].vertices), gl.STATIC_DRAW);
+                    gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
+                    
+                    // Prep for texture
+                    gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
+                    gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+                    
+                    // Bind texture and draw tile
+                    gl.bindTexture(gl.TEXTURE_2D, program.currentNodes[i].texture); // Bind program.currentNodes[i].texture to TEXTURE0
+                    gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
                 }
             }
         }
@@ -298,7 +281,7 @@ function Renderer(canvas, image, imageType) {
             if (!inCurrent) {
                 //node.color = [Math.random(), Math.random(), Math.random()];
                 node.timestamp = program.nodeCacheTimestamp++;
-                this.processNextTile(node, pitch, yaw, hfov);
+                setTimeout(this.processNextTile(node, pitch, yaw, hfov), 0);
                 program.currentNodes.push(node);
                 program.nodeCache.push(node);
             }
@@ -645,9 +628,9 @@ var fragEquirectangular = [
 
 // Fragment shader
 var fragMulti = [
-'varying highp vec2 v_texCoord;',
+'varying mediump vec2 v_texCoord;',
 'uniform sampler2D u_sampler;',
-//'uniform highp vec4 u_color;',
+//'uniform mediump vec4 u_color;',
 
 'void main(void) {',
     // Look up color from texture
