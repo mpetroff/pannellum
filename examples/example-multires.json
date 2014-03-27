@@ -13,6 +13,7 @@
         "path": "../examples/multires/%l/%s%x%y",
         "extension": "png",
         "tileResolution": 256,
-        "maxLevel": 4
+        "maxLevel": 4,
+        "cubeResolution": 2048
     }
 }

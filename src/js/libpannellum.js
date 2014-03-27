@@ -294,39 +294,100 @@ function Renderer(canvas, image, imageType) {
             // TODO: Test error
             // Create child nodes
             if (node.level < program.level) {
+                var cubeSize = this.image.cubeResolution / Math.pow(2, this.image.maxLevel - node.level);
+                var numTiles = Math.ceil(cubeSize / this.image.tileResolution) - 1;
+                doubleTileSize = cubeSize % this.image.tileResolution * 2;
+                var lastTileSize = (cubeSize * 2) % this.image.tileResolution;
+                if (lastTileSize == 0) {
+                    lastTileSize = this.image.tileResolution;
+                }
+                if (doubleTileSize == 0) {
+                    doubleTileSize = this.image.tileResolution * 2;
+                }
+                var f = 0.5;
+                if (node.x == numTiles || node.y == numTiles) {
+                    f = 1.0 - this.image.tileResolution / (this.image.tileResolution + lastTileSize);
+                }
+                var i = 1.0 - f;
                 var children = [];
                 var v = node.vertices;
                 var vtmp, ntmp;
-                vtmp = [         v[0],           v[1],           v[2],
-                        (v[0]+v[3])/2,  (v[1]+v[4])/2,  (v[2]+v[5])/2,
-                        (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
-                        (v[0]+v[9])/2, (v[1]+v[10])/2, (v[2]+v[11])/2
+                var f1 = f, f2 = f, f3 = f, i1 = i, i2 = i, i3 = i;
+                // Handle non-symmetric tiles
+                if (((node.x == numTiles && node.y != numTiles) || (node.x != numTiles && node.y == numTiles)) && lastTileSize < this.image.tileResolution) {
+                    if (node.x == numTiles) {
+                        f2 = 0.5;
+                        i2 = 0.5;
+                        if (node.side == 'd' || node.side == 'u') {
+                            f3 = 0.5;
+                            i3 = 0.5;
+                        }
+                    } else {
+                        f1 = 0.5;
+                        i1 = 0.5;
+                        if (node.side == 'l' || node.side == 'r') {
+                            f3 = 0.5;
+                            i3 = 0.5;
+                        }
+                    }
+                }
+                // Handle small tiles that have fewer than four children
+                if (doubleTileSize < this.image.tileResolution) {
+                    if (node.x == numTiles) {
+                        f1 = 0;
+                        i1 = 1;
+                        if (node.side == 'l' || node.side == 'r') {
+                            f3 = 0;
+                            i3 = 1;
+                        }
+                    }
+                    if (node.y == numTiles) {
+                        f2 = 0;
+                        i2 = 1;
+                        if (node.side == 'd' || node.side == 'u') {
+                            f3 = 0;
+                            i3 = 1;
+                        }
+                    }
+                }
+                
+                vtmp = [           v[0],             v[1],             v[2],
+                        v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
+                        v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
+                          v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3
                 ];
                 ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, this.image.path);
                 children.push(ntmp);
-                vtmp = [(v[0]+v[3])/2,  (v[1]+v[4])/2,  (v[2]+v[5])/2,
-                                 v[3],           v[4],           v[5],
-                        (v[3]+v[6])/2,  (v[4]+v[7])/2,  (v[5]+v[8])/2,
-                        (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2
-                ];
-                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.path);
-                children.push(ntmp);
-                vtmp = [(v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
-                        (v[3]+v[6])/2,  (v[4]+v[7])/2,  (v[5]+v[8])/2,
-                                 v[6],           v[7],           v[8],
-                        (v[9]+v[6])/2, (v[10]+v[7])/2, (v[11]+v[8])/2
-                ];
-                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, this.image.path);
-                children.push(ntmp);
-                vtmp = [(v[0]+v[9])/2, (v[1]+v[10])/2, (v[2]+v[11])/2,
-                        (v[0]+v[6])/2,  (v[1]+v[7])/2,  (v[2]+v[8])/2,
-                        (v[9]+v[6])/2, (v[10]+v[7])/2, (v[11]+v[8])/2,
-                                 v[9],          v[10],          v[11],
-                ];
-                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, this.image.path);
-                children.push(ntmp);
-                for (var i = 0; i < 4; i++) {
-                    this.testMultiresNode(rotPersp, children[i], pitch, yaw, hfov);
+                if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution)) {
+                    vtmp = [v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
+                                       v[3],             v[4],             v[5],
+                              v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
+                            v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3
+                    ];
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.path);
+                    children.push(ntmp);
+                }
+                if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution)
+                    && !(node.y == numTiles && doubleTileSize < this.image.tileResolution)) {
+                    vtmp = [v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
+                              v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
+                                       v[6],             v[7],             v[8],
+                            v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3
+                    ];
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, this.image.path);
+                    children.push(ntmp);
+                }
+                if (!(node.y == numTiles && doubleTileSize < this.image.tileResolution)) {
+                    vtmp = [  v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3,
+                            v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
+                            v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3,
+                                       v[9],            v[10],            v[11]
+                    ];
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, this.image.path);
+                    children.push(ntmp);
+                }
+                for (var j = 0; j < children.length; j++) {
+                    this.testMultiresNode(rotPersp, children[j], pitch, yaw, hfov);
                 }
             }
         }
