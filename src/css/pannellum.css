@@ -6,8 +6,10 @@ body {
     margin: 0px;
     padding: 0px;
     overflow: hidden;
+    position: fixed;
     cursor:default;
     width: 100%;
+    height: 100%;
     font-family:serif;
     background-color: #666;
     background-image: -webkit-linear-gradient(-45deg, #999 24%, #666 26%, #666 49%, #999 51%, #999 74%, #666 76%, #666);
