@@ -51,6 +51,12 @@ function init() {
             panoImage[i].crossOrigin = "anonymous";
         }
     } else if(config.type == 'multires') {
+        var c = config.multiRes;
+        if (config.path) {
+            c.path = config.path + config.multiRes.path;
+        } else if (tourConfig.path) {
+            c.path = tourConfig.path + config.multiRes.path;
+        }
         panoImage = config.multiRes;
     } else {
         panoImage = new Image();
@@ -109,13 +115,25 @@ function init() {
         
         for(var i = 0; i < panoImage.length; i++) {
             panoImage[i].onload = loadCounter;
-            panoImage[i].src = config.cubeMap[i];
+            var p = config.cubeMap[i];
+            if (config.path) {
+                p = config.path + p;
+            } else if (tourConfig.path) {
+                p = tourConfig.path + p;
+            }
+            panoImage[i].src = p;
         }
     } else if(config.type == "multires") {
         onImageLoad();
     } else {
         panoImage.onload = onImageLoad;
-        panoImage.src = config.panorama;
+        var p = config.panorama;
+        if (config.path) {
+            p = config.path + p;
+        } else if (tourConfig.path) {
+            p = tourConfig.path + p;
+        }
+        panoImage.src = p;
     }
     
     document.getElementById('page').className = 'grab';
@@ -537,6 +555,9 @@ function parseURLParameters() {
         request.send();
         var c = JSON.parse(request.responseText);
         
+        // Set JSON file location
+        c.path = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
+        
         // Merge options
         for(var k in c) {
             if(!configFromURL[k]) {
@@ -553,6 +574,9 @@ function parseURLParameters() {
         request.open('GET', configFromURL.tour, false);
         request.send();
         tourConfig = JSON.parse(request.responseText);
+        
+        // Set JSON file location
+        tourConfig.path = configFromURL.tour.substring(0,configFromURL.tour.lastIndexOf('/')+1);
         
         // Activate first scene if specified
         if(tourConfig.default.firstScene) {
@@ -625,7 +649,13 @@ function processOptions() {
                 break;
             
             case 'preview':
-                document.body.style.backgroundImage = "url('" + config[key] + "')";
+                var p = config[key];
+                if (config.path) {
+                    p = config.path + p;
+                } else if (tourConfig.path) {
+                    p = tourConfig.path + p;
+                }
+                document.body.style.backgroundImage = "url('" + p + "')";
                 document.body.style.backgroundSize = "auto";
                 break;
             

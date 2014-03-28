@@ -9,15 +9,15 @@
     "scenes": {
         "pondCube": {
             "title": "Jordan Pond (Cube)",
-            "preview": "../examples/examplepano-preview.jpg",
+            "preview": "./examplepano-preview.jpg",
             "type": "cubemap",
             "cubeMap": [
-                "../examples/examplepanocube0.jpg",
-                "../examples/examplepanocube1.jpg",
-                "../examples/examplepanocube2.jpg",
-                "../examples/examplepanocube3.jpg",
-                "../examples/examplepanocube4.jpg",
-                "../examples/examplepanocube5.jpg"
+                "./examplepanocube0.jpg",
+                "./examplepanocube1.jpg",
+                "./examplepanocube2.jpg",
+                "./examplepanocube3.jpg",
+                "./examplepanocube4.jpg",
+                "./examplepanocube5.jpg"
             ],
             "hotSpots": [
                 {
@@ -45,8 +45,8 @@
 
         "pond": {
             "title": "Jordan Pond",
-            "preview": "../examples/examplepano-preview.jpg",
-            "panorama": "../examples/examplepano.jpg",
+            "preview": "./examplepano-preview.jpg",
+            "panorama": "./examplepano.jpg",
             "hotSpots": [
                 {
                     "pitch": 0,
