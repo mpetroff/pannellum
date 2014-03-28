@@ -752,8 +752,11 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if(i < 40 && config.type != 'multires') { // TODO: proper check for multires
+    if(i < 40 && config.type != 'multires') {
         config.hfov = 40;
+    } else if(config.type == 'multires' && i < canvas.width
+        / (config.multiRes.cubeResolution / 90 * 0.9)) {
+        config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
     } else if(i > 100) {
         config.hfov = 100;
     } else {

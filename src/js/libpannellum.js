@@ -459,7 +459,8 @@ function Renderer(canvas, image, imageType) {
         ]
     }
     
-    this.makePersp = function(fovy, aspect, znear, zfar) {
+    this.makePersp = function(hfov, aspect, znear, zfar) {
+        var fovy = 2 * Math.atan(Math.tan(hfov/2) * this.canvas.height / this.canvas.width);
         var f = 1 / Math.tan(fovy/2);
         return [
             f/aspect,   0,  0,  0,
@@ -502,7 +503,9 @@ function Renderer(canvas, image, imageType) {
         
         // Find optimal level
         var newLevel = 1;
-        while ( this.canvas.width > (Math.pow(2, newLevel - 1) * this.image.tileResolution) / f && newLevel < this.image.maxLevel ) {
+        while ( this.canvas.width > this.image.cubeResolution
+            / Math.pow(2, this.image.maxLevel - newLevel)
+            * hfov / (Math.PI / 2) * 0.9 && newLevel < this.image.maxLevel ) {
             newLevel++;
         }
         
