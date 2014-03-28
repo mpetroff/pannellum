@@ -22,16 +22,16 @@ HTML = [
 def merge(files):
     buffer = []
     for filename in files:
-        with open(os.path.join('..', 'src', filename), 'r') as f:
+        with open(os.path.join('../..', 'src', filename), 'r') as f:
             buffer.append(f.read())
     return "".join(buffer)
 
 def read(filename):
-    with open(os.path.join('..','src',filename), 'r') as f:
+    with open(os.path.join('../..','src',filename), 'r') as f:
         return f.read()
 
 def output(text, filename):
-    with open(os.path.join('..', 'build', filename), 'w') as f:
+    with open(os.path.join('../..', 'build', filename), 'w') as f:
         f.write(text)
 
 def JScompress(text):
@@ -77,7 +77,7 @@ def addHeader(text):
 
 def build(files, css, html, filename):
     folder = ''
-    os.makedirs('../build', exist_ok=True)
+    os.makedirs('../../build', exist_ok=True)
     
     cssfilename = filename + '.css'
     htmlfilename = filename + '.htm'
