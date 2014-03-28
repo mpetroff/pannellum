@@ -181,9 +181,10 @@ function onDocumentMouseDown(event) {
 
 function onDocumentMouseMove(event) {
     if (isUserInteracting) {
-        //TODO: This should not only be FOV scaled but scaled to canvas size
-        config.yaw = (onPointerDownPointerX - event.clientX) * 0.0029 * config.hfov + onPointerDownYaw;
-        config.pitch = (event.clientY - onPointerDownPointerY) * 0.0029 * config.hfov + onPointerDownPitch;
+        //TODO: This still isn't quite right
+        config.yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
+        vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
+        config.pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
     }
 }
 
