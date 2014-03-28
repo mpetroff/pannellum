@@ -7,7 +7,7 @@ Pannellum is a lightweight, free, and open source panorama viewer for the web. B
 ## How to use
 1. Upload `build/pannellum.htm` and a full equirectangular panorama to a web server.
     * Due to browser security restrictions, a web server must be used locally as well. With Python 2, one can use `python -m SimpleHTTPServer`, and with Python 3, one can use `python -m http.server`, but any other web server will work as well.
-2. Use the included configuration tool (`configuration.htm`).
+2. Use the included configuration tool (`utils/config/configuration.htm`).
     * `Pannellum Location` is the address of `pannellum.htm` and can be either a full or relative path (relative to the page containing the `<iframe>`).
     * `Panorama URL` is the address of the panorama image file and can be either a full or relative path (relative to `pannellum.htm`).
     * `Basic Information` is optional. If provided, it is displayed in the bottom left corner.
@@ -41,7 +41,7 @@ Since Pannellum is built with emerging web standards, it requires a modern brows
 Internet Explorer 10 and previous
 
 ## Building
-The `utils` folder contains the required build tools, with the exception of Python 2.x and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
+The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
 
 ## License
 Pannellum is distributed under the MIT License. For more information, read the file `COPYING` or peruse the license [online](http://www.opensource.org/licenses/MIT).
