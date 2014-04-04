@@ -214,6 +214,13 @@ function Renderer(canvas, image, imageType) {
                 var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
                 this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
+            // Only process one tile per frame to improve responsiveness
+            for ( var i = 0; i < program.currentNodes.length; i++ ) {
+                if (!program.currentNodes[i].texture) {
+                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, hfov), 0);
+                    break;
+                }
+            }
             
             // Draw tiles
             this.multiresDraw()
@@ -286,7 +293,6 @@ function Renderer(canvas, image, imageType) {
             if (!inCurrent) {
                 //node.color = [Math.random(), Math.random(), Math.random()];
                 node.timestamp = program.nodeCacheTimestamp++;
-                setTimeout(this.processNextTile(node, pitch, yaw, hfov), 0);
                 program.currentNodes.push(node);
                 program.nodeCache.push(node);
             }
@@ -590,7 +596,7 @@ var vMulti = [
 'uniform mat4 u_cubeMatrix;',
 'uniform mat4 u_perspMatrix;',
 
-'varying highp vec2 v_texCoord;',
+'varying mediump vec2 v_texCoord;',
 
 'void main(void) {',
     // Set position

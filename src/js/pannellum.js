@@ -404,12 +404,14 @@ function onDocumentResize() {
 
 function animate() {
     render();
-    if(isUserInteracting || (renderer && renderer.isLoading())) {
+    if(isUserInteracting) {
         requestAnimationFrame(animate);
     } else if(keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
       || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7]
       || keysDown[8] || keysDown[9] || config.autoRotate) {
         keyRepeat();
+        requestAnimationFrame(animate);
+    } else if(renderer && renderer.isLoading()) {
         requestAnimationFrame(animate);
     }
 }
