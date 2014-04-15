@@ -239,6 +239,13 @@ function Renderer(canvas, image, imageType) {
     }
     
     this.multiresNodeSort = function(a, b) {
+        // Base tiles are always first
+        if (a.level == 1 && b.level != 1) {
+            return -1;
+        }
+        if (b. level == 1 && a.level != 1) {
+            return 1;
+        }
         // Higher timestamp first
         return b.timestamp - a.timestamp;
     }
