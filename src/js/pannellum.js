@@ -510,7 +510,7 @@ function renderHotSpots() {
             180) + Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw + config.yaw) *
             Math.PI / 180) * Math.cos(config.pitch * Math.PI / 180);
         if((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
-          (hs.yaw > 90 || hs.yaw <= -90 && z <= 0)) {
+          ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
             hs.div.style.visibility = 'hidden';
         } else {
             hs.div.style.visibility = 'visible';
