@@ -428,6 +428,12 @@ function render() {
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180);
         
         renderHotSpots();
+        
+        // Update compass
+        if (config.northOffset) {
+            document.getElementById('compass').style.transform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
+            document.getElementById('compass').style.webkitTransform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
+        }
     } catch(event) {
         // Panorama not loaded
     }
@@ -440,6 +446,11 @@ function renderInit() {
         renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.voffset * Math.PI / 180);
         
         animate();
+        
+        // Show compass if applicable
+        if (config.northOffset) {
+            document.getElementById('compass').style.display = 'inline';
+        }
         
         // Hide loading display
         document.getElementById('load_box').style.display = 'none';
