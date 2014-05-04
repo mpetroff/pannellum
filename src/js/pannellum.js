@@ -518,10 +518,10 @@ function renderHotSpots() {
                 (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch * Math.PI /
                 180) - Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw +
                 config.yaw) * Math.PI / 180) * Math.sin(config.pitch * Math.PI / 180)) / z /
-                2 + canvas.height / 2 - 13.5 + 'px';
+                2 + canvas.height / 2 - 13 + 'px';
             hs.div.style.left = -canvas.height / Math.tan(config.hfov * Math.PI / 360) *
                 Math.sin((hs.yaw + config.yaw) * Math.PI / 180) * Math.cos(hs.pitch *
-                Math.PI / 180) / z / 2 + canvas.width / 2 - 13.5 + 'px';
+                Math.PI / 180) / z / 2 + canvas.width / 2 - 13 + 'px';
         }
     });
 }
@@ -537,7 +537,7 @@ function parseURLParameters() {
         json += '"' + option + '":';
         switch(option) {
             case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
-            case 'voffset': case 'license':
+            case 'voffset':
                 json += value;
                 break;
             default:
@@ -624,20 +624,14 @@ function mergeConfig(sceneId) {
 function processOptions() {
     for(var key in config) {
         switch(key) {
-            case 'logo':
-                if(config[key] == 'yes') {
-                    document.getElementById('pannellum_logo').style.display = 'inline';
-                } else {
-                    document.getElementById('pannellum_logo').style.display = 'none';
-                }
-                break;
-            
             case 'title':
                 document.getElementById('title_box').innerHTML = config[key];
+                document.getElementById('panorama_info').style.display = 'inline';
                 break;
             
             case 'author':
                 document.getElementById('author_box').innerHTML = 'by ' + config[key];
+                document.getElementById('panorama_info').style.display = 'inline';
                 break;
             
             case 'popout':
@@ -691,22 +685,6 @@ function processOptions() {
             case 'autorotate':
                 // Rotation speed in degrees/second (+ccw, -cw)
                 config.autoRotate = config[key];
-                break;
-            
-            case 'license':
-                var licenseType;
-                switch(config[key]) {
-                    case 0: licenseType = 'by'; break;
-                    case 1: licenseType = 'by-sa'; break;
-                    case 2: licenseType = 'by-nd'; break;
-                    case 3: licenseType = 'by-nc'; break;
-                    case 4: licenseType = 'by-nc-sa'; break;
-                    case 5: licenseType = 'by-nc-nd'; break;
-                }
-                document.getElementById('author_box').innerHTML += '<a rel="license" target="_blank" href="//creativecommons.org/licenses/' + licenseType + '/3.0/"><div id="license"></div></a>';
-                var license = document.getElementById('license').style;
-                license.backgroundImage = "url('//i.creativecommons.org/l/" + licenseType + "/3.0/80x15.png')";
-                license.width = '80px';
         }
     }
     

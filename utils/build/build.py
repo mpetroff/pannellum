@@ -99,6 +99,7 @@ def build(files, css, html, filename):
     css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grabbing.svg'),'') + "'")
     css = cssCompress(css)
     css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
+    css = css.replace("'img/background.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
     
     print('=' * 40)
     print('Compiling', htmlfilename)
