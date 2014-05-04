@@ -214,6 +214,7 @@ function Renderer(canvas, image, imageType) {
                 var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
                 this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
+            program.currentNodes.sort(this.multiresNodeRenderSort);
             // Only process one tile per frame to improve responsiveness
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (!program.currentNodes[i].texture) {
@@ -246,8 +247,19 @@ function Renderer(canvas, image, imageType) {
         if (b. level == 1 && a.level != 1) {
             return 1;
         }
+        
         // Higher timestamp first
         return b.timestamp - a.timestamp;
+    }
+    
+    this.multiresNodeRenderSort = function(a, b) {
+        // Lower zoom levels first
+        if (a.level != b.level) {
+            return a.level - b.level;
+        }
+        
+        // Lower distance from center first
+        return a.diff - b.diff;
     }
     
     this.multiresDraw = function() {
@@ -287,12 +299,26 @@ function Renderer(canvas, image, imageType) {
 
     this.testMultiresNode = function(rotPersp, node, pitch, yaw, hfov) {
         if (this.checkSquareInView(rotPersp, node.vertices)) {
+            // Calculate central angle between center of view and center of tile
+            var v = node.vertices;
+            var x = (v[0] + v[3] + v[6] + v[ 9]) / 4;
+            var y = (v[1] + v[4] + v[7] + v[10]) / 4;
+            var z = (v[2] + v[5] + v[8] + v[11]) / 4;
+            var r = Math.sqrt(x*x + y*y + z*z);
+            var theta = Math.asin(z / r);
+            var phi = Math.atan2(y, x);
+            var ydiff = phi - yaw;
+            ydiff += (ydiff > Math.PI) ? -2 * Math.PI : (ydiff < -Math.PI) ? 2 * Math.PI : 0;
+            ydiff = Math.abs(ydiff);
+            node.diff = Math.acos(Math.sin(pitch) * Math.sin(theta) + Math.cos(pitch) * Math.cos(theta) * Math.cos(ydiff));
+            
             // Add node to current nodes and load texture if needed
             var inCurrent = false;
             for (var i = 0; i < program.nodeCache.length; i++) {
                 if (program.nodeCache[i].path == node.path) {
                     inCurrent = true;
                     program.nodeCache[i].timestamp = program.nodeCacheTimestamp++;
+                    program.nodeCache[i].diff = node.diff;
                     program.currentNodes.push(program.nodeCache[i]);
                     break;
                 }
