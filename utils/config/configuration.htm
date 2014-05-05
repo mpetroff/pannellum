@@ -7,20 +7,15 @@
         <script>
             function processForm (form)
             {
-                var id = 'pannellum_' + randomString();
                 var embed_code = document.getElementById('embed_code');
                 embed_code.innerHTML = '<iframe title="pannellum panorama viewer"' +
                     ' width="' + escape(form.embed_width.value) +
                     '" height="' + escape(form.embed_height.value) +
                     '" webkitAllowFullScreen mozallowfullscreen allowFullScreen' +
                     ' style="border-style:none;"' +
-                    ' id="' + escape(id) +
                     '" src="' + escape(form.pannellum_url.value) +
                     '?' +
                     'panorama=' + escape(form.pano_url.value);
-                    if(form.use_logo.checked) {
-                        embed_code.innerHTML += '&amp;amp;logo=yes';
-                    }
                     if(form.pano_title.value != '') {
                         embed_code.innerHTML += '&amp;amp;title=' + escape(form.pano_title.value);
                     }
@@ -32,9 +27,6 @@
                     }
                     if(form.autorotate.value != 'none') {
                         embed_code.innerHTML += '&amp;amp;autorotate=' + escape(form.autorotate.value);
-                    }
-                    if(form.license.value > -1) {
-                        embed_code.innerHTML += '&amp;amp;license=' + escape(form.license.value);
                     }
                     if(form.fallback_url.value != '') {
                         embed_code.innerHTML += '&amp;amp;fallback=' + escape(form.fallback_url.value);
@@ -92,23 +84,12 @@
             <input name="embed_width" type="number" min="200" placeholder="Width" required> <input name="embed_height" type="number" min="150" placeholder="Height" required><p>
             Initial Parameters (degrees) (optional):<br>
             <input name="hfov" type="number" min="40" max="100" placeholder="Horizontal Field of View"> <input name="pitch" type="number" min="-85" max="85" placeholder="Pitch"> <input name="yaw" type="number" min="-180" max="180" placeholder="Yaw"><p>
-            Include Pannellum Logo: <input name="use_logo" type="checkbox"><p>
             Auto Load: <input name="autoload" type="checkbox"><p>
             Auto Rotate:
             <select name="autorotate">
                 <option value="none">None</option>
                 <option value="cw">CW</option>
                 <option value="ccw">CCW</option>
-            </select><p>
-            Creative Commons License: 
-            <select name="license">
-                <option value="-1">None</option>
-                <option value="0">CC BY 3.0</option>
-                <option value="1">CC BY-SA 3.0</option>
-                <option value="2">CC BY-ND 3.0</option>
-                <option value="3">CC BY-NC 3.0</option>
-                <option value="4">CC BY-NC-SA 3.0</option>
-                <option value="5">CC BY-NC-ND 3.0</option>
             </select><p>
             URL to fall back to if WebGL is not supported:<br>
             <input name="fallback_url" placeholder="Fallback URL"><p>

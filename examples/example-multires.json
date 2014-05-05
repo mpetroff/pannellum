@@ -1,11 +1,5 @@
 {
-    "logo": "yes",
-    
-    "title": "Jordan Pond",
-    
-    "author": "Matthew Petroff",
-    
-    "license": 1,
+    "title": "Multires Test",
     
     "type": "multires",
     

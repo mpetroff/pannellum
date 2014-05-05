@@ -1,7 +1,5 @@
 ﻿{
     "default": {
-        "license": 1,
-        "logo": "yes",
         "author": "Matthew Petroff",
         "firstScene": "pond"
     },

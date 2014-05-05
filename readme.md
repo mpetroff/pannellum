@@ -12,9 +12,7 @@ Pannellum is a lightweight, free, and open source panorama viewer for the web. B
     * `Panorama URL` is the address of the panorama image file and can be either a full or relative path (relative to `pannellum.htm`).
     * `Basic Information` is optional. If provided, it is displayed in the bottom left corner.
     * `Embed Size` is the dimensions of the `<iframe>`.
-    * `Include Pannellum Logo` includes the Pannellum logo in the upper right corner with a link to the project's website.
     * `Auto Load` loads the panorama when the page is loaded. If left unchecked, the user must click to load the panorama.
-    * Selecting a `Creative Commons License` inserts a banner for the appropriate license next to the author's name.
     * `Generate` creates the embed code that can then be copied wherever desired.
 3. Insert the generated `<iframe>` code into a page.
 
