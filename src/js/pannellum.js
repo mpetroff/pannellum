@@ -430,7 +430,7 @@ function render() {
         renderHotSpots();
         
         // Update compass
-        if (config.northOffset) {
+        if (config.compass) {
             document.getElementById('compass').style.transform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
             document.getElementById('compass').style.webkitTransform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
         }
@@ -448,8 +448,10 @@ function renderInit() {
         animate();
         
         // Show compass if applicable
-        if (config.northOffset) {
+        if (config.compass) {
             document.getElementById('compass').style.display = 'inline';
+        } else {
+            document.getElementById('compass').style.display = 'none';
         }
         
         // Hide loading display
