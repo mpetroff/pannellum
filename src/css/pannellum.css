@@ -262,6 +262,10 @@ body {
     width: 26px;
     visibility: hidden;
     cursor: default;
+    border-radius: 13px;
+}
+.hotspot:hover {
+    background-color: rgba(255,255,255,0.2);
 }
 .hotspot.info {
     background-position: 0 -104px;
