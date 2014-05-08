@@ -296,7 +296,7 @@ div.tooltip:hover:after {
     border-style: solid;
     border-color: rgba(0,0,0,0.7) transparent transparent transparent;
     top: -12px;
-    left: 0;
+    left: 3px;
 }
 
 #compass {
