@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Requires Python 3.2+
+
 # generate.py - A multires tile set generator for Pannellum
 # Copyright (c) 2014 Matthew Petroff
 # 
@@ -88,10 +90,10 @@ for f in range(0, 6):
             face = face.resize([size, size], Image.ANTIALIAS)
         for i in range(0, tiles):
             for j in range(0, tiles):
-                left = j * 512
-                upper = i * 512
-                right = min(j * 512 + 512, size)
-                lower = min(i * 512 + 512, size)
+                left = j * args.tileSize
+                upper = i * args.tileSize
+                right = min(j * args.tileSize + args.tileSize, size)
+                lower = min(i * args.tileSize + args.tileSize, size)
                 tile = face.crop([left, upper, right, lower])
                 tile.load()
                 tile.save(os.path.join(args.output, str(level), faceLetters[f] + str(i) + '_' + str(j) + extension))
