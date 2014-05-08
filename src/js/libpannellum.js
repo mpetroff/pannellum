@@ -182,11 +182,13 @@ function Renderer(canvas, image, imageType) {
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         
         } else {
+            var fov = 2 * Math.atan(Math.tan(hfov / 2) * this.canvas.width / this.canvas.height);
+            
             // Create perspective matrix
-            var perspMatrix = this.makePersp(hfov, this.canvas.width / this.canvas.height, 0.1, 100.0);
+            var perspMatrix = this.makePersp(fov, this.canvas.width / this.canvas.height, 0.1, 100.0);
             
             // Find correct zoom level
-            this.checkZoom(hfov);
+            this.checkZoom(fov);
             
             // Create rotation matrix
             var matrix = this.identityMatrix3();
@@ -212,13 +214,13 @@ function Renderer(canvas, image, imageType) {
             for ( var s = 0; s < 6; s++ ) {
                 var vtmp = vertices.slice(s * 12, s * 12 + 12)
                 var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
-                this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
+                this.testMultiresNode(rotPersp, ntmp, pitch, yaw, fov);
             }
             program.currentNodes.sort(this.multiresNodeRenderSort);
             // Only process one tile per frame to improve responsiveness
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (!program.currentNodes[i].texture) {
-                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, hfov), 0);
+                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, fov), 0);
                     break;
                 }
             }
