@@ -7,33 +7,33 @@ body {
     padding: 0px;
     overflow: hidden;
     position: fixed;
-    cursor:default;
+    cursor: default;
     width: 100%;
     height: 100%;
-    font-family:Helvetica, "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
+    font-family: Helvetica, "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
     background: #f4f4f4 url('img/background.svg') repeat;
-    -webkit-user-select:none;
-    -khtml-user-select:none;
-    -moz-user-select:none;
-    -o-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .grab {
-    cursor:url('img/grab.svg') 12 8,default;
+    cursor: url('img/grab.svg') 12 8,default;
 }
 
 .grabbing {
-    cursor:url('img/grabbing.svg') 12 8,default;
+    cursor: url('img/grabbing.svg') 12 8,default;
 }
 
 .sprite {
-    background-image:url('img/sprites.svg');
+    background-image: url('img/sprites.svg');
 }
 
 #container {
-    cursor:inherit;
+    cursor: inherit;
 }
 
 #page {
@@ -42,107 +42,107 @@ body {
 }
 
 .controls {
-    position:absolute;
-    background-color:#fff;
-    border:1px solid #999;
-    border-color:rgba(0,0,0,0.4);
-    border-radius:3px;
-    cursor:pointer;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #999;
+    border-color: rgba(0,0,0,0.4);
+    border-radius: 3px;
+    cursor: pointer;
 }
 
 .control:hover {
-    background-color:#f8f8f8;
+    background-color: #f8f8f8;
 }
 
 #zoomcontrols {
-    top:4px;
-    left:4px;
-    width:26px;
-    height:52px;
+    top: 4px;
+    left: 4px;
+    width: 26px;
+    height: 52px;
 }
 
 #zoom_in {
-    width:100%;
-    height:50%;
-    position:absolute;
-    top:0px;
-    border-radius:3px 3px 0 0;
+    width: 100%;
+    height: 50%;
+    position: absolute;
+    top: 0;
+    border-radius: 3px 3px 0 0;
 }
 
 #zoom_out {
-    width:100%;
-    height:50%;
-    position:absolute;
-    bottom:0px;
-    background-position:0px -26px;
-    border-top:1px solid #ddd;
-    border-top-color:rgba(0,0,0,0.10);
-    border-radius:0 0 3px 3px;
+    width: 100%;
+    height: 50%;
+    position: absolute;
+    bottom: 0;
+    background-position: 0 -26px;
+    border-top: 1px solid #ddd;
+    border-top-color: rgba(0,0,0,0.10);
+    border-radius: 0 0 3px 3px;
 }
 
 #fullwindowtoggle_button {
-    top:66px;
-    left:4px;
-    width:26px;
-    height:26px;
+    top: 66px;
+    left: 4px;
+    width: 26px;
+    height: 26px;
 }
 
 .fullwindowtoggle_button_inactive {
-    background-position:0px -52px;
+    background-position: 0 -52px;
 }
 
 .fullwindowtoggle_button_active {
-    background-position:0px -78px;
+    background-position: 0 -78px;
 }
 
 #panorama_info {
-    position:absolute;
-    bottom:4px;
-    background-color:rgba(0,0,0,0.7);
-    border-radius:0 3px 3px 0;
-    padding-right:10px;
-    color:#fff;
-    text-align:left;
-    display:none;
+    position: absolute;
+    bottom: 4px;
+    background-color: rgba(0,0,0,0.7);
+    border-radius: 0 3px 3px 0;
+    padding-right: 10px;
+    color: #fff;
+    text-align: left;
+    display: none;
 }
 
 #title_box {
-    position:relative;
-    font-size:20px;
-    display:table;
-    padding-left:5px;
-    margin-bottom:3px;
+    position: relative;
+    font-size: 20px;
+    display: table;
+    padding-left: 5px;
+    margin-bottom: 3px;
 }
 
 #author_box {
-    position:relative;
-    font-size:12px;
-    display:table;
-    padding-left:5px;
+    position: relative;
+    font-size: 12px;
+    display: table;
+    padding-left: 5px;
 }
 
 #load_box {
-    position:absolute;
-    top:50%;
-    left:50%;
-    width:200px;
-    height:150px;
-    margin:-75px 0px 0px -100px;
-    background-color:rgba(0,0,0,0.7);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 150px;
+    margin: -75px 0 0 -100px;
+    background-color: rgba(0,0,0,0.7);
     border-radius: 3px;
-    text-align:center;
-    font-size:20px;
-    display:none;
-    color:#fff;
+    text-align: center;
+    font-size: 20px;
+    display: none;
+    color: #fff;
 }
 
 .lbox {
-    position:absolute;
-    top:50%;
-    left:50%;
-    width:20px;
-    height:20px;
-    margin:-10px 0px 0px -10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
 }
 
 .loading {
@@ -154,10 +154,10 @@ body {
     -webkit-animation-iteration-count: infinite;
     animation-timing-function: linear;
     -webkit-animation-timing-function: linear;
-    height:10px;
-    width:10px;
-    background-color:#fff;
-    position:relative;
+    height: 10px;
+    width: 10px;
+    background-color: #fff;
+    position: relative;
 }
 
 @keyframes mv {
@@ -177,52 +177,52 @@ body {
 }
 
 #load_button {
-    position:absolute;
-    top:50%;
-    left:50%;
-    width:200px;
-    height:100px;
-    margin:-50px 0px 0px -100px;
-    background-color:#222;
-    background-color:rgba(0,0,0,.7);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 100px;
+    margin: -50px 0 0 -100px;
+    background-color: #222;
+    background-color: rgba(0,0,0,.7);
     border-radius: 3px;
-    text-align:center;
-    font-size:20px;
-    display:table;
-    color:#fff;
-    cursor:pointer;
+    text-align: center;
+    font-size: 20px;
+    display: table;
+    color: #fff;
+    cursor: pointer;
 }
 
 #load_button:hover {
-    background-color:#111;
-    background-color:rgba(0,0,0,.8);
+    background-color: #111;
+    background-color: rgba(0,0,0,.8);
 }
 
 #load_button p {
-    display:table-cell;
-    vertical-align:middle;
+    display: table-cell;
+    vertical-align: middle;
 }
 
 .infobox {
-    color:#000;
-    font-size:15px;
-    position:absolute;
-    top:50%;
-    left:50%;
-    width:200px;
-    height:150px;
-    margin:-75px 0px 0px -100px;
-    background-color:#000;
+    color: #000;
+    font-size: 15px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 150px;
+    margin: -75px 0 0 -100px;
+    background-color: #000;
     border-radius: 3px;
-    display:table;
-    text-align:center;
-    color:#fff
+    display: table;
+    text-align: center;
+    color: #fff;
 }
 
 .infobox p {
-    display:table-cell;
-    vertical-align:middle;
-    padding:0px 5px 0px 5px;
+    display: table-cell;
+    vertical-align: middle;
+    padding: 0 5px 0 5px;
 }
 
 #nocanvas {
@@ -230,17 +230,17 @@ body {
 }
 
 #about {
-    font-size:11px;
-    line-height:11px;
-    color:#fff;
+    font-size: 11px;
+    line-height: 11px;
+    color: #fff;
     padding: 5px 8px 5px 8px;
-    background:rgba(0,0,0,0.7);
-    border-radius:3px;
-    position:absolute;
-    top:50px;
-    left:50px;
-    display:none;
-    opacity:0;
+    background: rgba(0,0,0,0.7);
+    border-radius: 3px;
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    display: none;
+    opacity: 0;
     -moz-transition: opacity .3s ease-in-out;
     -webkit-transition: opacity .3s ease-in-out;
     -o-transition: opacity .3s ease-in-out;
@@ -249,54 +249,54 @@ body {
 }
 
 #about a:link, #about a:visited {
-    color:#fff;
+    color: #fff;
 }
 
 #about a:hover, #about a:active {
-    color:#eee;
+    color: #eee;
 }
 
 .hotspot {
-    position:absolute;
-    height:26px;
-    width:26px;
-    visibility:hidden;
-    cursor:default;
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    visibility: hidden;
+    cursor: default;
 }
 .hotspot.info {
-    background-position:0px -104px;
+    background-position: 0 -104px;
 }
 .hotspot.scene {
-    background-position:0px -130px;
+    background-position: 0 -130px;
 }
 
 div.tooltip span {
-    visibility:hidden;
-    position:absolute;
+    visibility: hidden;
+    position: absolute;
     border-radius: 3px;
-    background-color:rgba(0,0,0,0.7);
-    color:#fff;
-    text-align:center;
-    max-width:200px;
-    z-index:10;
-    padding:5px 10px;
-    margin-top:-41px;
-    margin-left:-220px;
-    cursor:default;
+    background-color: rgba(0,0,0,0.7);
+    color: #fff;
+    text-align: center;
+    max-width: 200px;
+    z-index: 10;
+    padding: 5px 10px;
+    margin-top: -41px;
+    margin-left: -220px;
+    cursor: default;
 }
 div.tooltip:hover span{
-   visibility:visible;
+    visibility: visible;
 }
 div.tooltip:hover:after {
-      content: "";
-      position: absolute;
-      width: 0;
-      height: 0;
-      border-width: 10px;
-      border-style: solid;
-      border-color: rgba(0,0,0,0.7) transparent transparent transparent;
-      top: -12px;
-      left: 0px;
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-width: 10px;
+    border-style: solid;
+    border-color: rgba(0,0,0,0.7) transparent transparent transparent;
+    top: -12px;
+    left: 0;
 }
 
 #compass {
