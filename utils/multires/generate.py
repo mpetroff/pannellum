@@ -28,6 +28,7 @@ from PIL import Image
 import os
 import math
 from distutils.spawn import find_executable
+import subprocess
 
 # find external programs
 nona = find_executable('nona')
@@ -83,7 +84,7 @@ with open(os.path.join(args.output, 'cubic.pto'), 'w') as f:
 
 # Create cube faces
 print('Generating cube faces...')
-os.system(args.nona + ' -o ' + os.path.join(args.output, 'face') + ' ' + os.path.join(args.output, 'cubic.pto'))
+subprocess.check_call([args.nona, '-o', os.path.join(args.output, 'face'), os.path.join(args.output, 'cubic.pto')])
 faces = ['face0000.tif', 'face0001.tif', 'face0002.tif', 'face0003.tif', 'face0004.tif', 'face0005.tif']
 
 # Generate tiles
