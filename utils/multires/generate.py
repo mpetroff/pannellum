@@ -33,13 +33,14 @@ from distutils.spawn import find_executable
 nona = find_executable('nona')
 
 # Parse input
-parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an equirectangular panorama.')
+parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an equirectangular panorama.',
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('inputFile', metavar='INPUT',
                     help='full equirectangular panorama to be processed')
 parser.add_argument('-o', '--output', dest='output', default='./output',
-                    help='output directory (default: ./output)')
+                    help='output directory')
 parser.add_argument('-s', '--tilesize', dest='tileSize', default=512, type=int,
-                    help='tile size in pixels (default: 512)')
+                    help='tile size in pixels')
 parser.add_argument('--png', action='store_true',
                     help='output PNG tiles instead of JPEG tiles')
 parser.add_argument('-n', '--nona', default=nona, required=nona is None,
