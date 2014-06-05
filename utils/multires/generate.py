@@ -27,6 +27,10 @@ import argparse
 from PIL import Image
 import os
 import math
+from distutils.spawn import find_executable
+
+# find external programs
+nona = find_executable('nona')
 
 # Parse input
 parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an equirectangular panorama.')
@@ -38,6 +42,9 @@ parser.add_argument('-s', '--tilesize', dest='tileSize', default=512, type=int,
                     help='tile size in pixels (default: 512)')
 parser.add_argument('--png', action='store_true',
                     help='output PNG tiles instead of JPEG tiles')
+parser.add_argument('-n', '--nona', default=nona, required=nona is None,
+                    metavar='EXECUTABLE',
+                    help='location of the nona executable to use')
 args = parser.parse_args()
 
 # Create output directory
@@ -75,7 +82,7 @@ with open(os.path.join(args.output, 'cubic.pto'), 'w') as f:
 
 # Create cube faces
 print('Generating cube faces...')
-os.system('nona -o ' + os.path.join(args.output, 'face') + ' ' + os.path.join(args.output, 'cubic.pto'))
+os.system(args.nona + ' -o ' + os.path.join(args.output, 'face') + ' ' + os.path.join(args.output, 'cubic.pto'))
 faces = ['face0000.tif', 'face0001.tif', 'face0002.tif', 'face0003.tif', 'face0004.tif', 'face0005.tif']
 
 # Generate tiles
