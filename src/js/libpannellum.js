@@ -1,5 +1,5 @@
 /*
- * libpannellum - An WebGL based Panorama Renderer
+ * libpannellum - A WebGL and CSS 3D transform based Panorama Renderer
  * Copyright (c) 2012-2014 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,8 +27,8 @@ window.libpannellum = (function(window, document, undefined) {
  * instead of a single image.  They should be the order of:
  * +z, +x, -z, -x, +y, -y.
  */
-function Renderer(canvas, image, imageType) {
-    this.canvas = canvas;
+function Renderer(container, image, imageType) {
+    this.canvas = container.querySelector('#canvas');
     this.image = image;
 
     // Default argument for image type
@@ -42,6 +42,28 @@ function Renderer(canvas, image, imageType) {
     this.init = function(haov, vaov, voffset) {
         // Enable WebGL on canvas
         gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
+        
+        // If there is no WebGL, fall back to CSS 3D transform renderer.
+        if (!gl && this.imageType == 'multires') {
+            // Initialize renderer
+            container.className = 'viewport';
+            this.world = container.querySelector('.world');
+            this.world.style.display = 'block';
+            
+            // Add images
+            var path = this.image.basePath + '/fallback/';
+            this.world.querySelector('.fface').style.backgroundImage = 'url("' + path + 'f.' + this.image.extension + '")';
+            this.world.querySelector('.bface').style.backgroundImage = 'url("' + path + 'b.' + this.image.extension + '")';
+            this.world.querySelector('.uface').style.backgroundImage = 'url("' + path + 'u.' + this.image.extension + '")';
+            this.world.querySelector('.dface').style.backgroundImage = 'url("' + path + 'd.' + this.image.extension + '")';
+            this.world.querySelector('.lface').style.backgroundImage = 'url("' + path + 'l.' + this.image.extension + '")';
+            this.world.querySelector('.rface').style.backgroundImage = 'url("' + path + 'r.' + this.image.extension + '")';
+            
+            return;
+        }
+        this.image.path = this.image.basePath + this.image.path;
+        
+        // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
 
         // Create viewport for entire canvas
@@ -169,6 +191,14 @@ function Renderer(canvas, image, imageType) {
     }
 
     this.render = function(pitch, yaw, hfov) {
+        // If no WebGL
+        if (!gl && this.imageType == 'multires') {
+            var transform = 'translate3d(0px, 0px, 700px) rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
+            this.world.style.webkitTransform = transform;
+            this.world.style.transform = transform;
+            return;
+        }
+        
         if(this.imageType != 'multires') {
             // Calculate focal length from horizontal angle of view
             var focal = 1 / Math.tan(hfov / 2);
@@ -231,7 +261,7 @@ function Renderer(canvas, image, imageType) {
     }
     
     this.isLoading = function() {
-        if (this.imageType == 'multires') {
+        if (gl && this.imageType == 'multires') {
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (!program.currentNodes[i].textureLoaded) {
                     return true;

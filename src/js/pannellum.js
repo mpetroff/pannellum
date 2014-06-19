@@ -52,10 +52,10 @@ function init() {
         }
     } else if(config.type == 'multires') {
         var c = config.multiRes;
-        if (config.path) {
-            c.path = config.path + config.multiRes.path;
-        } else if (tourConfig.path) {
-            c.path = tourConfig.path + config.multiRes.path;
+        if (config.basePath) {
+            c.basePath = config.basePath + config.multiRes.basePath;
+        } else if (tourConfig.basePath) {
+            c.basePath = tourConfig.basePath + config.multiRes.basePath;
         }
         panoImage = config.multiRes;
     } else {
@@ -65,7 +65,7 @@ function init() {
     
     function onImageLoad() {
         try {
-            renderer = new libpannellum.renderer(canvas, panoImage, config.type);
+            renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type);
         } catch (event) {
             // Show error message if WebGL is not supported
             anError();
@@ -116,10 +116,10 @@ function init() {
         for(var i = 0; i < panoImage.length; i++) {
             panoImage[i].onload = loadCounter;
             var p = config.cubeMap[i];
-            if (config.path) {
-                p = config.path + p;
-            } else if (tourConfig.path) {
-                p = tourConfig.path + p;
+            if (config.basePath) {
+                p = config.basePath + p;
+            } else if (tourConfig.basePath) {
+                p = tourConfig.basePath + p;
             }
             panoImage[i].src = p;
         }
@@ -128,10 +128,10 @@ function init() {
     } else {
         panoImage.onload = onImageLoad;
         var p = config.panorama;
-        if (config.path) {
-            p = config.path + p;
-        } else if (tourConfig.path) {
-            p = tourConfig.path + p;
+        if (config.basePath) {
+            p = config.basePath + p;
+        } else if (tourConfig.basePath) {
+            p = tourConfig.basePath + p;
         }
         panoImage.src = p;
     }
@@ -572,7 +572,7 @@ function parseURLParameters() {
         var c = JSON.parse(request.responseText);
         
         // Set JSON file location
-        c.path = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
+        c.basePath = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
         
         // Merge options
         for(var k in c) {
@@ -592,7 +592,7 @@ function parseURLParameters() {
         tourConfig = JSON.parse(request.responseText);
         
         // Set JSON file location
-        tourConfig.path = configFromURL.tour.substring(0,configFromURL.tour.lastIndexOf('/')+1);
+        tourConfig.basePath = configFromURL.tour.substring(0,configFromURL.tour.lastIndexOf('/')+1);
         
         // Activate first scene if specified
         if(tourConfig.default.firstScene) {
@@ -660,10 +660,10 @@ function processOptions() {
             
             case 'preview':
                 var p = config[key];
-                if (config.path) {
-                    p = config.path + p;
-                } else if (tourConfig.path) {
-                    p = tourConfig.path + p;
+                if (config.basePath) {
+                    p = config.basePath + p;
+                } else if (tourConfig.basePath) {
+                    p = tourConfig.basePath + p;
                 }
                 document.body.style.backgroundImage = "url('" + p + "')";
                 document.body.style.backgroundSize = "auto";
