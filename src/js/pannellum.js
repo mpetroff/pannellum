@@ -493,7 +493,18 @@ function createHotSpots() {
                 video.setAttribute('controls',true);
                 video.setAttribute('width',hs.width);
                 document.getElementById('page').appendChild(div);
-                span.appendChild(video)
+                span.appendChild(video);
+            } else if (hs.image) {
+                var a = document.createElement('a');
+                a.setAttribute('href', hs.image);
+                a.setAttribute('target', '_blank');
+                span.appendChild(a);
+                var image = document.createElement('img');
+                image.setAttribute('src',hs.image);
+                image.setAttribute('width',hs.width);
+                document.getElementById('page').appendChild(div);
+                a.appendChild(image);
+                
             } else {
                 if(hs.sceneId) {
                     div.onclick = function() {
