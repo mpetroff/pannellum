@@ -474,8 +474,11 @@ function createHotSpots() {
     } else {
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
-            var span = document.createElement('span');
             div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+            
+            var span = document.createElement('span');
+            span.innerHTML = hs.text;
+            
             if(hs.URL) {
                 var a = document.createElement('a');
                 a.setAttribute('href', hs.URL);
@@ -484,6 +487,13 @@ function createHotSpots() {
                 div.style.cursor = 'pointer';
                 span.style.cursor = 'pointer';
                 a.appendChild(div);
+            } else if (hs.video) {
+                var video = document.createElement('video');
+                video.setAttribute('src',hs.video);
+                video.setAttribute('controls',true);
+                video.setAttribute('width',hs.width);
+                document.getElementById('page').appendChild(div);
+                span.appendChild(video)
             } else {
                 if(hs.sceneId) {
                     div.onclick = function() {
@@ -495,7 +505,7 @@ function createHotSpots() {
                 }
                 document.getElementById('page').appendChild(div);
             }
-            span.innerHTML = hs.text;
+            
             div.appendChild(span);
             span.style.width = span.scrollWidth - 20 + 'px';
             span.style.marginLeft = -(span.scrollWidth - 26) / 2 + 'px';
