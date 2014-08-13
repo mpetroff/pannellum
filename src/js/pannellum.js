@@ -491,7 +491,7 @@ function createHotSpots() {
                 var video = document.createElement('video');
                 video.setAttribute('src',hs.video);
                 video.setAttribute('controls',true);
-                video.setAttribute('width',hs.width);
+                video.setAttribute('style','width:' + hs.width + 'px');
                 document.getElementById('page').appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
@@ -501,7 +501,7 @@ function createHotSpots() {
                 span.appendChild(a);
                 var image = document.createElement('img');
                 image.setAttribute('src',hs.image);
-                image.setAttribute('width',hs.width);
+                image.setAttribute('style','width:' + hs.width + 'px');
                 document.getElementById('page').appendChild(div);
                 a.appendChild(image);
                 
