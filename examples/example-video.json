@@ -2,7 +2,8 @@
     "default": {
         "author": "Matthew Petroff",
         "firstScene": "pond",
-        "autoload": "yes"
+        "autoload": "yes",
+        "css": "/font-awesome/css/font-awesome.min.css"
     },
     
     "scenes": {
@@ -56,10 +57,18 @@
                 },
                 {
                     "pitch":0,
-                    "yaw": -120,
-                    "text": "Video Test ",
-                    "type": "info",
+                    "yaw": 0,
+                    "text": "Video Test",
+                    "type": "fa fa-camera",
                     "video": "../examples/big_buck_bunny_480p_h264.mov",
+                    "width":200
+                },
+                {
+                    "pitch":0,
+                    "yaw": 30,
+                    "text": "Image Test",
+                    "type": "fa fa-photo",
+                    "image": "http://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Jordan_Pond_Maine.JPG/1024px-Jordan_Pond_Maine.JPG",
                     "width":200
                 }
             ]

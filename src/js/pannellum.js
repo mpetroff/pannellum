@@ -667,6 +667,9 @@ function processOptions() {
                 document.getElementById('author_box').innerHTML = 'by ' + config[key];
                 document.getElementById('panorama_info').style.display = 'inline';
                 break;
+                
+            case 'css':
+                document.head.innerHTML = document.head.innerHTML + '<link type="text/css" rel="Stylesheet" href="' + config[key] + '" />'
             
             case 'popout':
                 if(config[key] == 'yes') {
