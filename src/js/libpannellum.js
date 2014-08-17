@@ -195,8 +195,7 @@ function Renderer(container, image, imageType) {
         // If no WebGL
         if (!gl && this.imageType == 'multires') {
             var focal = 1 / Math.tan(hfov / 2);
-            console.log(focal);
-            var zoom = focal * this.canvas.height / 2 + 'px';
+            var zoom = focal * this.canvas.width / 2 + 'px';
             var transform = 'translate3d(0px, 0px, ' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
             this.world.style.webkitTransform = transform;
             this.world.style.transform = transform;
@@ -206,8 +205,9 @@ function Renderer(container, image, imageType) {
         }
         
         if(this.imageType != 'multires') {
-            // Calculate focal length from horizontal angle of view
-            var focal = 1 / Math.tan(hfov / 2);
+            // Calculate focal length from vertical field of view
+            var vfov = 2 * Math.atan(Math.tan(hfov/2) / (this.canvas.width / this.canvas.height));
+            var focal = 1 / Math.tan(vfov / 2);
             
             // Pass psi, theta, and focal length
             gl.uniform1f(program.psi, yaw);
@@ -218,13 +218,11 @@ function Renderer(container, image, imageType) {
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         
         } else {
-            var fov = 2 * Math.atan(Math.tan(hfov / 2) * this.canvas.width / this.canvas.height);
-            
             // Create perspective matrix
-            var perspMatrix = this.makePersp(fov, this.canvas.width / this.canvas.height, 0.1, 100.0);
+            var perspMatrix = this.makePersp(hfov, this.canvas.width / this.canvas.height, 0.1, 100.0);
             
             // Find correct zoom level
-            this.checkZoom(fov);
+            this.checkZoom(hfov);
             
             // Create rotation matrix
             var matrix = this.identityMatrix3();
@@ -250,13 +248,13 @@ function Renderer(container, image, imageType) {
             for ( var s = 0; s < 6; s++ ) {
                 var vtmp = vertices.slice(s * 12, s * 12 + 12)
                 var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
-                this.testMultiresNode(rotPersp, ntmp, pitch, yaw, fov);
+                this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
             program.currentNodes.sort(this.multiresNodeRenderSort);
             // Only process one tile per frame to improve responsiveness
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (!program.currentNodes[i].texture) {
-                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, fov), 0);
+                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, hfov), 0);
                     break;
                 }
             }

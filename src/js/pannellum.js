@@ -527,12 +527,12 @@ function renderHotSpots() {
             hs.div.style.visibility = 'hidden';
         } else {
             hs.div.style.visibility = 'visible';
-            hs.div.style.top = -canvas.height / Math.tan(config.hfov * Math.PI / 360) *
+            hs.div.style.top = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
                 (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch * Math.PI /
                 180) - Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw +
                 config.yaw) * Math.PI / 180) * Math.sin(config.pitch * Math.PI / 180)) / z /
                 2 + canvas.height / 2 - 13 + 'px';
-            hs.div.style.left = -canvas.height / Math.tan(config.hfov * Math.PI / 360) *
+            hs.div.style.left = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
                 Math.sin((hs.yaw + config.yaw) * Math.PI / 180) * Math.cos(hs.pitch *
                 Math.PI / 180) / z / 2 + canvas.width / 2 - 13 + 'px';
         }
@@ -776,13 +776,13 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if(i < 40 && config.type != 'multires') {
-        config.hfov = 40;
+    if(i < 50 && config.type != 'multires') {
+        config.hfov = 50;
     } else if(config.type == 'multires' && i < canvas.width
         / (config.multiRes.cubeResolution / 90 * 0.9)) {
         config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
-    } else if(i > 100) {
-        config.hfov = 100;
+    } else if(i > 120) {
+        config.hfov = 120;
     } else {
         config.hfov = i;
     }
