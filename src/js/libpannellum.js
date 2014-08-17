@@ -28,6 +28,7 @@ window.libpannellum = (function(window, document, undefined) {
  * +z, +x, -z, -x, +y, -y.
  */
 function Renderer(container, image, imageType) {
+    this.container = container;
     this.canvas = container.querySelector('#canvas');
     this.image = image;
 
@@ -193,9 +194,14 @@ function Renderer(container, image, imageType) {
     this.render = function(pitch, yaw, hfov) {
         // If no WebGL
         if (!gl && this.imageType == 'multires') {
-            var transform = 'translate3d(0px, 0px, 700px) rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
+            var focal = 1 / Math.tan(hfov / 2);
+            console.log(focal);
+            var zoom = focal * this.canvas.height / 2 + 'px';
+            var transform = 'translate3d(0px, 0px, ' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
             this.world.style.webkitTransform = transform;
             this.world.style.transform = transform;
+            this.container.style.webkitPerspective = zoom;
+            this.container.style.perspective = zoom;
             return;
         }
         
