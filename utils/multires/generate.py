@@ -108,6 +108,14 @@ for f in range(0, 6):
                 tile.save(os.path.join(args.output, str(level), faceLetters[f] + str(i) + '_' + str(j) + extension))
         size = int(size / 2)
 
+# Generate fallback tiles
+print('Generating fallback tiles...')
+for f in range(0, 6):
+    os.makedirs(os.path.join(args.output, 'fallback'), exist_ok=True)
+    face = Image.open(os.path.join(args.output, faces[f]))
+    face = face.resize([1024, 1024], Image.ANTIALIAS)
+    face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension))
+
 # Clean up temporary files
 os.remove(os.path.join(args.output, 'cubic.pto'))
 for face in faces:
