@@ -503,6 +503,7 @@ function createHotSpots() {
             hs.div = div;
         });
     }
+    renderHotSpots();
 }
 
 function destroyHotSpots() {
