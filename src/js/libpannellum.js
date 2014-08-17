@@ -62,7 +62,7 @@ function Renderer(container, image, imageType) {
             
             return;
         }
-        this.image.path = this.image.basePath + this.image.path;
+        this.image.fullpath = this.image.basePath + this.image.path;
         
         // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
@@ -247,7 +247,7 @@ function Renderer(container, image, imageType) {
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
             for ( var s = 0; s < 6; s++ ) {
                 var vtmp = vertices.slice(s * 12, s * 12 + 12)
-                var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
+                var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.fullpath);
                 this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
             program.currentNodes.sort(this.multiresNodeRenderSort);
@@ -431,7 +431,7 @@ function Renderer(container, image, imageType) {
                         v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                           v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3
                 ];
-                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, this.image.path);
+                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, this.image.fullpath);
                 children.push(ntmp);
                 if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution)) {
                     vtmp = [v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
@@ -439,7 +439,7 @@ function Renderer(container, image, imageType) {
                               v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
                             v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3
                     ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.path);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.fullpath);
                     children.push(ntmp);
                 }
                 if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution)
@@ -449,7 +449,7 @@ function Renderer(container, image, imageType) {
                                        v[6],             v[7],             v[8],
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3
                     ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, this.image.path);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, this.image.fullpath);
                     children.push(ntmp);
                 }
                 if (!(node.y == numTiles && doubleTileSize < this.image.tileResolution)) {
@@ -458,7 +458,7 @@ function Renderer(container, image, imageType) {
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3,
                                        v[9],            v[10],            v[11]
                     ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, this.image.path);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, this.image.fullpath);
                     children.push(ntmp);
                 }
                 for (var j = 0; j < children.length; j++) {
