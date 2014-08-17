@@ -137,6 +137,7 @@ function init() {
     }
     
     document.getElementById('page').className = 'grab';
+    createHotSpots();
 }
 
 function anError() {
@@ -701,9 +702,6 @@ function processOptions() {
                 config.autoRotate = config[key];
         }
     }
-    
-    // Create hot spots
-    createHotSpots();
 }
 
 function toggleFullWindow() {
