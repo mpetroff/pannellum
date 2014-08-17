@@ -34,7 +34,7 @@ var config, tourConfig = {}, configFromURL, popoutMode = false, renderer,
     canvas = document.getElementById('canvas'), panoImage, prevTime;
 
 var defaultConfig = {
-    hfov: 70, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
+    hfov: 100, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
     autoRotate: false, type: 'equirectangular'
 };
 
