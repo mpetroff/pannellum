@@ -700,6 +700,11 @@ function processOptions() {
             case 'autorotate':
                 // Rotation speed in degrees/second (+ccw, -cw)
                 config.autoRotate = config[key];
+                break;
+            
+            case 'header':
+                // Add contents to header
+                document.getElementsByTagName('head')[0].innerHTML += config[key];
         }
     }
 }
