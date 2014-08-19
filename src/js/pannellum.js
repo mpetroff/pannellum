@@ -31,7 +31,8 @@ var config, tourConfig = {}, configFromURL, popoutMode = false, renderer,
     keysDown = new Array(10), fullWindowActive = false, loaded = false,
     error = false, isTimedOut = false, listenersAdded = false,
     about_box = document.getElementById('about_box'),
-    canvas = document.getElementById('canvas'), panoImage, prevTime;
+    canvas = document.getElementById('canvas'), panoImage, prevTime,
+    hotspotsCreated = false;
 
 var defaultConfig = {
     hfov: 100, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
@@ -470,6 +471,8 @@ function renderInit() {
 }
 
 function createHotSpots() {
+    if (hotspotsCreated) return;
+    
     if(!config.hotSpots) {
         config.hotSpots = [];
     } else {
@@ -504,6 +507,7 @@ function createHotSpots() {
             hs.div = div;
         });
     }
+    hotspotsCreated = true;
     renderHotSpots();
 }
 
@@ -517,6 +521,7 @@ function destroyHotSpots() {
             document.getElementById('page').removeChild(current);
         });
     }
+    hotspotsCreated = false;
 }
 
 function renderHotSpots() {
