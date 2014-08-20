@@ -45,20 +45,18 @@ function Renderer(container, image, imageType) {
         gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
-        if (!gl && this.imageType == 'multires') {
+        if (!gl && this.imageType == 'multires' && this.image.fallbackPath) {
             // Initialize renderer
             container.className = 'viewport';
             this.world = container.querySelector('.world');
             this.world.style.display = 'block';
             
             // Add images
-            var path = this.image.basePath + '/fallback/';
-            this.world.querySelector('.fface').style.backgroundImage = 'url("' + path + 'f.' + this.image.extension + '")';
-            this.world.querySelector('.bface').style.backgroundImage = 'url("' + path + 'b.' + this.image.extension + '")';
-            this.world.querySelector('.uface').style.backgroundImage = 'url("' + path + 'u.' + this.image.extension + '")';
-            this.world.querySelector('.dface').style.backgroundImage = 'url("' + path + 'd.' + this.image.extension + '")';
-            this.world.querySelector('.lface').style.backgroundImage = 'url("' + path + 'l.' + this.image.extension + '")';
-            this.world.querySelector('.rface').style.backgroundImage = 'url("' + path + 'r.' + this.image.extension + '")';
+            var path = this.image.basePath + this.image.fallbackPath;
+            var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
+            for (var s = 0; s < 6; s++) {
+                this.world.querySelector('.' + sides[s] + 'face').style.backgroundImage = 'url("' + path.replace('%s',sides[s]) + '.' + this.image.extension + '")';
+            }
             
             return;
         }
