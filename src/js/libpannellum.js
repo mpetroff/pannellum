@@ -28,6 +28,7 @@ window.libpannellum = (function(window, document, undefined) {
  * +z, +x, -z, -x, +y, -y.
  */
 function Renderer(container, image, imageType) {
+    this.container = container;
     this.canvas = container.querySelector('#canvas');
     this.image = image;
 
@@ -61,7 +62,7 @@ function Renderer(container, image, imageType) {
             
             return;
         }
-        this.image.path = this.image.basePath + this.image.path;
+        this.image.fullpath = this.image.basePath + this.image.path;
         
         // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
@@ -193,15 +194,20 @@ function Renderer(container, image, imageType) {
     this.render = function(pitch, yaw, hfov) {
         // If no WebGL
         if (!gl && this.imageType == 'multires') {
-            var transform = 'translate3d(0px, 0px, 700px) rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
+            var focal = 1 / Math.tan(hfov / 2);
+            var zoom = focal * this.canvas.width / 2 + 'px';
+            var transform = 'translate3d(0px, 0px, ' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
             this.world.style.webkitTransform = transform;
             this.world.style.transform = transform;
+            this.container.style.webkitPerspective = zoom;
+            this.container.style.perspective = zoom;
             return;
         }
         
         if(this.imageType != 'multires') {
-            // Calculate focal length from horizontal angle of view
-            var focal = 1 / Math.tan(hfov / 2);
+            // Calculate focal length from vertical field of view
+            var vfov = 2 * Math.atan(Math.tan(hfov/2) / (this.canvas.width / this.canvas.height));
+            var focal = 1 / Math.tan(vfov / 2);
             
             // Pass psi, theta, and focal length
             gl.uniform1f(program.psi, yaw);
@@ -212,13 +218,11 @@ function Renderer(container, image, imageType) {
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         
         } else {
-            var fov = 2 * Math.atan(Math.tan(hfov / 2) * this.canvas.width / this.canvas.height);
-            
             // Create perspective matrix
-            var perspMatrix = this.makePersp(fov, this.canvas.width / this.canvas.height, 0.1, 100.0);
+            var perspMatrix = this.makePersp(hfov, this.canvas.width / this.canvas.height, 0.1, 100.0);
             
             // Find correct zoom level
-            this.checkZoom(fov);
+            this.checkZoom(hfov);
             
             // Create rotation matrix
             var matrix = this.identityMatrix3();
@@ -243,14 +247,14 @@ function Renderer(container, image, imageType) {
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
             for ( var s = 0; s < 6; s++ ) {
                 var vtmp = vertices.slice(s * 12, s * 12 + 12)
-                var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.path);
-                this.testMultiresNode(rotPersp, ntmp, pitch, yaw, fov);
+                var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.fullpath);
+                this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
             program.currentNodes.sort(this.multiresNodeRenderSort);
             // Only process one tile per frame to improve responsiveness
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (!program.currentNodes[i].texture) {
-                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, fov), 0);
+                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, hfov), 0);
                     break;
                 }
             }
@@ -427,7 +431,7 @@ function Renderer(container, image, imageType) {
                         v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                           v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3
                 ];
-                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, this.image.path);
+                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, this.image.fullpath);
                 children.push(ntmp);
                 if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution)) {
                     vtmp = [v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
@@ -435,7 +439,7 @@ function Renderer(container, image, imageType) {
                               v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
                             v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3
                     ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.path);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.fullpath);
                     children.push(ntmp);
                 }
                 if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution)
@@ -445,7 +449,7 @@ function Renderer(container, image, imageType) {
                                        v[6],             v[7],             v[8],
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3
                     ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, this.image.path);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, this.image.fullpath);
                     children.push(ntmp);
                 }
                 if (!(node.y == numTiles && doubleTileSize < this.image.tileResolution)) {
@@ -454,7 +458,7 @@ function Renderer(container, image, imageType) {
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3,
                                        v[9],            v[10],            v[11]
                     ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, this.image.path);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, this.image.fullpath);
                     children.push(ntmp);
                 }
                 for (var j = 0; j < children.length; j++) {

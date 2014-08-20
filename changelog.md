@@ -1,20 +1,20 @@
-                     -------------------------------------
-                                   Pannellum
-                     https://github.com/mpetroff/pannellum
-                     -------------------------------------
-
+Pannellum
+=========
 
 
 Changes in Pannellum 1.2
-========================
+------------------------
 
 New Features:
+
  - Added keyboard panning controls
  - Added support for a fallback URL if WebGL is not supported
 
 Improvements:
+
  - Clarified load button text
  - Switched from raster to vector icons
 
 Bugfixes:
+
  - Added workaround for WebKit fullscreen regression

@@ -31,10 +31,11 @@ var config, tourConfig = {}, configFromURL, popoutMode = false, renderer,
     keysDown = new Array(10), fullWindowActive = false, loaded = false,
     error = false, isTimedOut = false, listenersAdded = false,
     about_box = document.getElementById('about_box'),
-    canvas = document.getElementById('canvas'), panoImage, prevTime;
+    canvas = document.getElementById('canvas'), panoImage, prevTime,
+    hotspotsCreated = false;
 
 var defaultConfig = {
-    hfov: 70, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
+    hfov: 100, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
     autoRotate: false, type: 'equirectangular'
 };
 
@@ -51,13 +52,13 @@ function init() {
             panoImage[i].crossOrigin = "anonymous";
         }
     } else if(config.type == 'multires') {
-        var c = config.multiRes;
+        var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
         if (config.basePath) {
             c.basePath = config.basePath + config.multiRes.basePath;
         } else if (tourConfig.basePath) {
             c.basePath = tourConfig.basePath + config.multiRes.basePath;
         }
-        panoImage = config.multiRes;
+        panoImage = c;
     } else {
         panoImage = new Image();
         panoImage.crossOrigin = "anonymous";
@@ -137,6 +138,7 @@ function init() {
     }
     
     document.getElementById('page').className = 'grab';
+    createHotSpots();
 }
 
 function anError() {
@@ -469,6 +471,8 @@ function renderInit() {
 }
 
 function createHotSpots() {
+    if (hotspotsCreated) return;
+    
     if(!config.hotSpots) {
         config.hotSpots = [];
     } else {
@@ -524,6 +528,8 @@ function createHotSpots() {
             hs.div = div;
         });
     }
+    hotspotsCreated = true;
+    renderHotSpots();
 }
 
 function destroyHotSpots() {
@@ -536,6 +542,7 @@ function destroyHotSpots() {
             document.getElementById('page').removeChild(current);
         });
     }
+    hotspotsCreated = false;
 }
 
 function renderHotSpots() {
@@ -548,12 +555,12 @@ function renderHotSpots() {
             hs.div.style.visibility = 'hidden';
         } else {
             hs.div.style.visibility = 'visible';
-            hs.div.style.top = -canvas.height / Math.tan(config.hfov * Math.PI / 360) *
+            hs.div.style.top = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
                 (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch * Math.PI /
                 180) - Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw +
                 config.yaw) * Math.PI / 180) * Math.sin(config.pitch * Math.PI / 180)) / z /
                 2 + canvas.height / 2 - 13 + 'px';
-            hs.div.style.left = -canvas.height / Math.tan(config.hfov * Math.PI / 360) *
+            hs.div.style.left = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
                 Math.sin((hs.yaw + config.yaw) * Math.PI / 180) * Math.cos(hs.pitch *
                 Math.PI / 180) / z / 2 + canvas.width / 2 - 13 + 'px';
         }
@@ -722,11 +729,13 @@ function processOptions() {
             case 'autorotate':
                 // Rotation speed in degrees/second (+ccw, -cw)
                 config.autoRotate = config[key];
+                break;
+            
+            case 'header':
+                // Add contents to header
+                document.getElementsByTagName('head')[0].innerHTML += config[key];
         }
     }
-    
-    // Create hot spots
-    createHotSpots();
 }
 
 function toggleFullWindow() {
@@ -800,13 +809,13 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if(i < 40 && config.type != 'multires') {
-        config.hfov = 40;
+    if(i < 50 && config.type != 'multires') {
+        config.hfov = 50;
     } else if(config.type == 'multires' && i < canvas.width
         / (config.multiRes.cubeResolution / 90 * 0.9)) {
         config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
-    } else if(i > 100) {
-        config.hfov = 100;
+    } else if(i > 120) {
+        config.hfov = 120;
     } else {
         config.hfov = i;
     }
