@@ -52,13 +52,13 @@ function init() {
             panoImage[i].crossOrigin = "anonymous";
         }
     } else if(config.type == 'multires') {
-        var c = config.multiRes;
+        var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
         if (config.basePath) {
             c.basePath = config.basePath + config.multiRes.basePath;
         } else if (tourConfig.basePath) {
             c.basePath = tourConfig.basePath + config.multiRes.basePath;
         }
-        panoImage = config.multiRes;
+        panoImage = c;
     } else {
         panoImage = new Image();
         panoImage.crossOrigin = "anonymous";
