@@ -675,9 +675,6 @@ function processOptions() {
                 document.getElementById('panorama_info').style.display = 'inline';
                 break;
                 
-            case 'css':
-                document.head.innerHTML = document.head.innerHTML + '<link type="text/css" rel="Stylesheet" href="' + config[key] + '" />'
-            
             case 'popout':
                 if(config[key] == 'yes') {
                     document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
