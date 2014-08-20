@@ -65,12 +65,7 @@ function init() {
     }
     
     function onImageLoad() {
-        try {
-            renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type);
-        } catch (event) {
-            // Show error message if WebGL is not supported
-            anError();
-        }
+        renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type);
         
         // Only add event listeners once
         if(!listenersAdded) {
@@ -464,7 +459,7 @@ function renderInit() {
         // Panorama not loaded
         
         // Display error if there is a bad texture
-        if(event == 'bad texture') {
+        if (event == 'webgl error' || event == 'no webgl') {
             anError();
         }
     }

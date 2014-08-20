@@ -59,6 +59,9 @@ function Renderer(container, image, imageType) {
             }
             
             return;
+        } else if (!gl) {
+            console.log('Error: no WebGL support detected!');
+            throw 'no webgl';
         }
         this.image.fullpath = this.image.basePath + this.image.path;
         
@@ -186,6 +189,12 @@ function Renderer(container, image, imageType) {
             program.currentNodes = [];
             program.nodeCache = [];
             program.nodeCacheTimestamp = 0;
+        }
+        
+        // Check if there was an error
+        if (gl.getError() != 0) {
+            console.log('Error: something went wrong with WebGL!');
+            throw 'webgl error';
         }
     }
 
