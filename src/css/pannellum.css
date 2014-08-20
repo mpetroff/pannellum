@@ -339,33 +339,33 @@ div.tooltip:hover:after {
     -webkit-backface-visibility: hidden;
     -moz-transform-origin: 0 0 0;
     -moz-backface-visibility: hidden;
-    height: 1000px;
-    width: 1000px;
+    height: 1002px;
+    width: 1002px;
     background-size: 100% 100%;
 }
 .fface {
-    -webkit-transform: translate3d(-500px, -500px, -500px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-    transform: translate3d(-500px, -500px, -500px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    -webkit-transform: translate3d(-501px, -501px, -500px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    transform: translate3d(-501px, -501px, -500px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
 }
 .bface {
-    -webkit-transform: translate3d(500px, -500px, 500px) rotateX(180deg) rotateY(0deg) rotateZ(180deg);
-    transform: translate3d(500px, -500px, 500px) rotateX(180deg) rotateY(0deg) rotateZ(180deg);
+    -webkit-transform: translate3d(501px, -501px, 500px) rotateX(180deg) rotateY(0deg) rotateZ(180deg);
+    transform: translate3d(501px, -501px, 500px) rotateX(180deg) rotateY(0deg) rotateZ(180deg);
 }
 .uface {
-    -webkit-transform: translate3d(-500px, -500px, 500px) rotateX(270deg) rotateY(0deg) rotateZ(0deg);
-    transform: translate3d(-500px, -500px, 500px) rotateX(270deg) rotateY(0deg) rotateZ(0deg);
+    -webkit-transform: translate3d(-501px, -500px, 501px) rotateX(270deg) rotateY(0deg) rotateZ(0deg);
+    transform: translate3d(-501px, -500px, 501px) rotateX(270deg) rotateY(0deg) rotateZ(0deg);
 }
 .dface {
-    -webkit-transform: translate3d(-500px, 500px, -500px) rotateX(90deg) rotateY(0deg) rotateZ(0deg);
-    transform: translate3d(-500px, 500px, -500px) rotateX(90deg) rotateY(0deg) rotateZ(0deg);
+    -webkit-transform: translate3d(-501px, 500px, -501px) rotateX(90deg) rotateY(0deg) rotateZ(0deg);
+    transform: translate3d(-501px, 500px, -501px) rotateX(90deg) rotateY(0deg) rotateZ(0deg);
 }
 .lface {
-    -webkit-transform: translate3d(-500px, -500px, 500px) rotateX(180deg) rotateY(90deg) rotateZ(180deg);
-    transform: translate3d(-500px, -500px, 500px) rotateX(180deg) rotateY(90deg) rotateZ(180deg);
+    -webkit-transform: translate3d(-500px, -501px, 501px) rotateX(180deg) rotateY(90deg) rotateZ(180deg);
+    transform: translate3d(-500px, -501px, 501px) rotateX(180deg) rotateY(90deg) rotateZ(180deg);
 }
 .rface {
-    -webkit-transform: translate3d(500px, -500px, -500px) rotateX(0deg) rotateY(270deg) rotateZ(0deg);
-    transform: translate3d(500px, -500px, -500px) rotateX(0deg) rotateY(270deg) rotateZ(0deg);
+    -webkit-transform: translate3d(500px, -501px, -501px) rotateX(0deg) rotateY(270deg) rotateZ(0deg);
+    transform: translate3d(500px, -501px, -501px) rotateX(0deg) rotateY(270deg) rotateZ(0deg);
 }
 
 .dragfix {
