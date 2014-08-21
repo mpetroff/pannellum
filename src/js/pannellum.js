@@ -473,8 +473,11 @@ function createHotSpots() {
     } else {
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
-            var span = document.createElement('span');
             div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+            
+            var span = document.createElement('span');
+            span.innerHTML = hs.text;
+            
             if(hs.URL) {
                 var a = document.createElement('a');
                 a.setAttribute('href', hs.URL);
@@ -483,6 +486,24 @@ function createHotSpots() {
                 div.style.cursor = 'pointer';
                 span.style.cursor = 'pointer';
                 a.appendChild(div);
+            } else if (hs.video) {
+                var video = document.createElement('video');
+                video.setAttribute('src',hs.video);
+                video.setAttribute('controls',true);
+                video.setAttribute('style','width:' + hs.width + 'px');
+                document.getElementById('page').appendChild(div);
+                span.appendChild(video);
+            } else if (hs.image) {
+                var a = document.createElement('a');
+                a.setAttribute('href', hs.image);
+                a.setAttribute('target', '_blank');
+                span.appendChild(a);
+                var image = document.createElement('img');
+                image.setAttribute('src',hs.image);
+                image.setAttribute('style','width:' + hs.width + 'px');
+                document.getElementById('page').appendChild(div);
+                a.appendChild(image);
+                
             } else {
                 if(hs.sceneId) {
                     div.onclick = function() {
@@ -494,7 +515,7 @@ function createHotSpots() {
                 }
                 document.getElementById('page').appendChild(div);
             }
-            span.innerHTML = hs.text;
+            
             div.appendChild(span);
             span.style.width = span.scrollWidth - 20 + 'px';
             span.style.marginLeft = -(span.scrollWidth - 26) / 2 + 'px';
@@ -648,7 +669,7 @@ function processOptions() {
                 document.getElementById('author_box').innerHTML = 'by ' + config[key];
                 document.getElementById('panorama_info').style.display = 'inline';
                 break;
-            
+                
             case 'popout':
                 if(config[key] == 'yes') {
                     document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
