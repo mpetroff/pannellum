@@ -2,18 +2,12 @@
 
 ## About
 
-Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 18kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding.
+Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 11kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding.
 
 ## How to use
 1. Upload `build/pannellum.htm` and a full equirectangular panorama to a web server.
     * Due to browser security restrictions, a web server must be used locally as well. With Python 2, one can use `python -m SimpleHTTPServer`, and with Python 3, one can use `python -m http.server`, but any other web server will work as well.
-2. Use the included configuration tool (`utils/config/configuration.htm`).
-    * `Pannellum Location` is the address of `pannellum.htm` and can be either a full or relative path (relative to the page containing the `<iframe>`).
-    * `Panorama URL` is the address of the panorama image file and can be either a full or relative path (relative to `pannellum.htm`).
-    * `Basic Information` is optional. If provided, it is displayed in the bottom left corner.
-    * `Embed Size` is the dimensions of the `<iframe>`.
-    * `Auto Load` loads the panorama when the page is loaded. If left unchecked, the user must click to load the panorama.
-    * `Generate` creates the embed code that can then be copied wherever desired.
+2. Use the included multi-resolution generator (`utils/multires/generate.py`) or configuration tool (`utils/config/configuration.htm`).
 3. Insert the generated `<iframe>` code into a page.
 
 ## Examples
