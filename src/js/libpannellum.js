@@ -34,7 +34,7 @@ function Renderer(container, image, imageType) {
 
     // Default argument for image type
     this.imageType = 'equirectangular';
-    if(typeof imageType != 'undefined'){
+    if (typeof imageType != 'undefined'){
         this.imageType = imageType;
     }
 
@@ -74,7 +74,7 @@ function Renderer(container, image, imageType) {
         // Create vertex shader
         var vs = gl.createShader(gl.VERTEX_SHADER);
         var vertexSrc = v;
-        if(this.imageType == 'multires') {
+        if (this.imageType == 'multires') {
             vertexSrc = vMulti;
         }
         gl.shaderSource(vs, vertexSrc);
@@ -83,7 +83,7 @@ function Renderer(container, image, imageType) {
         // Create fragment shader
         var fs = gl.createShader(gl.FRAGMENT_SHADER);
         var fragmentSrc = fragEquirectangular;
-        if(this.imageType == 'cubemap') {
+        if (this.imageType == 'cubemap') {
             glBindType = gl.TEXTURE_CUBE_MAP;
             fragmentSrc = fragCube;
         } else if (this.imageType == 'multires') {
@@ -113,7 +113,7 @@ function Renderer(container, image, imageType) {
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
         
-        if(this.imageType != 'multires') {
+        if (this.imageType != 'multires') {
             // Provide texture coordinates for rectangle
             program.texCoordBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, program.texCoordBuffer);
@@ -142,7 +142,7 @@ function Renderer(container, image, imageType) {
             gl.bindTexture(glBindType, program.texture);
             
             // Upload images to texture depending on type
-            if(this.imageType == "cubemap") {
+            if (this.imageType == 'cubemap') {
                 // Load all six sides of the cube map
                 gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image[1]);
                 gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image[3]);
@@ -163,7 +163,7 @@ function Renderer(container, image, imageType) {
             
         } else {
             // Look up vertex coordinates location
-            program.vertPosLocation = gl.getAttribLocation(program, "a_vertCoord");
+            program.vertPosLocation = gl.getAttribLocation(program, 'a_vertCoord');
             gl.enableVertexAttribArray(program.vertPosLocation);
             
             // Create buffers
@@ -180,9 +180,9 @@ function Renderer(container, image, imageType) {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
             
             // Find uniforms
-            program.perspUniform = gl.getUniformLocation(program, "u_perspMatrix");
-            program.cubeUniform = gl.getUniformLocation(program, "u_cubeMatrix");
-            //program.colorUniform = gl.getUniformLocation(program, "u_color");
+            program.perspUniform = gl.getUniformLocation(program, 'u_perspMatrix');
+            program.cubeUniform = gl.getUniformLocation(program, 'u_cubeMatrix');
+            //program.colorUniform = gl.getUniformLocation(program, 'u_color');
             
             program.level = -1;
             
@@ -192,11 +192,11 @@ function Renderer(container, image, imageType) {
         }
         
         // Check if there was an error
-        if (gl.getError() != 0) {
+        if (gl.getError() !== 0) {
             console.log('Error: something went wrong with WebGL!');
             throw 'webgl error';
         }
-    }
+    };
 
     this.render = function(pitch, yaw, hfov) {
         // If no WebGL
@@ -211,7 +211,7 @@ function Renderer(container, image, imageType) {
             return;
         }
         
-        if(this.imageType != 'multires') {
+        if (this.imageType != 'multires') {
             // Calculate focal length from vertical field of view
             var vfov = 2 * Math.atan(Math.tan(hfov/2) / (this.canvas.width / this.canvas.height));
             var focal = 1 / Math.tan(vfov / 2);
@@ -253,7 +253,7 @@ function Renderer(container, image, imageType) {
             var vertices = this.createCube();
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
             for ( var s = 0; s < 6; s++ ) {
-                var vtmp = vertices.slice(s * 12, s * 12 + 12)
+                var vtmp = vertices.slice(s * 12, s * 12 + 12);
                 var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.fullpath);
                 this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
@@ -261,15 +261,15 @@ function Renderer(container, image, imageType) {
             // Only process one tile per frame to improve responsiveness
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (!program.currentNodes[i].texture) {
-                    setTimeout(this.processNextTile(program.currentNodes[i], pitch, yaw, hfov), 0);
+                    setTimeout(this.processNextTile(program.currentNodes[i]), 0);
                     break;
                 }
             }
             
             // Draw tiles
-            this.multiresDraw()
+            this.multiresDraw();
         }
-    }
+    };
     
     this.isLoading = function() {
         if (gl && this.imageType == 'multires') {
@@ -280,7 +280,7 @@ function Renderer(container, image, imageType) {
             }
         }
         return false;
-    }
+    };
     
     this.multiresNodeSort = function(a, b) {
         // Base tiles are always first
@@ -293,7 +293,7 @@ function Renderer(container, image, imageType) {
         
         // Higher timestamp first
         return b.timestamp - a.timestamp;
-    }
+    };
     
     this.multiresNodeRenderSort = function(a, b) {
         // Lower zoom levels first
@@ -303,7 +303,7 @@ function Renderer(container, image, imageType) {
         
         // Lower distance from center first
         return a.diff - b.diff;
-    }
+    };
     
     this.multiresDraw = function() {
         if (!program.drawInProgress) {
@@ -329,7 +329,7 @@ function Renderer(container, image, imageType) {
             }
         }
         program.drawInProgress = false;
-    }
+    };
 
     function MultiresNode(vertices, side, level, x, y, path) {
         this.vertices = vertices;
@@ -378,12 +378,12 @@ function Renderer(container, image, imageType) {
             if (node.level < program.level) {
                 var cubeSize = this.image.cubeResolution / Math.pow(2, this.image.maxLevel - node.level);
                 var numTiles = Math.ceil(cubeSize / this.image.tileResolution) - 1;
-                doubleTileSize = cubeSize % this.image.tileResolution * 2;
+                var doubleTileSize = cubeSize % this.image.tileResolution * 2;
                 var lastTileSize = (cubeSize * 2) % this.image.tileResolution;
-                if (lastTileSize == 0) {
+                if (lastTileSize === 0) {
                     lastTileSize = this.image.tileResolution;
                 }
-                if (doubleTileSize == 0) {
+                if (doubleTileSize === 0) {
                     doubleTileSize = this.image.tileResolution * 2;
                 }
                 var f = 0.5;
@@ -392,7 +392,6 @@ function Renderer(container, image, imageType) {
                 }
                 var i = 1.0 - f;
                 var children = [];
-                var v = node.vertices;
                 var vtmp, ntmp;
                 var f1 = f, f2 = f, f3 = f, i1 = i, i2 = i, i3 = i;
                 // Handle non-symmetric tiles
@@ -473,17 +472,17 @@ function Renderer(container, image, imageType) {
                 }
             }
         }
-    }
+    };
 
     this.setImage = function(image) {
         this.image = image;
         this.init();
-    }
+    };
     
     this.setCanvas = function(canvas) {
         this.canvas = canvas;
         this.init();
-    }
+    };
     
     this.createCube = function() {
         return [-1,  1, -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, // Front face
@@ -493,7 +492,7 @@ function Renderer(container, image, imageType) {
                 -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, -1,  1, // Left face
                  1,  1, -1,  1,  1,  1,  1, -1,  1,  1, -1, -1  // Right face
         ];
-    }
+    };
     
     this.identityMatrix3 = function() {
         return [
@@ -501,7 +500,7 @@ function Renderer(container, image, imageType) {
             0, 1, 0,
             0, 0, 1
         ];
-    }
+    };
     
     // angle in radians
     this.rotateMatrix = function(m, angle, axis) {
@@ -521,7 +520,7 @@ function Renderer(container, image, imageType) {
                 c*m[6] - s*m[8], m[7], c*m[8] + s*m[6]
             ];
         }
-    }
+    };
     
     this.makeMatrix4 = function(m) {
         return [
@@ -530,7 +529,7 @@ function Renderer(container, image, imageType) {
             m[6], m[7], m[8],    0,
                0,    0,    0,    1
         ];
-    }
+    };
     
     this.transposeMatrix4 = function(m) {
         return [
@@ -538,8 +537,8 @@ function Renderer(container, image, imageType) {
             m[ 1], m[ 5], m[ 9], m[13],
             m[ 2], m[ 6], m[10], m[14],
             m[ 3], m[ 7], m[11], m[15]
-        ]
-    }
+        ];
+    };
     
     this.makePersp = function(hfov, aspect, znear, zfar) {
         var fovy = 2 * Math.atan(Math.tan(hfov/2) * this.canvas.height / this.canvas.width);
@@ -550,7 +549,7 @@ function Renderer(container, image, imageType) {
                    0,   0,  (zfar+znear)/(znear-zfar), (2*zfar*znear)/(znear-zfar),
                    0,   0, -1,  0
         ];
-    }
+    };
     
     this.processLoadedTexture = function(img, tex) {
         gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -560,9 +559,9 @@ function Renderer(container, image, imageType) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
-    }
+    };
     
-    this.processNextTile = function(node, pitch, yaw, hfov) {
+    this.processNextTile = function(node) {
         if (!node.texture) {
         node.texture = gl.createTexture();
         node.image = new Image();
@@ -571,10 +570,10 @@ function Renderer(container, image, imageType) {
         node.image.onload = function() {
             self.processLoadedTexture(node.image, node.texture);
             node.textureLoaded = true;
-        }
+        };
         node.image.src = node.path + '.' + this.image.extension;
         }
-    }
+    };
     
     this.checkZoom = function(hfov) {
         // Focal length
@@ -594,7 +593,7 @@ function Renderer(container, image, imageType) {
         
         // Apply change
         program.level = newLevel;
-    }
+    };
     
     // perspective matrix, rotation matrix
     this.rotatePersp = function(p, r) {
@@ -604,7 +603,7 @@ function Renderer(container, image, imageType) {
             p[10]*r[8], p[10]*r[9], p[10]*r[10], p[11],
                  -r[8],      -r[9],      -r[10],     0
         ];
-    }
+    };
     
     // rotated perspective matrix, vec3
     this.applyRotPerspToVec = function(m, v) {
@@ -614,7 +613,7 @@ function Renderer(container, image, imageType) {
             m[11] + m[ 8]*v[0] + m[ 9]*v[1] + m[10]*v[2],
                     m[12]*v[0] + m[13]*v[1] + m[14]*v[2]
         ];
-    }
+    };
     
     this.checkInView = function(m, v) {
         var vpp = this.applyRotPerspToVec(m, v);
@@ -634,7 +633,7 @@ function Renderer(container, image, imageType) {
         if ( winZ < 0 || winZ > 1 )
             ret[2] = 1;
         return ret;
-    }
+    };
     
     this.checkSquareInView = function(m, v) {
         var check1 = this.checkInView(m, v.slice(0, 3));
@@ -648,7 +647,7 @@ function Renderer(container, image, imageType) {
             return false;
         
         return true;
-    }
+    };
 }
 
 // Vertex shader for equirectangular and cube
@@ -795,6 +794,6 @@ return {
     renderer: function(canvas, image, imagetype) {
         return new Renderer(canvas, image, imagetype);
     }
-}
+};
 
 })(window, document);

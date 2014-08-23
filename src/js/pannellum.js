@@ -25,18 +25,36 @@
 document.addEventListener('contextmenu', onRightClick, false);
 
 // Declare variables
-var config, tourConfig = {}, configFromURL, popoutMode = false, renderer,
-    isUserInteracting = false, onMouseDownMouseX = 0, onMouseDownMouseY = 0,
-    onMouseDownYaw = 0, onMouseDownPitch = 0, phi = 0, theta = 0,
-    keysDown = new Array(10), fullWindowActive = false, loaded = false,
-    error = false, isTimedOut = false, listenersAdded = false,
-    about_box = document.getElementById('about_box'),
-    canvas = document.getElementById('canvas'), panoImage, prevTime,
+var config,
+    tourConfig = {},
+    configFromURL,
+    popoutMode = false,
+    renderer,
+    isUserInteracting = false,
+    onPointerDownPointerX = 0,
+    onPointerDownPointerY = 0,
+    onPointerDownYaw = 0,
+    onPointerDownPitch = 0,
+    keysDown = new Array(10),
+    fullWindowActive = false,
+    loaded = false,
+    error = false,
+    isTimedOut = false,
+    listenersAdded = false,
+    canvas = document.getElementById('canvas'),
+    panoImage,
+    prevTime,
     hotspotsCreated = false;
 
 var defaultConfig = {
-    hfov: 100, pitch: 0, yaw: 0, haov: 360, vaov: 180, voffset: 0,
-    autoRotate: false, type: 'equirectangular'
+    hfov: 100,
+    pitch: 0,
+    yaw: 0,
+    haov: 360,
+    vaov: 180,
+    voffset: 0,
+    autoRotate: false,
+    type: 'equirectangular'
 };
 
 // Process options
@@ -45,13 +63,13 @@ processOptions();
 
 // Initialize viewer
 function init() {
-    if(config.type == 'cubemap') {
-        panoImage = new Array();
-        for(var i = 0; i < 6; i++) {
+    if (config.type == 'cubemap') {
+        panoImage = [];
+        for (var i = 0; i < 6; i++) {
             panoImage.push(new Image());
-            panoImage[i].crossOrigin = "anonymous";
+            panoImage[i].crossOrigin = 'anonymous';
         }
-    } else if(config.type == 'multires') {
+    } else if (config.type == 'multires') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
         if (config.basePath) {
             c.basePath = config.basePath + config.multiRes.basePath;
@@ -61,14 +79,14 @@ function init() {
         panoImage = c;
     } else {
         panoImage = new Image();
-        panoImage.crossOrigin = "anonymous";
+        panoImage.crossOrigin = 'anonymous';
     }
     
     function onImageLoad() {
         renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type);
         
         // Only add event listeners once
-        if(!listenersAdded) {
+        if (!listenersAdded) {
             listenersAdded = true;
             document.addEventListener('mousedown', onDocumentMouseDown, false);
             document.addEventListener('mousemove', onDocumentMouseMove, false);
@@ -95,22 +113,21 @@ function init() {
         }
         
         renderInit();
-        var t = setTimeout('isTimedOut = true', 500);
+        setTimeout(function(){isTimedOut = true;}, 500);
     }
     
     // Configure image loading
-    if(config.type == "cubemap") {
+    if (config.type == 'cubemap') {
         // Quick loading counter for synchronous loading
         var itemsToLoad = 6;
-        function loadCounter() {
-            itemsToLoad--;
-            if(itemsToLoad == 0) {
-                onImageLoad();
-            }
-        }
         
-        for(var i = 0; i < panoImage.length; i++) {
-            panoImage[i].onload = loadCounter;
+        for (var i = 0; i < panoImage.length; i++) {
+            panoImage[i].onload = function() {
+                itemsToLoad--;
+                if (itemsToLoad === 0) {
+                    onImageLoad();
+                }
+            };
             var p = config.cubeMap[i];
             if (config.basePath) {
                 p = config.basePath + p;
@@ -119,7 +136,7 @@ function init() {
             }
             panoImage[i].src = p;
         }
-    } else if(config.type == "multires") {
+    } else if (config.type == 'multires') {
         onImageLoad();
     } else {
         panoImage.onload = onImageLoad;
@@ -180,12 +197,12 @@ function onDocumentMouseMove(event) {
     if (isUserInteracting) {
         //TODO: This still isn't quite right
         config.yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
-        vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
+        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
         config.pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
     }
 }
 
-function onDocumentMouseUp(event) {
+function onDocumentMouseUp() {
     isUserInteracting = false;
     document.getElementById('page').className = 'grab';
 }
@@ -207,7 +224,7 @@ function onDocumentTouchMove(event) {
     animate();
 }
 
-function onDocumentTouchEnd(event) {
+function onDocumentTouchEnd() {
     // Do nothing for now
 }
 
@@ -236,15 +253,15 @@ function onDocumentKeyPress(event) {
     config.autoRotate = false;
     
     // Record key pressed
-    keynumber = event.keycode;
-    if(event.which) {
+    var keynumber = event.keycode;
+    if (event.which) {
         keynumber = event.which;
     }
     
     // If escape key is pressed
-    if(keynumber == 27) {
+    if (keynumber == 27) {
         // If in full window / popout mode
-        if(fullWindowActive || popoutMode) {
+        if (fullWindowActive || popoutMode) {
             toggleFullWindow();
         }
     } else {
@@ -254,7 +271,7 @@ function onDocumentKeyPress(event) {
 }
 
 function clearKeys() {
-    for(i = 0; i < 10; i++) {
+    for (var i = 0; i < 10; i++) {
         keysDown[i] = false;
     }
 }
@@ -264,8 +281,8 @@ function onDocumentKeyUp(event) {
     event.preventDefault();
     
     // Record key released
-    keynumber = event.keycode;
-    if(event.which) {
+    var keynumber = event.keycode;
+    if (event.which) {
         keynumber = event.which;
     }
     
@@ -278,56 +295,56 @@ function changeKey(keynumber, value) {
     switch(keynumber) {
         // If minus key is released
         case 109: case 189: case 17:
-            if(keysDown[0] != value) { keyChanged = true; }
+            if (keysDown[0] != value) { keyChanged = true; }
             keysDown[0] = value; break;
         
         // If plus key is released
         case 107: case 187: case 16:
-            if(keysDown[1] != value) { keyChanged = true; }
+            if (keysDown[1] != value) { keyChanged = true; }
             keysDown[1] = value; break;
         
         // If up arrow is released
         case 38:
-            if(keysDown[2] != value) { keyChanged = true; }
+            if (keysDown[2] != value) { keyChanged = true; }
             keysDown[2] = value; break;
         
         // If "w" is released
         case 87:
-            if(keysDown[6] != value) { keyChanged = true; }
+            if (keysDown[6] != value) { keyChanged = true; }
             keysDown[6] = value; break;
         
         // If down arrow is released
         case 40:
-            if(keysDown[3] != value) { keyChanged = true; }
+            if (keysDown[3] != value) { keyChanged = true; }
             keysDown[3] = value; break;
         
         // If "s" is released
         case 83:
-            if(keysDown[7] != value) { keyChanged = true; }
+            if (keysDown[7] != value) { keyChanged = true; }
             keysDown[7] = value; break;
         
         // If left arrow is released
         case 37:
-            if(keysDown[4] != value) { keyChanged = true; }
+            if (keysDown[4] != value) { keyChanged = true; }
             keysDown[4] = value; break;
         
         // If "a" is released
         case 65:
-            if(keysDown[8] != value) { keyChanged = true; }
+            if (keysDown[8] != value) { keyChanged = true; }
             keysDown[8] = value; break;
         
         // If right arrow is released
         case 39:
-            if(keysDown[5] != value) { keyChanged = true; }
+            if (keysDown[5] != value) { keyChanged = true; }
             keysDown[5] = value; break;
         
         // If "d" is released
         case 68:
-            if(keysDown[9] != value) { keyChanged = true; }
+            if (keysDown[9] != value) { keyChanged = true; }
             keysDown[9] = value;
     }
     
-    if(keyChanged && value) {
+    if (keyChanged && value) {
         if (performance.now()) {
             prevTime = performance.now();
         } else {
@@ -347,43 +364,43 @@ function keyRepeat() {
     var diff = (newTime - prevTime) * config.hfov / 1700;
     
     // If minus key is down
-    if(keysDown[0]) {
+    if (keysDown[0]) {
         zoomOut(diff);
     }
     
     // If plus key is down
-    if(keysDown[1]) {
+    if (keysDown[1]) {
         zoomIn(diff);
     }
     
     // If up arrow or "w" is down
-    if(keysDown[2] || keysDown[6]) {
+    if (keysDown[2] || keysDown[6]) {
         // Pan up
         config.pitch += diff;
     }
     
     // If down arrow or "s" is down
-    if(keysDown[3] || keysDown[7]) {
+    if (keysDown[3] || keysDown[7]) {
         // Pan down
         config.pitch -= diff;
     }
     
     // If left arrow or "a" is down
-    if(keysDown[4] || keysDown[8]) {
+    if (keysDown[4] || keysDown[8]) {
         // Pan left
         config.yaw -= diff;
     }
     
     // If right arrow or "d" is down
-    if(keysDown[5] || keysDown[9]) {
+    if (keysDown[5] || keysDown[9]) {
         // Pan right
         config.yaw += diff;
     }
     
     // If auto-rotate
-    if(config.autoRotate) {
+    if (config.autoRotate) {
         // Pan
-        if(diff > 0.000001) {
+        if (diff > 0.000001) {
             config.yaw -= config.autoRotate / 60 * diff;
         }
     }
@@ -401,23 +418,23 @@ function onDocumentResize() {
 
 function animate() {
     render();
-    if(isUserInteracting) {
+    if (isUserInteracting) {
         requestAnimationFrame(animate);
-    } else if(keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
+    } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
       || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7]
       || keysDown[8] || keysDown[9] || config.autoRotate) {
         keyRepeat();
         requestAnimationFrame(animate);
-    } else if(renderer && renderer.isLoading()) {
+    } else if (renderer && renderer.isLoading()) {
         requestAnimationFrame(animate);
     }
 }
 
 function render() {
     try {
-        if(config.yaw > 180) {
+        if (config.yaw > 180) {
             config.yaw -= 360;
-        } else if(config.yaw < -180) {
+        } else if (config.yaw < -180) {
             config.yaw += 360;
         }
         
@@ -468,7 +485,7 @@ function renderInit() {
 function createHotSpots() {
     if (hotspotsCreated) return;
     
-    if(!config.hotSpots) {
+    if (!config.hotSpots) {
         config.hotSpots = [];
     } else {
         config.hotSpots.forEach(function(hs) {
@@ -478,7 +495,7 @@ function createHotSpots() {
             var span = document.createElement('span');
             span.innerHTML = hs.text;
             
-            if(hs.URL) {
+            if (hs.URL) {
                 var a = document.createElement('a');
                 a.setAttribute('href', hs.URL);
                 a.setAttribute('target', '_blank');
@@ -505,7 +522,7 @@ function createHotSpots() {
                 a.appendChild(image);
                 
             } else {
-                if(hs.sceneId) {
+                if (hs.sceneId) {
                     div.onclick = function() {
                         loadScene(hs.sceneId);
                         return false;
@@ -528,7 +545,7 @@ function createHotSpots() {
 }
 
 function destroyHotSpots() {
-    if(config.hotSpots) {
+    if (config.hotSpots) {
         config.hotSpots.forEach(function(hs) {
             var current = hs.div;
             while(current.parentNode.id != 'page') {
@@ -545,7 +562,7 @@ function renderHotSpots() {
         var z = Math.sin(hs.pitch * Math.PI / 180) * Math.sin(config.pitch * Math.PI /
             180) + Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw + config.yaw) *
             Math.PI / 180) * Math.cos(config.pitch * Math.PI / 180);
-        if((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
+        if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
           ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
             hs.div.style.visibility = 'hidden';
         } else {
@@ -563,11 +580,11 @@ function renderHotSpots() {
 }
 
 function parseURLParameters() {
-    var URL = unescape(window.location.href).split('?');
+    var URL = decodeURI(window.location.href).split('?');
     URL.shift();
     URL = URL[0].split('&');
     var json = '{';
-    for(var i = 0; i < URL.length; i++) {
+    for (var i = 0; i < URL.length; i++) {
         var option = URL[i].split('=')[0];
         var value = URL[i].split('=')[1];
         json += '"' + option + '":';
@@ -579,7 +596,7 @@ function parseURLParameters() {
             default:
                 json += '"' + value + '"';
         }
-        if(i < URL.length - 1) {
+        if (i < URL.length - 1) {
             json += ',';
         }
     }
@@ -587,7 +604,7 @@ function parseURLParameters() {
     configFromURL = JSON.parse(json);
     
     // Check for JSON configuration file
-    if(configFromURL.config) {
+    if (configFromURL.config) {
         // Get JSON configuration file
         var request = new XMLHttpRequest();
         request.open('GET', configFromURL.config, false);
@@ -598,8 +615,8 @@ function parseURLParameters() {
         c.basePath = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
         
         // Merge options
-        for(var k in c) {
-            if(!configFromURL[k]) {
+        for (var k in c) {
+            if (!configFromURL[k]) {
                 configFromURL[k] = c[k];
             }
         }
@@ -607,7 +624,7 @@ function parseURLParameters() {
     
     // Check for virtual tour JSON configuration file
     var firstScene = null;
-    if(configFromURL.tour) {
+    if (configFromURL.tour) {
         // Get JSON configuration file
         var request = new XMLHttpRequest();
         request.open('GET', configFromURL.tour, false);
@@ -618,10 +635,10 @@ function parseURLParameters() {
         tourConfig.basePath = configFromURL.tour.substring(0,configFromURL.tour.lastIndexOf('/')+1);
         
         // Activate first scene if specified
-        if(tourConfig.default.firstScene) {
+        if (tourConfig.default.firstScene) {
             firstScene = tourConfig.default.firstScene;
         }
-        if(configFromURL.firstScene) {
+        if (configFromURL.firstScene) {
             firstScene = configFromURL.firstScene;
         }
     }
@@ -633,32 +650,32 @@ function mergeConfig(sceneId) {
     config = {};
     
     // Merge default config
-    for(var k in defaultConfig) {
+    for (var k in defaultConfig) {
         config[k] = defaultConfig[k];
     }
     
     // Merge default scene config
-    for(var k in tourConfig.default) {
+    for (var k in tourConfig.default) {
         config[k] = tourConfig.default[k];
     }
     
     // Merge current scene config
-    if((sceneId != null) && (sceneId != '') && (tourConfig.scenes) && (tourConfig.scenes[sceneId])) {
+    if ((sceneId !== null) && (sceneId !== '') && (tourConfig.scenes) && (tourConfig.scenes[sceneId])) {
         var scene = tourConfig.scenes[sceneId];
-        for(var k in scene) {
+        for (var k in scene) {
             config[k] = scene[k];
         }
         config.activeScene = sceneId;
     }
     
     // Merge URL and config file
-    for(var k in configFromURL) {
+    for (var k in configFromURL) {
         config[k] = configFromURL[k];
     }
 }
 
 function processOptions() {
-    for(var key in config) {
+    for (var key in config) {
         switch(key) {
             case 'title':
                 document.getElementById('title_box').innerHTML = config[key];
@@ -671,7 +688,7 @@ function processOptions() {
                 break;
                 
             case 'popout':
-                if(config[key] == 'yes') {
+                if (config[key] == 'yes') {
                     document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
                     popoutMode = true;
                 }
@@ -689,7 +706,7 @@ function processOptions() {
                     p = tourConfig.basePath + p;
                 }
                 document.body.style.backgroundImage = "url('" + p + "')";
-                document.body.style.backgroundSize = "auto";
+                document.body.style.backgroundSize = 'auto';
                 break;
             
             case 'hfov':
@@ -698,15 +715,15 @@ function processOptions() {
             
             case 'pitch':
                 // Keep pitch within bounds
-                if(config.pitch < -85) {
+                if (config.pitch < -85) {
                     config.pitch = -85;
-                } else if(config.pitch > 85) {
+                } else if (config.pitch > 85) {
                     config.pitch = 85;
                 }
                 break;
             
             case 'autoload':
-                if(config[key] == 'yes') {
+                if (config[key] == 'yes') {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
                 }
@@ -731,8 +748,8 @@ function processOptions() {
 }
 
 function toggleFullWindow() {
-    if(loaded && !error) {
-        if(!fullWindowActive && !popoutMode) {
+    if (loaded && !error) {
+        if (!fullWindowActive && !popoutMode) {
             try {
                 var page = document.getElementById('page');
                 if (page.requestFullscreen) {
@@ -758,7 +775,7 @@ function toggleFullWindow() {
                 document.msExitFullscreen();
             }
 
-            if(popoutMode) {
+            if (popoutMode) {
                 window.close();
             }
         }
@@ -766,7 +783,7 @@ function toggleFullWindow() {
 }
 
 function onFullScreenChange() {
-    if(document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
+    if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
         document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
         fullWindowActive = true;
     } else {
@@ -776,37 +793,37 @@ function onFullScreenChange() {
 }
 
 function fullScreenError() {
-    if(!popoutMode) {
+    if (!popoutMode) {
         // Open new window instead
         var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
         var windowlocation = window.location.href + '&popout=yes';
         windowlocation += '&popoutautoload';
-        window.open(windowlocation,null,windowspecs)
+        window.open(windowlocation, null, windowspecs);
     } else {
         window.close();
     }
 }
 
 function zoomIn(amount) {
-    if(loaded) {
+    if (loaded) {
         setHfov(config.hfov -= amount);
     }
 }
 
 function zoomOut(amount) {
-    if(loaded) {
+    if (loaded) {
         setHfov(config.hfov += amount);
     }
 }
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if(i < 50 && config.type != 'multires') {
+    if (i < 50 && config.type != 'multires') {
         config.hfov = 50;
-    } else if(config.type == 'multires' && i < canvas.width
+    } else if (config.type == 'multires' && i < canvas.width
         / (config.multiRes.cubeResolution / 90 * 0.9)) {
         config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
-    } else if(i > 120) {
+    } else if (i > 120) {
         config.hfov = 120;
     } else {
         config.hfov = i;
