@@ -263,7 +263,6 @@ body {
     visibility: hidden;
     cursor: default;
     border-radius: 13px;
-    text-align: center;
     vertical-align: middle;
 }
 .hotspot:hover {
