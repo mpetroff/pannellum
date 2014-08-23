@@ -1,5 +1,31 @@
-Pannellum
+Changelog
 =========
+
+
+Changes in Pannellum 2.0
+------------------------
+
+New Features:
+
+ - New rendering backend
+ - Multiresolution panoramas
+ - Partial panoramas
+ - Cubic panoramas
+ - CSS 3D fallback renderer for multiresolution panoramas
+ - JSON configuration files
+ - Hot spots and tours
+ - Compass headings
+
+Improvements:
+
+ - More configuration options
+ - New theme
+ - Performance improvements
+ - CORS support
+
+Bugfixes:
+
+ - Numerous
 
 
 Changes in Pannellum 1.2
