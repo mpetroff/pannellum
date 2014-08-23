@@ -566,6 +566,7 @@ function Renderer(container, image, imageType) {
         if (!node.texture) {
         node.texture = gl.createTexture();
         node.image = new Image();
+        node.image.crossOrigin = 'anonymous';
         var self = this;
         node.image.onload = function() {
             self.processLoadedTexture(node.image, node.texture);
