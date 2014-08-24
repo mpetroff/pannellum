@@ -345,7 +345,7 @@ function changeKey(keynumber, value) {
     }
     
     if (keyChanged && value) {
-        if (performance.now()) {
+        if (typeof performance !== 'undefined' && performance.now()) {
             prevTime = performance.now();
         } else {
             prevTime = Date.now();
@@ -356,7 +356,7 @@ function changeKey(keynumber, value) {
 
 function keyRepeat() {
     var newTime;
-    if (performance.now()) {
+    if (typeof performance !== 'undefined' && performance.now()) {
         newTime = performance.now();
     } else {
         newTime = Date.now();
