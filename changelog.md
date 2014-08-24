@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.0.1
+--------------------------
+
+Bugfixes:
+ - Fix keyboard controls in Safari
+
+
 Changes in Pannellum 2.0
 ------------------------
 
