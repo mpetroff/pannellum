@@ -48,8 +48,14 @@ var config,
 
 var defaultConfig = {
     hfov: 100,
+    minhfov: 50,
+    maxhfov: 120,
     pitch: 0,
+    minpitch: -85,
+    maxpitch: 85,
     yaw: 0,
+    minyaw: -360,
+    maxyaw: 360,
     haov: 360,
     vaov: 180,
     voffset: 0,
@@ -196,9 +202,15 @@ function onDocumentMouseDown(event) {
 function onDocumentMouseMove(event) {
     if (isUserInteracting) {
         //TODO: This still isn't quite right
-        config.yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
+        var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
+        // Ensure the yaw is within min and max allowed
+        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        
         var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
-        config.pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
+        
+        var pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
+        // Ensure the calculated pitch is within min and max allowed
+        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
     }
 }
 
@@ -218,9 +230,15 @@ function onDocumentTouchStart(event) {
 function onDocumentTouchMove(event) {
     // Override default action
     event.preventDefault();
+
+    var yaw = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownYaw;
+    // Ensure the yaw is within min and max allowed
+    config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
     
-    config.yaw = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownYaw;
-    config.pitch = (event.targetTouches[0].clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
+    var pitch = (event.targetTouches[0].clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
+    // Ensure the calculated pitch is within min and max allowed
+    config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+    
     animate();
 }
 
@@ -363,6 +381,9 @@ function keyRepeat() {
     }
     var diff = (newTime - prevTime) * config.hfov / 1700;
     
+    var pitch = config.pitch;
+    var yaw = config.yaw;
+    
     // If minus key is down
     if (keysDown[0]) {
         zoomOut(diff);
@@ -376,25 +397,37 @@ function keyRepeat() {
     // If up arrow or "w" is down
     if (keysDown[2] || keysDown[6]) {
         // Pan up
-        config.pitch += diff;
+        pitch += diff;
+        
+        // Ensure the calculated pitch is within min and max allowed
+        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
     }
     
     // If down arrow or "s" is down
     if (keysDown[3] || keysDown[7]) {
         // Pan down
-        config.pitch -= diff;
+        pitch -= diff;
+        
+        // Ensure the calculated pitch is within min and max allowed
+        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
     }
     
     // If left arrow or "a" is down
     if (keysDown[4] || keysDown[8]) {
         // Pan left
-        config.yaw -= diff;
+        yaw -= diff;
+        
+        // Ensure the yaw is within min and max allowed
+        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
     }
     
     // If right arrow or "d" is down
     if (keysDown[5] || keysDown[9]) {
         // Pan right
-        config.yaw += diff;
+        yaw += diff;
+        
+        // Ensure the yaw is within min and max allowed
+        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
     }
     
     // If auto-rotate
@@ -438,7 +471,12 @@ function render() {
             config.yaw += 360;
         }
         
-        config.pitch = Math.max(-85, Math.min(85, config.pitch));
+        // Ensure the yaw is within min and max allowed
+        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, config.yaw));
+        
+        // Ensure the calculated pitch is within min and max allowed
+        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, config.pitch));
+        
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180);
         
         renderHotSpots();
@@ -715,11 +753,7 @@ function processOptions() {
             
             case 'pitch':
                 // Keep pitch within bounds
-                if (config.pitch < -85) {
-                    config.pitch = -85;
-                } else if (config.pitch > 85) {
-                    config.pitch = 85;
-                }
+                config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, config.pitch));
                 break;
             
             case 'autoload':
@@ -818,13 +852,13 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if (i < 50 && config.type != 'multires') {
-        config.hfov = 50;
+    if (i < config.minhfov && config.type != 'multires') {
+        config.hfov = config.minhfov;
     } else if (config.type == 'multires' && i < canvas.width
         / (config.multiRes.cubeResolution / 90 * 0.9)) {
         config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
-    } else if (i > 120) {
-        config.hfov = 120;
+    } else if (i > config.maxhfov) {
+        config.hfov = config.maxhfov;
     } else {
         config.hfov = i;
     }
