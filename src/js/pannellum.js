@@ -869,7 +869,16 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    config.hfov = Math.max(config.minhfov, Math.min(config.maxhfov, i));
+    if (i < config.minhfov && config.type != 'multires') {
+        config.hfov = config.minhfov;
+    } else if (config.type == 'multires' && i < canvas.width
+        / (config.multiRes.cubeResolution / 90 * 0.9)) {
+        config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
+    } else if (i > config.maxhfov) {
+        config.hfov = config.maxhfov;
+    } else {
+        config.hfov = i;
+    }
 }
 
 function load() {
