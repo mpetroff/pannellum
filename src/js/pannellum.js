@@ -165,6 +165,12 @@ function anError() {
     error = true;
 }
 
+function clearError() {
+    document.getElementById('load_box').style.display = 'none';
+    document.getElementById('nocanvas').style.display = 'none';
+    error = false;
+}
+
 function onRightClick(event) {
     document.getElementById('about').style.left = event.clientX + 'px';
     document.getElementById('about').style.top = event.clientY + 'px';
@@ -464,16 +470,27 @@ function animate() {
 }
 
 function render() {
+	var tmpyaw;
+
     try {
         if (config.yaw > 180) {
             config.yaw -= 360;
         } else if (config.yaw < -180) {
             config.yaw += 360;
         }
-        
+
+        // Keep a tmp value of yaw for autoRotate comparison later
+        tmpyaw = config.yaw;
+
         // Ensure the yaw is within min and max allowed
         config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, config.yaw));
         
+		// Check if we autoRotate in a limited by min and max yaw
+		// If so reverse direction
+		if (config.autoRotate !== false && tmpyaw != config.yaw) {
+			config.autoRotate *= -1;
+		}
+
         // Ensure the calculated pitch is within min and max allowed
         config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, config.pitch));
         
@@ -744,7 +761,7 @@ function processOptions() {
                     p = tourConfig.basePath + p;
                 }
                 document.body.style.backgroundImage = "url('" + p + "')";
-                document.body.style.backgroundSize = 'auto';
+                document.body.style.backgroundSize = '100% 100%';
                 break;
             
             case 'hfov':
@@ -865,6 +882,11 @@ function setHfov(i) {
 }
 
 function load() {
+    // Since WebGL error handling is very general, first we clear any error box
+    // since it is a new scene and the error from previous maybe because of lacking
+    // memory etc and not because of a lack of WebGL support etc
+    clearError();
+
     document.getElementById('load_button').style.display = 'none';
     document.getElementById('load_box').style.display = 'inline';
     init();
