@@ -582,6 +582,10 @@ function createHotSpots() {
                         loadScene(hs.sceneId);
                         return false;
                     };
+                    div.ontouchend = function() {
+                        loadScene(hs.sceneId);
+                        return false;
+                    };
                     div.style.cursor = 'pointer';
                     span.style.cursor = 'pointer';
                 }
