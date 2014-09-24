@@ -3,8 +3,8 @@ html {
 }
 
 body {
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
     position: fixed;
     cursor: default;
@@ -21,11 +21,11 @@ body {
 }
 
 .grab {
-    cursor: url('img/grab.svg') 12 8,default;
+    cursor: url('img/grab.svg') 12 8, default;
 }
 
 .grabbing {
-    cursor: url('img/grabbing.svg') 12 8,default;
+    cursor: url('img/grabbing.svg') 12 8, default;
 }
 
 .sprite {
@@ -204,7 +204,6 @@ body {
 }
 
 .infobox {
-    color: #000;
     font-size: 15px;
     position: absolute;
     top: 50%;
@@ -337,9 +336,9 @@ div.tooltip:hover:after {
 .face {
     position: absolute;
     -webkit-transform-origin: 0 0 0;
+    transform-origin: 0 0 0;
     -webkit-backface-visibility: hidden;
-    -moz-transform-origin: 0 0 0;
-    -moz-backface-visibility: hidden;
+    backface-visibility: hidden;
     height: 1002px;
     width: 1002px;
     background-size: 100% 100%;
