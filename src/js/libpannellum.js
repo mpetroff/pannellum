@@ -64,6 +64,15 @@ function Renderer(container, image, imageType) {
             throw 'no webgl';
         }
         this.image.fullpath = this.image.basePath + this.image.path;
+        this.image.invTileResolution = 1 / this.image.tileResolution;
+        
+        var vertices = this.createCube();
+        this.vtmp = [];
+        for ( var s = 0; s < 6; s++ ) {
+            this.vtmp[s] = vertices.slice(s * 12, s * 12 + 12);
+            vertices = this.createCube();
+        }
+        
         
         // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
@@ -108,6 +117,8 @@ function Renderer(container, image, imageType) {
         
         // Use WebGL program
         gl.useProgram(program);
+        
+        program.drawInProgress = false;
         
         // Look up texture coordinates location
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
@@ -213,8 +224,8 @@ function Renderer(container, image, imageType) {
         
         if (this.imageType != 'multires') {
             // Calculate focal length from vertical field of view
-            var vfov = 2 * Math.atan(Math.tan(hfov/2) / (this.canvas.width / this.canvas.height));
-            var focal = 1 / Math.tan(vfov / 2);
+            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (this.canvas.width / this.canvas.height));
+            var focal = 1 / Math.tan(vfov * 0.5);
             
             // Pass psi, theta, and focal length
             gl.uniform1f(program.psi, yaw);
@@ -250,11 +261,10 @@ function Renderer(container, image, imageType) {
                 program.nodeCache.splice(200, program.nodeCache.length - 200);
             }
             program.currentNodes = [];
-            var vertices = this.createCube();
+            
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
             for ( var s = 0; s < 6; s++ ) {
-                var vtmp = vertices.slice(s * 12, s * 12 + 12);
-                var ntmp = new MultiresNode(vtmp, sides[s], 1, 0, 0, this.image.fullpath);
+                var ntmp = new MultiresNode(this.vtmp[s], sides[s], 1, 0, 0, this.image.fullpath);
                 this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
             program.currentNodes.sort(this.multiresNodeRenderSort);
@@ -327,8 +337,8 @@ function Renderer(container, image, imageType) {
                     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
                 }
             }
+            program.drawInProgress = false;
         }
-        program.drawInProgress = false;
     };
 
     function MultiresNode(vertices, side, level, x, y, path) {
@@ -344,9 +354,9 @@ function Renderer(container, image, imageType) {
         if (this.checkSquareInView(rotPersp, node.vertices)) {
             // Calculate central angle between center of view and center of tile
             var v = node.vertices;
-            var x = (v[0] + v[3] + v[6] + v[ 9]) / 4;
-            var y = (v[1] + v[4] + v[7] + v[10]) / 4;
-            var z = (v[2] + v[5] + v[8] + v[11]) / 4;
+            var x = v[0] + v[3] + v[6] + v[ 9];
+            var y = v[1] + v[4] + v[7] + v[10];
+            var z = v[2] + v[5] + v[8] + v[11];
             var r = Math.sqrt(x*x + y*y + z*z);
             var theta = Math.asin(z / r);
             var phi = Math.atan2(y, x);
@@ -376,8 +386,8 @@ function Renderer(container, image, imageType) {
             // TODO: Test error
             // Create child nodes
             if (node.level < program.level) {
-                var cubeSize = this.image.cubeResolution / Math.pow(2, this.image.maxLevel - node.level);
-                var numTiles = Math.ceil(cubeSize / this.image.tileResolution) - 1;
+                var cubeSize = this.image.cubeResolution * Math.pow(2, node.level - this.image.maxLevel);
+                var numTiles = Math.ceil(cubeSize * this.image.invTileResolution) - 1;
                 var doubleTileSize = cubeSize % this.image.tileResolution * 2;
                 var lastTileSize = (cubeSize * 2) % this.image.tileResolution;
                 if (lastTileSize === 0) {
@@ -395,15 +405,15 @@ function Renderer(container, image, imageType) {
                 var vtmp, ntmp;
                 var f1 = f, f2 = f, f3 = f, i1 = i, i2 = i, i3 = i;
                 // Handle non-symmetric tiles
-                if (((node.x == numTiles && node.y != numTiles) || (node.x != numTiles && node.y == numTiles)) && lastTileSize < this.image.tileResolution) {
-                    if (node.x == numTiles) {
+                if (lastTileSize < this.image.tileResolution) {
+                    if (node.x == numTiles && node.y != numTiles) {
                         f2 = 0.5;
                         i2 = 0.5;
                         if (node.side == 'd' || node.side == 'u') {
                             f3 = 0.5;
                             i3 = 0.5;
                         }
-                    } else {
+                    } else if (node.x != numTiles && node.y == numTiles) {
                         f1 = 0.5;
                         i1 = 0.5;
                         if (node.side == 'l' || node.side == 'r') {
@@ -576,18 +586,12 @@ function Renderer(container, image, imageType) {
     };
     
     this.checkZoom = function(hfov) {
-        // Focal length
-        var f = 1 / Math.tan(hfov);
-        
-        // Keep in bounds
-        if (f < 0.00001)
-            f = 0.00001;
-        
         // Find optimal level
         var newLevel = 1;
-        while ( this.canvas.width > this.image.cubeResolution
-            / Math.pow(2, this.image.maxLevel - newLevel)
-            * hfov / (Math.PI / 2) * 0.9 && newLevel < this.image.maxLevel ) {
+        while ( newLevel < this.image.maxLevel &&
+            this.canvas.width > this.image.cubeResolution
+            * Math.pow(2, newLevel - this.image.maxLevel)
+            * hfov / (Math.PI / 2) * 0.9 ) {
             newLevel++;
         }
         
@@ -605,32 +609,32 @@ function Renderer(container, image, imageType) {
         ];
     };
     
-    // rotated perspective matrix, vec3
+    // rotated perspective matrix, vec3 (last element is inverted)
     this.applyRotPerspToVec = function(m, v) {
         return [
                     m[ 0]*v[0] + m[ 1]*v[1] + m[ 2]*v[2],
                     m[ 4]*v[0] + m[ 5]*v[1] + m[ 6]*v[2],
             m[11] + m[ 8]*v[0] + m[ 9]*v[1] + m[10]*v[2],
-                    m[12]*v[0] + m[13]*v[1] + m[14]*v[2]
+                 1/(m[12]*v[0] + m[13]*v[1] + m[14]*v[2])
         ];
     };
     
     this.checkInView = function(m, v) {
         var vpp = this.applyRotPerspToVec(m, v);
-        var winX = ( vpp[0]/vpp[3] + 1 ) / 2;
-        var winY = ( vpp[1]/vpp[3] + 1 ) / 2;
-        var winZ = ( vpp[2]/vpp[3] + 1 ) / 2;
+        var winX = vpp[0]*vpp[3];
+        var winY = vpp[1]*vpp[3];
+        var winZ = vpp[2]*vpp[3];
         var ret = [0, 0, 0];
         
-        if ( winX < 0 )
+        if ( winX < -1 )
             ret[0] = -1;
         if ( winX > 1 )
             ret[0] = 1;
-        if ( winY < 0 )
+        if ( winY < -1 )
             ret[1] = -1;
         if ( winY > 1 )
             ret[1] = 1;
-        if ( winZ < 0 || winZ > 1 )
+        if ( winZ < -1 || winZ > 1 )
             ret[2] = 1;
         return ret;
     };
@@ -641,9 +645,13 @@ function Renderer(container, image, imageType) {
         var check3 = this.checkInView(m, v.slice(6, 9));
         var check4 = this.checkInView(m, v.slice(9, 12));
         var testX = check1[0] + check2[0] + check3[0] + check4[0];
+        if ( testX == -4 || testX == 4 )
+            return false;
         var testY = check1[1] + check2[1] + check3[1] + check4[1];
+        if ( testY == -4 || testY == 4 )
+            return false;
         var testZ = check1[2] + check2[2] + check3[2] + check4[2];
-        if ( testX == -4 || testX == 4 || testY == -4 || testY == 4 || testZ == 4 )
+        if ( testZ == 4 )
             return false;
         
         return true;
