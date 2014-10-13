@@ -579,11 +579,11 @@ function createHotSpots() {
             } else {
                 if (hs.sceneId) {
                     div.onclick = function() {
-                        loadScene(hs.sceneId);
+                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw);
                         return false;
                     };
                     div.ontouchend = function() {
-                        loadScene(hs.sceneId);
+                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw);
                         return false;
                     };
                     div.style.cursor = 'pointer';
@@ -897,8 +897,17 @@ function load() {
     animate();
 }
 
-function loadScene(sceneId) {
+function loadScene(sceneId, targetPitch, targetYaw) {
     loaded = false;
+    
+    if (targetPitch === 'same') {
+        targetPitch = config.pitch;
+    }
+    if (targetYaw === 'same') {
+        targetYaw = config.yaw;
+    } else if (targetYaw === 'sameAzimuth') {
+        targetYaw = config.yaw + config.northOffset - tourConfig.scenes[sceneId].northOffset;
+    }
     
     // Destroy hot spots from previous scene
     destroyHotSpots();
@@ -908,5 +917,11 @@ function loadScene(sceneId) {
     
     // Reload scene
     processOptions();
+    if (targetPitch) {
+        config.pitch = targetPitch;
+    }
+    if (targetYaw) {
+        config.yaw = targetYaw;
+    }
     load();
 }
