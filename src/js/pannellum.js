@@ -33,6 +33,7 @@ var config,
     isUserInteracting = false,
     onPointerDownPointerX = 0,
     onPointerDownPointerY = 0,
+    onPointerDownPointerDist = -1,
     onPointerDownYaw = 0,
     onPointerDownPitch = 0,
     keysDown = new Array(10),
@@ -229,6 +230,16 @@ function onDocumentTouchStart(event) {
     onPointerDownPointerX = event.targetTouches[0].clientX;
     onPointerDownPointerY = event.targetTouches[0].clientY;
     
+    if (event.targetTouches.length == 2) {
+        // Down pointer is the center of the two fingers
+        onPointerDownPointerX += (event.targetTouches[1].clientX - event.targetTouches[0].clientX) * 0.5;
+        onPointerDownPointerY += (event.targetTouches[1].clientY - event.targetTouches[0].clientY) * 0.5; 
+        onPointerDownPointerDist = Math.sqrt(
+                                    (event.targetTouches[0].clientX - event.targetTouches[1].clientX) * (event.targetTouches[0].clientX - event.targetTouches[1].clientX) +
+                                    (event.targetTouches[0].clientY - event.targetTouches[1].clientY) * (event.targetTouches[0].clientY - event.targetTouches[1].clientY)); 
+    }
+    isUserInteracting = true;
+    
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
 }
@@ -236,20 +247,35 @@ function onDocumentTouchStart(event) {
 function onDocumentTouchMove(event) {
     // Override default action
     event.preventDefault();
-
-    var yaw = (onPointerDownPointerX - event.targetTouches[0].clientX) * 0.1 + onPointerDownYaw;
-    // Ensure the yaw is within min and max allowed
-    config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
-    
-    var pitch = (event.targetTouches[0].clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
-    // Ensure the calculated pitch is within min and max allowed
-    config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
-    
-    animate();
+    if (isUserInteracting) {
+        var clientX = event.targetTouches[0].clientX;
+        var clientY = event.targetTouches[0].clientY;
+        
+        if (event.targetTouches.length == 2 && onPointerDownPointerDist != -1) {
+            clientX += (event.targetTouches[1].clientX - event.targetTouches[0].clientX) * 0.5;
+            clientY += (event.targetTouches[1].clientY - event.targetTouches[0].clientY) * 0.5;
+            var clientDist = Math.sqrt(
+                                    (event.targetTouches[0].clientX - event.targetTouches[1].clientX) * (event.targetTouches[0].clientX - event.targetTouches[1].clientX) +
+                                    (event.targetTouches[0].clientY - event.targetTouches[1].clientY) * (event.targetTouches[0].clientY - event.targetTouches[1].clientY));
+            setHfov(config.hfov += (onPointerDownPointerDist - clientDist) * 0.1);
+            onPointerDownPointerDist = clientDist;
+        }
+        
+        var yaw = (onPointerDownPointerX - clientX) * 0.1 + onPointerDownYaw;
+        // Ensure the yaw is within min and max allowed
+        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        
+        var pitch = (clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
+        // Ensure the calculated pitch is within min and max allowed
+        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        
+        animate();
+    }
 }
 
 function onDocumentTouchEnd() {
-    // Do nothing for now
+    isUserInteracting = false;
+    onPointerDownPointerDist = -1;
 }
 
 function onDocumentMouseWheel(event) {
