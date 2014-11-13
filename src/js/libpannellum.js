@@ -45,7 +45,9 @@ function Renderer(container, image, imageType) {
         gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
-        if (!gl && this.imageType == 'multires' && this.image.fallbackPath) {
+        // While browser specific tests are usually frowned upon, the
+        // fallback viewer only really works with WebKit/Blink
+        if (!gl && this.imageType == 'multires' && this.image.fallbackPath && 'WebkitAppearance' in document.documentElement.style) {
             // Initialize renderer
             container.className = 'viewport';
             this.world = container.querySelector('.world');
