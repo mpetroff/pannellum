@@ -61,7 +61,8 @@ var defaultConfig = {
     vaov: 180,
     voffset: 0,
     autoRotate: false,
-    type: 'equirectangular'
+    type: 'equirectangular',
+    northOffset: 0
 };
 
 // Process options
