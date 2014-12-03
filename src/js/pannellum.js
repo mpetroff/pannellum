@@ -824,6 +824,24 @@ function processOptions() {
             case 'header':
                 // Add contents to header
                 document.getElementsByTagName('head')[0].innerHTML += config[key];
+            
+            case 'showZoomCtrl':
+                if (config[key]) {
+                    // Show zoom controls
+                    document.getElementById('zoomcontrols').style.display = 'block';
+                } else {
+                    // Hide zoom controls
+                    document.getElementById('zoomcontrols').style.display = 'none';
+                }
+            
+            case 'showFullscreenCtrl':
+                if (config[key]) {
+                    // Show fullscreen control
+                    document.getElementById('fullwindowtoggle_button').style.display = 'block';
+                } else {
+                    // Hide fullscreen control
+                    document.getElementById('fullwindowtoggle_button').style.display = 'none';
+                }
         }
     }
 }
