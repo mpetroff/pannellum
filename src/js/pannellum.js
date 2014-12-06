@@ -775,6 +775,12 @@ function processOptions() {
         }
         document.body.style.backgroundImage = "url('" + p + "')";
         document.body.style.backgroundSize = '100% 100%';
+        
+        // Initialize a request to make sure the browser begins fetching the
+        // preview image.
+        var request = new XMLHttpRequest();
+        request.open('GET', p, false);
+        request.send();
     }
     
     // Process other options
