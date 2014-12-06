@@ -761,6 +761,21 @@ function mergeConfig(sceneId) {
 }
 
 function processOptions() {
+    // Process preview first so it always loads before the browser hits its
+    // maximum number of connections to a server as can happen with cubic
+    // panoramas
+    if ('preview' in config) {
+        var p = config['preview'];
+        if (config.basePath) {
+            p = config.basePath + p;
+        } else if (tourConfig.basePath) {
+            p = tourConfig.basePath + p;
+        }
+        document.body.style.backgroundImage = "url('" + p + "')";
+        document.body.style.backgroundSize = '100% 100%';
+    }
+    
+    // Process other options
     for (var key in config) {
         switch(key) {
             case 'title':
@@ -782,17 +797,6 @@ function processOptions() {
             
             case 'fallback':
                 document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + config[key] + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
-                break;
-            
-            case 'preview':
-                var p = config[key];
-                if (config.basePath) {
-                    p = config.basePath + p;
-                } else if (tourConfig.basePath) {
-                    p = tourConfig.basePath + p;
-                }
-                document.body.style.backgroundImage = "url('" + p + "')";
-                document.body.style.backgroundSize = '100% 100%';
                 break;
             
             case 'hfov':
