@@ -609,7 +609,7 @@ function createHotSpots() {
                 var a = document.createElement('a');
                 a.setAttribute('href', hs.URL);
                 a.setAttribute('target', '_blank');
-                document.getElementById('page').appendChild(a);
+                document.getElementById('container').appendChild(a);
                 div.style.cursor = 'pointer';
                 span.style.cursor = 'pointer';
                 a.appendChild(div);
@@ -618,7 +618,7 @@ function createHotSpots() {
                 video.setAttribute('src',hs.video);
                 video.setAttribute('controls',true);
                 video.setAttribute('style','width:' + hs.width + 'px');
-                document.getElementById('page').appendChild(div);
+                document.getElementById('container').appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
                 var a = document.createElement('a');
@@ -628,7 +628,7 @@ function createHotSpots() {
                 var image = document.createElement('img');
                 image.setAttribute('src',hs.image);
                 image.setAttribute('style','width:' + hs.width + 'px');
-                document.getElementById('page').appendChild(div);
+                document.getElementById('container').appendChild(div);
                 a.appendChild(image);
                 
             } else {
@@ -644,7 +644,7 @@ function createHotSpots() {
                     div.style.cursor = 'pointer';
                     span.style.cursor = 'pointer';
                 }
-                document.getElementById('page').appendChild(div);
+                document.getElementById('container').appendChild(div);
             }
             
             div.appendChild(span);
@@ -662,10 +662,10 @@ function destroyHotSpots() {
     if (config.hotSpots) {
         config.hotSpots.forEach(function(hs) {
             var current = hs.div;
-            while(current.parentNode.id != 'page') {
+            while(current.parentNode.id != 'container') {
                 current = current.parentNode;
             }
-            document.getElementById('page').removeChild(current);
+            document.getElementById('container').removeChild(current);
         });
     }
     hotspotsCreated = false;
