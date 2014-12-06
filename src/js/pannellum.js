@@ -190,6 +190,11 @@ function onDocumentMouseDown(event) {
     // But not all of it
     window.focus();
     
+    // Only do something if the panorama is loaded
+    if (!loaded) {
+        return;
+    }
+    
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
     
@@ -207,7 +212,7 @@ function onDocumentMouseDown(event) {
 }
 
 function onDocumentMouseMove(event) {
-    if (isUserInteracting) {
+    if (isUserInteracting && loaded) {
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
         // Ensure the yaw is within min and max allowed
@@ -227,6 +232,11 @@ function onDocumentMouseUp() {
 }
 
 function onDocumentTouchStart(event) {
+    // Only do something if the panorama is loaded
+    if (!loaded) {
+        return;
+    }
+    
     onPointerDownPointerX = event.targetTouches[0].clientX;
     onPointerDownPointerY = event.targetTouches[0].clientY;
     
@@ -247,7 +257,7 @@ function onDocumentTouchStart(event) {
 function onDocumentTouchMove(event) {
     // Override default action
     event.preventDefault();
-    if (isUserInteracting) {
+    if (isUserInteracting && loaded) {
         var clientX = event.targetTouches[0].clientX;
         var clientY = event.targetTouches[0].clientY;
         
@@ -280,6 +290,11 @@ function onDocumentTouchEnd() {
 
 function onDocumentMouseWheel(event) {
     event.preventDefault();
+    
+    // Only do something if the panorama is loaded
+    if (!loaded) {
+        return;
+    }
     
     if (event.wheelDeltaY) {
         // WebKit
@@ -405,6 +420,11 @@ function changeKey(keynumber, value) {
 }
 
 function keyRepeat() {
+    // Only do something if the panorama is loaded
+    if (!loaded) {
+        return;
+    }
+    
     var newTime;
     if (typeof performance !== 'undefined' && performance.now()) {
         newTime = performance.now();
@@ -482,6 +502,11 @@ function onDocumentResize() {
 }
 
 function animate() {
+    if (!loaded) {
+        requestAnimationFrame(animate);
+        return;
+    }
+    
     render();
     if (isUserInteracting) {
         requestAnimationFrame(animate);
@@ -554,6 +579,7 @@ function renderInit() {
         
         // Hide loading display
         document.getElementById('load_box').style.display = 'none';
+        document.getElementById('preview').style.display = 'none';
         loaded = true;
         
     } catch(event) {
@@ -773,14 +799,24 @@ function processOptions() {
         } else if (tourConfig.basePath) {
             p = tourConfig.basePath + p;
         }
-        document.body.style.backgroundImage = "url('" + p + "')";
-        document.body.style.backgroundSize = '100% 100%';
+        
+        var preview = document.getElementById('preview');
+        
+        preview.style.display = 'none';
+        preview.style.backgroundImage = "url('" + p + "')";
         
         // Initialize a request to make sure the browser begins fetching the
         // preview image.
         var request = new XMLHttpRequest();
-        request.open('GET', p, false);
+        request.open('GET', p);
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && !loaded) {
+                preview.style.display = 'block';
+            }
+        };
         request.send();
+        
+        //document.body.style.backgroundImage = "url('" + p + "')";
     }
     
     // Process other options

@@ -368,8 +368,14 @@ div.tooltip:hover:after {
     transform: translate3d(500px, -501px, -501px) rotateX(0deg) rotateY(270deg) rotateZ(0deg);
 }
 
-.dragfix {
+.dragfix, #preview {
     position: absolute;
     height: 100%;
     width: 100%;
+}
+
+#preview {
+    top: 0;
+    left: 0;
+    background-size: 100% 100%;
 }
