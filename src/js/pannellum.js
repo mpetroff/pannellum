@@ -579,7 +579,7 @@ function renderInit() {
         
         // Hide loading display
         document.getElementById('load_box').style.display = 'none';
-        document.getElementById('preview').style.display = 'none';
+        document.getElementById('container').removeChild(document.getElementById('preview'));
         loaded = true;
         
     } catch(event) {
@@ -800,21 +800,11 @@ function processOptions() {
             p = tourConfig.basePath + p;
         }
         
-        var preview = document.getElementById('preview');
-        
-        preview.style.display = 'none';
-        
-        // Initialize a request to make sure the browser begins fetching the
-        // preview image.
         var img = new Image();
-        img.onload = function(){
-            if (!loaded) {
-                preview.style.backgroundImage = 'url(' + img.src + ')';
-                preview.style.display = 'block';
-            }
-        };
         img.crossOrigin = 'anonymous';
+        img.id = 'preview';
         img.src = p;
+        document.getElementById('container').appendChild(img);
     }
     
     // Process other options
