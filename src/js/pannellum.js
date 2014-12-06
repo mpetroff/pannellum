@@ -803,20 +803,18 @@ function processOptions() {
         var preview = document.getElementById('preview');
         
         preview.style.display = 'none';
-        preview.style.backgroundImage = "url('" + p + "')";
         
         // Initialize a request to make sure the browser begins fetching the
         // preview image.
-        var request = new XMLHttpRequest();
-        request.open('GET', p);
-        request.onreadystatechange = function() {
-            if (request.readyState == 4 && !loaded) {
+        var img = new Image();
+        img.onload = function(){
+            if (!loaded) {
+                preview.style.backgroundImage = 'url(' + img.src + ')';
                 preview.style.display = 'block';
             }
         };
-        request.send();
-        
-        //document.body.style.backgroundImage = "url('" + p + "')";
+        img.crossOrigin = 'anonymous';
+        img.src = p;
     }
     
     // Process other options
