@@ -158,7 +158,6 @@ function init() {
     }
     
     document.getElementById('page').className = 'grab';
-    createHotSpots();
 }
 
 function anError() {
@@ -549,6 +548,9 @@ function renderInit() {
         } else {
             document.getElementById('compass').style.display = 'none';
         }
+        
+        // Show hotspots
+        createHotSpots();
         
         // Hide loading display
         document.getElementById('load_box').style.display = 'none';
