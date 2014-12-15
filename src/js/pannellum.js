@@ -252,6 +252,8 @@ function onDocumentTouchStart(event) {
     
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
+
+    requestAnimationFrame(animate);
 }
 
 function onDocumentTouchMove(event) {
@@ -278,8 +280,6 @@ function onDocumentTouchMove(event) {
         var pitch = (clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
         // Ensure the calculated pitch is within min and max allowed
         config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
-        
-        animate();
     }
 }
 
