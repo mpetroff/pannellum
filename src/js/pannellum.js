@@ -579,7 +579,9 @@ function renderInit() {
         
         // Hide loading display
         document.getElementById('load_box').style.display = 'none';
-        document.getElementById('container').removeChild(document.getElementById('preview'));
+        if (document.getElementById('preview') !== null) {
+            document.getElementById('container').removeChild(document.getElementById('preview'));
+        }
         loaded = true;
         
     } catch(event) {
