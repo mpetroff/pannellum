@@ -63,7 +63,7 @@ function Renderer(container, image, imageType) {
             return;
         } else if (!gl) {
             console.log('Error: no WebGL support detected!');
-            throw 'no webgl';
+            throw {type: 'no webgl'};
         }
         this.image.fullpath = this.image.basePath + this.image.path;
         this.image.invTileResolution = 1 / this.image.tileResolution;
@@ -206,8 +206,23 @@ function Renderer(container, image, imageType) {
         
         // Check if there was an error
         if (gl.getError() !== 0) {
-            console.log('Error: something went wrong with WebGL!');
-            throw 'webgl error';
+            console.log('Error: Something went wrong with WebGL!');
+            if (this.imageType == 'equirectangular') {
+                var width = Math.max(this.image.width, this.image.height);
+                var maxWidth = gl.getParameter(gl['MAX_TEXTURE_SIZE']);
+                if (width > maxWidth) {
+                    console.log('Error: The image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
+                    throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
+                }
+            } else if (this.imageType == 'cubemap') {
+                var width = this.image[0].width;
+                var maxWidth = gl.getParameter(gl['MAX_CUBE_MAP_TEXTURE_SIZE']);
+                if (width > maxWidth) {
+                    console.log('Error: The cube face image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
+                    throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
+                }
+            }
+            throw {type: 'webgl error'};
         }
     };
 

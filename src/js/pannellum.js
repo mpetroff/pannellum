@@ -160,10 +160,14 @@ function init() {
     document.getElementById('page').className = 'grab';
 }
 
-function anError() {
+function anError(error) {
+    if (error !== undefined) {
+        document.getElementById('nocanvas').innerHTML = '<p>' + error + '</p>';
+    }
     document.getElementById('load_box').style.display = 'none';
     document.getElementById('nocanvas').style.display = 'table';
     error = true;
+    document.getElementById('container').style.display = 'none';
 }
 
 function clearError() {
@@ -588,8 +592,13 @@ function renderInit() {
         // Panorama not loaded
         
         // Display error if there is a bad texture
-        if (event == 'webgl error' || event == 'no webgl') {
+        if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
+        } else if (event.type == 'webgl size error') {
+            anError('This panorama is too big for your device! It\'s '
+                + event.width + 'px wide, but your device only supports images up to '
+                + event.maxWidth + 'px wide. Try another device.'
+                + ' (If you\'re the author, try scaling down the image.)');
         }
     }
 }
