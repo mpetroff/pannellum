@@ -856,6 +856,7 @@ function processOptions() {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
                 }
+                //fallthrough
             case 'popoutautoload':
                 // Hide load button
                 document.getElementById('load_button').style.display = 'none';
@@ -872,7 +873,8 @@ function processOptions() {
             case 'header':
                 // Add contents to header
                 document.getElementsByTagName('head')[0].innerHTML += config[key];
-            
+                break;
+
             case 'showZoomCtrl':
                 if (config[key]) {
                     // Show zoom controls
@@ -881,6 +883,7 @@ function processOptions() {
                     // Hide zoom controls
                     document.getElementById('zoomcontrols').style.display = 'none';
                 }
+                break;
             
             case 'showFullscreenCtrl':
                 if (config[key]) {
@@ -890,6 +893,7 @@ function processOptions() {
                     // Hide fullscreen control
                     document.getElementById('fullwindowtoggle_button').style.display = 'none';
                 }
+                break;
         }
     }
 }
