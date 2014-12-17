@@ -31,6 +31,7 @@ var config,
     popoutMode = false,
     renderer,
     isUserInteracting = false,
+    latestInteraction = Date.now(),
     onPointerDownPointerX = 0,
     onPointerDownPointerY = 0,
     onPointerDownPointerDist = -1,
@@ -61,6 +62,7 @@ var defaultConfig = {
     vaov: 180,
     voffset: 0,
     autoRotate: false,
+    autoRotateDelayMillis: -1,
     type: 'equirectangular',
     northOffset: 0
 };
@@ -203,6 +205,7 @@ function onDocumentMouseDown(event) {
     config.autoRotate = false;
     
     isUserInteracting = true;
+    latestInteraction = Date.now();
     
     onPointerDownPointerX = event.clientX;
     onPointerDownPointerY = event.clientY;
@@ -217,6 +220,7 @@ function onDocumentMouseDown(event) {
 
 function onDocumentMouseMove(event) {
     if (isUserInteracting && loaded) {
+        latestInteraction = Date.now();
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
         // Ensure the yaw is within min and max allowed
@@ -253,6 +257,7 @@ function onDocumentTouchStart(event) {
                                     (event.targetTouches[0].clientY - event.targetTouches[1].clientY) * (event.targetTouches[0].clientY - event.targetTouches[1].clientY)); 
     }
     isUserInteracting = true;
+    latestInteraction = Date.now();
     
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
@@ -263,6 +268,9 @@ function onDocumentTouchStart(event) {
 function onDocumentTouchMove(event) {
     // Override default action
     event.preventDefault();
+    if (loaded) {
+        latestInteraction = Date.now();
+    }
     if (isUserInteracting && loaded) {
         var clientX = event.targetTouches[0].clientX;
         var clientY = event.targetTouches[0].clientY;
@@ -299,7 +307,8 @@ function onDocumentMouseWheel(event) {
     if (!loaded) {
         return;
     }
-    
+
+    latestInteraction = Date.now();
     if (event.wheelDeltaY) {
         // WebKit
         setHfov(config.hfov -= event.wheelDeltaY * 0.05);
@@ -487,13 +496,14 @@ function keyRepeat() {
     }
     
     // If auto-rotate
-    if (config.autoRotate) {
+    var inactivityInterval = Date.now() - latestInteraction;
+    if (config.autoRotate && inactivityInterval > config.autoRotateDelayMillis) {
         // Pan
         if (diff > 0.000001) {
             config.yaw -= config.autoRotate / 60 * diff;
         }
     }
-    
+
     prevTime = newTime;
 }
 
@@ -867,6 +877,11 @@ function processOptions() {
             case 'autorotate':
                 // Rotation speed in degrees/second (+ccw, -cw)
                 config.autoRotate = config[key];
+                break;
+
+            case 'autorotateDelayMillis':
+                // Start the auto-rotate only after user inactivity (milliseconds):
+                config.autoRotateDelayMillis = config[key];
                 break;
             
             case 'header':
