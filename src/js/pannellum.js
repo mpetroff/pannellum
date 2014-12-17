@@ -872,6 +872,7 @@ function processOptions() {
             case 'header':
                 // Add contents to header
                 document.getElementsByTagName('head')[0].innerHTML += config[key];
+                break;
             
             case 'showZoomCtrl':
                 if (config[key]) {
@@ -881,6 +882,7 @@ function processOptions() {
                     // Hide zoom controls
                     document.getElementById('zoomcontrols').style.display = 'none';
                 }
+                break;
             
             case 'showFullscreenCtrl':
                 if (config[key]) {
@@ -890,6 +892,7 @@ function processOptions() {
                     // Hide fullscreen control
                     document.getElementById('fullwindowtoggle_button').style.display = 'none';
                 }
+                break;
         }
     }
 }
