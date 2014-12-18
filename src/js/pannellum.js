@@ -46,6 +46,9 @@ var config,
     canvas = document.getElementById('canvas'),
     panoImage,
     prevTime,
+    yawSpeed = 0,
+    pitchSpeed = 0,
+    zoomSpeed = 0,
     hotspotsCreated = false;
 
 var defaultConfig = {
@@ -223,14 +226,14 @@ function onDocumentMouseMove(event) {
         latestInteraction = Date.now();
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        yawSpeed = (yaw - config.yaw) * 0.2;
+        config.yaw = yaw;
         
         var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
         
         var pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        pitchSpeed = (pitch - config.pitch) * 0.2;
+        config.pitch = pitch;
     }
 }
 
@@ -286,12 +289,12 @@ function onDocumentTouchMove(event) {
         }
         
         var yaw = (onPointerDownPointerX - clientX) * 0.1 + onPointerDownYaw;
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        yawSpeed = (yaw - config.yaw) * 0.2;
+        config.yaw = yaw;
         
         var pitch = (clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        pitchSpeed = (pitch - config.pitch) * 0.2;
+        config.pitch = pitch;
     }
 }
 
@@ -318,6 +321,20 @@ function onDocumentMouseWheel(event) {
     } else if (event.detail) {
         // Firefox
         setHfov(config.hfov += event.detail * 1.5);
+    }
+    
+    if (event.detail) {
+        if (event.detail > 0) {
+            zoomSpeed = 1;
+        } else {
+            zoomSpeed = -1;
+        }
+    } else {
+        if (event.detail < 0) {
+            zoomSpeed = 1;
+        } else {
+            zoomSpeed = -1;
+        }
     }
     
     requestAnimationFrame(animate);
@@ -438,6 +455,10 @@ function keyRepeat() {
         return;
     }
     
+    var prevPitch = config.pitch;
+    var prevYaw = config.yaw;
+    var prevZoom = config.hfov;
+    
     var newTime;
     if (typeof performance !== 'undefined' && performance.now()) {
         newTime = performance.now();
@@ -451,48 +472,36 @@ function keyRepeat() {
     
     // If minus key is down
     if (keysDown[0]) {
-        zoomOut(diff);
+        setHfov(config.hfov + (zoomSpeed * 0.8 + 0.2) * diff);
     }
     
     // If plus key is down
     if (keysDown[1]) {
-        zoomIn(diff);
+        setHfov(config.hfov + (zoomSpeed * 0.8 - 0.2) * diff);
     }
     
     // If up arrow or "w" is down
     if (keysDown[2] || keysDown[6]) {
         // Pan up
-        pitch += diff;
-        
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        config.pitch += (pitchSpeed * 0.8 + 0.2) * diff;
     }
     
     // If down arrow or "s" is down
     if (keysDown[3] || keysDown[7]) {
         // Pan down
-        pitch -= diff;
-        
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        config.pitch += (pitchSpeed * 0.8 - 0.2) * diff;
     }
     
     // If left arrow or "a" is down
     if (keysDown[4] || keysDown[8]) {
         // Pan left
-        yaw -= diff;
-        
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        config.yaw += (yawSpeed * 0.8 - 0.2) * diff;
     }
     
     // If right arrow or "d" is down
     if (keysDown[5] || keysDown[9]) {
         // Pan right
-        yaw += diff;
-        
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        config.yaw += (yawSpeed * 0.8 + 0.2) * diff;
     }
     
     // If auto-rotate
@@ -504,7 +513,31 @@ function keyRepeat() {
         }
     }
 
+    // "Inertia"
+    if (diff > 0) {
+        // "Friction"
+        var friction = 0.85;
+        
+        // Yaw
+        if (!keysDown[4] && !keysDown[5] && !keysDown[8] && !keysDown[9]) {
+            config.yaw += yawSpeed * diff * friction;
+        }
+        // Pitch
+        if (!keysDown[2] && !keysDown[3] && !keysDown[6] && !keysDown[7]) {
+            config.pitch += pitchSpeed * diff * friction;
+        }
+        // Zoom
+        if (!keysDown[0] && !keysDown[1]) {
+            setHfov(config.hfov + zoomSpeed * diff * friction);
+        }
+    }
+
     prevTime = newTime;
+    if (diff > 0) {
+        yawSpeed = yawSpeed * 0.8 + (config.yaw - prevYaw) / diff * 0.2;
+        pitchSpeed = pitchSpeed * 0.8 + (config.pitch - prevPitch) / diff * 0.2;
+        zoomSpeed = zoomSpeed * 0.8 + (config.hfov - prevZoom) / diff * 0.2;
+    }
 }
 
 function onDocumentResize() {
@@ -526,7 +559,9 @@ function animate() {
         requestAnimationFrame(animate);
     } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
       || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7]
-      || keysDown[8] || keysDown[9] || config.autoRotate) {
+      || keysDown[8] || keysDown[9] || config.autoRotate
+      || Math.abs(yawSpeed) > 0.01 || Math.abs(pitchSpeed) > 0.01
+      || Math.abs(zoomSpeed) > 0.01) {
         keyRepeat();
         requestAnimationFrame(animate);
     } else if (renderer && renderer.isLoading()) {
@@ -579,7 +614,7 @@ function renderInit() {
         canvas.height = window.innerHeight;
         renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.voffset * Math.PI / 180);
         
-        animate();
+        requestAnimationFrame(animate);
         
         // Show compass if applicable
         if (config.compass) {
@@ -871,7 +906,7 @@ function processOptions() {
                 document.getElementById('load_button').style.display = 'none';
                 // Initialize
                 init();
-                animate();
+                requestAnimationFrame(animate);
                 break;
             
             case 'autorotate':
@@ -1004,7 +1039,7 @@ function load() {
     document.getElementById('load_button').style.display = 'none';
     document.getElementById('load_box').style.display = 'inline';
     init();
-    animate();
+    requestAnimationFrame(animate);
 }
 
 function loadScene(sceneId, targetPitch, targetYaw) {
