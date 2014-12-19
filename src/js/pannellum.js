@@ -719,7 +719,7 @@ function parseURLParameters() {
                 json += value;
                 break;
             default:
-                json += '"' + value + '"';
+                json += '"' + decodeURIComponent(value) + '"';
         }
         if (i < URL.length - 1) {
             json += ',';
