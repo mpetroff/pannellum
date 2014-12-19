@@ -63,7 +63,7 @@ var defaultConfig = {
     maxYaw: 360,
     haov: 360,
     vaov: 180,
-    voffset: 0,
+    vOffset: 0,
     autoRotate: false,
     autoRotateDelayMillis: -1,
     type: 'equirectangular',
@@ -618,7 +618,7 @@ function renderInit() {
     try {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.voffset * Math.PI / 180);
+        renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180);
         
         requestAnimationFrame(animate);
         
@@ -766,7 +766,7 @@ function parseURLParameters() {
         json += '"' + option + '":';
         switch(option) {
             case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
-            case 'voffset':
+            case 'vOffset':
                 json += value;
                 break;
             default:
