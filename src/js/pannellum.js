@@ -902,12 +902,12 @@ function processOptions() {
                 config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
                 break;
             
-            case 'autoload':
+            case 'autoLoad':
                 if (config[key] == 'yes') {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
                 }
-            case 'popoutautoload':
+            case 'popoutAutoLoad':
                 // Hide load button
                 document.getElementById('load_button').style.display = 'none';
                 // Initialize
@@ -915,7 +915,7 @@ function processOptions() {
                 requestAnimationFrame(animate);
                 break;
             
-            case 'autorotate':
+            case 'autoRotate':
                 // Rotation speed in degrees/second (+ccw, -cw)
                 config.autoRotate = config[key];
                 break;
@@ -1003,7 +1003,7 @@ function fullScreenError() {
         // Open new window instead
         var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
         var windowlocation = window.location.href + '&popout=yes';
-        windowlocation += '&popoutautoload';
+        windowlocation += '&popoutAutoLoad';
         window.open(windowlocation, null, windowspecs);
     } else {
         window.close();
