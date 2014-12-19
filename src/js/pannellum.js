@@ -537,6 +537,12 @@ function keyRepeat() {
         yawSpeed = yawSpeed * 0.8 + (config.yaw - prevYaw) / diff * 0.2;
         pitchSpeed = pitchSpeed * 0.8 + (config.pitch - prevPitch) / diff * 0.2;
         zoomSpeed = zoomSpeed * 0.8 + (config.hfov - prevZoom) / diff * 0.2;
+        
+        // Limit speed
+        var maxSpeed = 5;
+        yawSpeed = Math.min(maxSpeed, Math.max(yawSpeed, -maxSpeed));
+        pitchSpeed = Math.min(maxSpeed, Math.max(pitchSpeed, -maxSpeed));
+        zoomSpeed = Math.min(maxSpeed, Math.max(zoomSpeed, -maxSpeed));
     }
 }
 
