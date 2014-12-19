@@ -65,7 +65,7 @@ var defaultConfig = {
     vaov: 180,
     vOffset: 0,
     autoRotate: false,
-    autoRotateDelayMillis: -1,
+    autoRotateInactivityDelay: -1,
     type: 'equirectangular',
     northOffset: 0
 };
@@ -506,7 +506,7 @@ function keyRepeat() {
     
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
-    if (config.autoRotate && inactivityInterval > config.autoRotateDelayMillis) {
+    if (config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay) {
         // Pan
         if (diff > 0.000001) {
             config.yaw -= config.autoRotate / 60 * diff;
@@ -920,9 +920,9 @@ function processOptions() {
                 config.autoRotate = config[key];
                 break;
 
-            case 'autorotateDelayMillis':
+            case 'autoRotateInactivityDelay':
                 // Start the auto-rotate only after user inactivity (milliseconds):
-                config.autoRotateDelayMillis = config[key];
+                config.autoRotateInactivityDelay = config[key];
                 break;
             
             case 'header':
