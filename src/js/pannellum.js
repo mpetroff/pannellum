@@ -883,7 +883,7 @@ function processOptions() {
                 break;
                 
             case 'popout':
-                if (config[key] == 'yes') {
+                if (config[key] == true) {
                     document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
                     popoutMode = true;
                 }
@@ -903,7 +903,7 @@ function processOptions() {
                 break;
             
             case 'autoLoad':
-                if (config[key] == 'yes') {
+                if (config[key] == true) {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
                 }
@@ -1002,7 +1002,7 @@ function fullScreenError() {
     if (!popoutMode) {
         // Open new window instead
         var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
-        var windowlocation = window.location.href + '&popout=yes';
+        var windowlocation = window.location.href + '&popout=true';
         windowlocation += '&popoutAutoLoad';
         window.open(windowlocation, null, windowspecs);
     } else {
