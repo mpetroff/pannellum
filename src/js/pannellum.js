@@ -53,14 +53,14 @@ var config,
 
 var defaultConfig = {
     hfov: 100,
-    minhfov: 50,
-    maxhfov: 120,
+    minHfov: 50,
+    maxHfov: 120,
     pitch: 0,
-    minpitch: -85,
-    maxpitch: 85,
+    minPitch: -85,
+    maxPitch: 85,
     yaw: 0,
-    minyaw: -360,
-    maxyaw: 360,
+    minYaw: -360,
+    maxYaw: 360,
     haov: 360,
     vaov: 180,
     voffset: 0,
@@ -589,7 +589,7 @@ function render() {
         tmpyaw = config.yaw;
 
         // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, config.yaw));
+        config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, config.yaw));
         
 		// Check if we autoRotate in a limited by min and max yaw
 		// If so reverse direction
@@ -598,7 +598,7 @@ function render() {
 		}
 
         // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, config.pitch));
+        config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
         
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180);
         
@@ -899,7 +899,7 @@ function processOptions() {
             
             case 'pitch':
                 // Keep pitch within bounds
-                config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, config.pitch));
+                config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
                 break;
             
             case 'autoload':
@@ -1024,13 +1024,13 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if (i < config.minhfov && config.type != 'multires') {
-        config.hfov = config.minhfov;
+    if (i < config.minHfov && config.type != 'multires') {
+        config.hfov = config.minHfov;
     } else if (config.type == 'multires' && i < canvas.width
         / (config.multiRes.cubeResolution / 90 * 0.9)) {
         config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
-    } else if (i > config.maxhfov) {
-        config.hfov = config.maxhfov;
+    } else if (i > config.maxHfov) {
+        config.hfov = config.maxHfov;
     } else {
         config.hfov = i;
     }
