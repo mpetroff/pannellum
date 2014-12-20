@@ -20,4 +20,5 @@ Specifies the URL of a JSON tour configuration file.
 
 A subset of the JSON configuration file options can be used as URL parameters.
 These include `author`, `title`, `hfov`, `pitch`, `yaw`, `haov`, `vaov`,
-`vOffset`, `autoLoad`, `autoRotate`, `firstScene`, and `fallback`.
+`vOffset`, `autoLoad`, `autoRotate`, `firstScene`, `ignoreGPanoXMP`, and
+`fallback`.

@@ -188,6 +188,11 @@ Sets the vertical offset of the center of the equirectangular image from the
 horizon, in degrees. Defaults to `0`. This is used if `vaov` is not zero and
 the equirectangular image is not cropped symmetrically.
 
+### `ignoreGPanoXMP`
+
+If set to `true`, any embedded Photo Sphere XMP data will be ignored; else,
+said data will override any existing settings. Defaults to `false`.
+
 
 
 ## `cubemap` specific options

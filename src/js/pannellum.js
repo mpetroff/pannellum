@@ -92,7 +92,6 @@ function init() {
         panoImage = c;
     } else {
         panoImage = new Image();
-        panoImage.crossOrigin = 'anonymous';
     }
     
     function onImageLoad() {
@@ -148,17 +147,75 @@ function init() {
     } else if (config.type == 'multires') {
         onImageLoad();
     } else {
-        panoImage.onload = onImageLoad;
+        panoImage.onload = function() {
+            window.URL.revokeObjectURL(this.src);  // Clean up
+            onImageLoad();
+        }
+        
         var p = config.panorama;
         if (config.basePath) {
             p = config.basePath + p;
         } else if (tourConfig.basePath) {
             p = tourConfig.basePath + p;
         }
-        panoImage.src = p;
+        
+        var xhr = new XMLHttpRequest();
+        xhr.onloadend = function() {
+            var img = this.response;
+            parseGPanoXMP(img);
+        };
+        xhr.open('GET', p, true);
+        xhr.responseType = 'blob';
+        xhr.send();
     }
     
     document.getElementById('page').className = 'grab';
+}
+
+// Parse Google Photo Sphere XMP Metadata
+// https://developers.google.com/photo-sphere/metadata/
+function parseGPanoXMP(image) {
+    var reader = new FileReader();
+    reader.addEventListener('loadend', function() {
+        img = reader.result;
+        
+        var start = img.indexOf('<x:xmpmeta');
+        if (start > -1 && config.ignoreGPanoXMP != true) {
+            var xmpData = img.substring(start, img.indexOf('</x:xmpmeta>') + 12);
+            
+            // Extract the requested tag from the XMP data
+            function getTag(tag) {
+                tag = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
+                return tag.substring(0, tag.indexOf('"'));
+            }
+            
+            // Relevant XMP data
+            xmp = {
+                fullWidth: Number(getTag('GPano:FullPanoWidthPixels')),
+                croppedWidth: Number(getTag('GPano:CroppedAreaImageWidthPixels')),
+                fullHeight: Number(getTag('GPano:FullPanoHeightPixels')),
+                croppedHeight: Number(getTag('GPano:CroppedAreaImageHeightPixels')),
+                topPixels: Number(getTag('GPano:CroppedAreaTopPixels')),
+                heading: Number(getTag('GPano:PoseHeadingDegrees'))
+            }
+            
+            // Set up viewer using GPano XMP data
+            config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
+            config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
+            config.vOffset = [(xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5] * -90;
+            if (xmp.heading) {
+                // TODO: make sure this works correctly for partial panoramas
+                config.northOffset = xmp.heading;
+                config.compass = true;
+            }
+            
+            // TODO: add support for initial view settings
+        }
+        
+        // Load panorama
+        panoImage.src = window.URL.createObjectURL(image);
+    });
+    reader.readAsText(image);
 }
 
 function anError(error) {
@@ -765,6 +822,9 @@ function parseURLParameters() {
             case 'vOffset':
                 json += value;
                 break;
+            case 'autoLoad': case 'ignoreGPanoXMP':
+                json += JSON.parse(value);
+                break;
             default:
                 json += '"' + decodeURIComponent(value) + '"';
         }
@@ -895,12 +955,12 @@ function processOptions() {
                 if (config[key] == true) {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
+                    // Hide load button
+                    document.getElementById('load_button').style.display = 'none';
+                    // Initialize
+                    init();
+                    requestAnimationFrame(animate);
                 }
-                // Hide load button
-                document.getElementById('load_button').style.display = 'none';
-                // Initialize
-                init();
-                requestAnimationFrame(animate);
                 break;
             
             case 'autoRotate':
