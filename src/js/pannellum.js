@@ -28,7 +28,6 @@ document.addEventListener('contextmenu', onRightClick, false);
 var config,
     tourConfig = {},
     configFromURL,
-    popoutMode = false,
     renderer,
     isUserInteracting = false,
     latestInteraction = Date.now(),
@@ -38,7 +37,7 @@ var config,
     onPointerDownYaw = 0,
     onPointerDownPitch = 0,
     keysDown = new Array(10),
-    fullWindowActive = false,
+    fullscreenActive = false,
     loaded = false,
     error = false,
     isTimedOut = false,
@@ -67,7 +66,8 @@ var defaultConfig = {
     autoRotate: false,
     autoRotateInactivityDelay: -1,
     type: 'equirectangular',
-    northOffset: 0
+    northOffset: 0,
+    showFullscreenCtrl: true
 };
 
 // Process options
@@ -111,10 +111,6 @@ function init() {
             document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
             document.addEventListener('msfullscreenchange', onFullScreenChange, false);
             document.addEventListener('fullscreenchange', onFullScreenChange, false);
-            document.addEventListener('mozfullscreenerror', fullScreenError, false);
-            document.addEventListener('webkitfullscreenerror', fullScreenError, false);
-            document.addEventListener('msfullscreenerror', fullScreenError, false);
-            document.addEventListener('fullscreenerror', fullScreenError, false);
             window.addEventListener('resize', onDocumentResize, false);
             document.addEventListener('keydown', onDocumentKeyPress, false);
             document.addEventListener('keyup', onDocumentKeyUp, false);
@@ -355,9 +351,9 @@ function onDocumentKeyPress(event) {
     
     // If escape key is pressed
     if (keynumber == 27) {
-        // If in full window / popout mode
-        if (fullWindowActive || popoutMode) {
-            toggleFullWindow();
+        // If in fullscreen mode
+        if (fullscreenActive) {
+            toggleFullscreen();
         }
     } else {
         // Change key
@@ -881,13 +877,6 @@ function processOptions() {
                 document.getElementById('author_box').innerHTML = 'by ' + config[key];
                 document.getElementById('panorama_info').style.display = 'inline';
                 break;
-                
-            case 'popout':
-                if (config[key] == true) {
-                    document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
-                    popoutMode = true;
-                }
-                break;
             
             case 'fallback':
                 document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + config[key] + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
@@ -907,7 +896,6 @@ function processOptions() {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
                 }
-            case 'popoutAutoLoad':
                 // Hide load button
                 document.getElementById('load_button').style.display = 'none';
                 // Initialize
@@ -941,21 +929,22 @@ function processOptions() {
                 break;
             
             case 'showFullscreenCtrl':
-                if (config[key]) {
+                if (config[key] && ('fullscreen' in document || 'mozFullScreen' in document
+                    || 'webkitIsFullScreen' in document || 'msFullscreenElement' in document)) {
                     // Show fullscreen control
-                    document.getElementById('fullwindowtoggle_button').style.display = 'block';
+                    document.getElementById('fullscreentoggle_button').style.display = 'block';
                 } else {
                     // Hide fullscreen control
-                    document.getElementById('fullwindowtoggle_button').style.display = 'none';
+                    document.getElementById('fullscreentoggle_button').style.display = 'none';
                 }
                 break;
         }
     }
 }
 
-function toggleFullWindow() {
+function toggleFullscreen() {
     if (loaded && !error) {
-        if (!fullWindowActive && !popoutMode) {
+        if (!fullscreenActive) {
             try {
                 var page = document.getElementById('page');
                 if (page.requestFullscreen) {
@@ -968,7 +957,7 @@ function toggleFullWindow() {
                     page.webkitRequestFullScreen();
                 }
             } catch(event) {
-                fullScreenError();
+                // Fullscreen doesn't work
             }
         } else {
             if (document.exitFullscreen) {
@@ -980,33 +969,17 @@ function toggleFullWindow() {
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             }
-
-            if (popoutMode) {
-                window.close();
-            }
         }
     }
 }
 
 function onFullScreenChange() {
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
-        document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
-        fullWindowActive = true;
+        document.getElementById('fullscreentoggle_button').classList.add('fullscreentoggle_button_active');
+        fullscreenActive = true;
     } else {
-        document.getElementById('fullwindowtoggle_button').classList.remove('fullwindowtoggle_button_active');
-        fullWindowActive = false;
-    }
-}
-
-function fullScreenError() {
-    if (!popoutMode) {
-        // Open new window instead
-        var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
-        var windowlocation = window.location.href + '&popout=true';
-        windowlocation += '&popoutAutoLoad';
-        window.open(windowlocation, null, windowspecs);
-    } else {
-        window.close();
+        document.getElementById('fullscreentoggle_button').classList.remove('fullscreentoggle_button_active');
+        fullscreenActive = false;
     }
 }
 

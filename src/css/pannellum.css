@@ -80,18 +80,18 @@ body {
     border-radius: 0 0 3px 3px;
 }
 
-#fullwindowtoggle_button {
+#fullscreentoggle_button {
     top: 66px;
     left: 4px;
     width: 26px;
     height: 26px;
 }
 
-.fullwindowtoggle_button_inactive {
+.fullscreentoggle_button_inactive {
     background-position: 0 -52px;
 }
 
-.fullwindowtoggle_button_active {
+.fullscreentoggle_button_active {
     background-position: 0 -78px;
 }
 
