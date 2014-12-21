@@ -22,6 +22,9 @@
  */
 
 window.libpannellum = (function(window, document, undefined) {
+
+'use strict';
+
 /* Image Type argument can be that of "equirectangular" or "cubemap".
  * If "cubemap" is used, the image argument should be an array of images
  * instead of a single image.  They should be the order of:
@@ -41,6 +44,8 @@ function Renderer(container, image, imageType) {
     var program, gl;
 
     this.init = function(haov, vaov, voffset) {
+        var s;
+        
         // Enable WebGL on canvas
         gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         
@@ -56,7 +61,7 @@ function Renderer(container, image, imageType) {
             // Add images
             var path = this.image.basePath + this.image.fallbackPath;
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
-            for (var s = 0; s < 6; s++) {
+            for (s = 0; s < 6; s++) {
                 this.world.querySelector('.' + sides[s] + 'face').style.backgroundImage = 'url("' + path.replace('%s',sides[s]) + '.' + this.image.extension + '")';
             }
             
@@ -70,7 +75,7 @@ function Renderer(container, image, imageType) {
         
         var vertices = this.createCube();
         this.vtmp = [];
-        for ( var s = 0; s < 6; s++ ) {
+        for (s = 0; s < 6; s++) {
             this.vtmp[s] = vertices.slice(s * 12, s * 12 + 12);
             vertices = this.createCube();
         }
@@ -206,17 +211,18 @@ function Renderer(container, image, imageType) {
         
         // Check if there was an error
         if (gl.getError() !== 0) {
+            var width, maxWidth;
             console.log('Error: Something went wrong with WebGL!');
             if (this.imageType == 'equirectangular') {
-                var width = Math.max(this.image.width, this.image.height);
-                var maxWidth = gl.getParameter(gl['MAX_TEXTURE_SIZE']);
+                width = Math.max(this.image.width, this.image.height);
+                maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
                 if (width > maxWidth) {
                     console.log('Error: The image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
                     throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
                 }
             } else if (this.imageType == 'cubemap') {
-                var width = this.image[0].width;
-                var maxWidth = gl.getParameter(gl['MAX_CUBE_MAP_TEXTURE_SIZE']);
+                width = this.image[0].width;
+                maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
                 if (width > maxWidth) {
                     console.log('Error: The cube face image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
                     throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
@@ -227,9 +233,11 @@ function Renderer(container, image, imageType) {
     };
 
     this.render = function(pitch, yaw, hfov) {
+        var focal;
+        
         // If no WebGL
         if (!gl && this.imageType == 'multires') {
-            var focal = 1 / Math.tan(hfov / 2);
+            focal = 1 / Math.tan(hfov / 2);
             var zoom = focal * this.canvas.width / 2 + 'px';
             var transform = 'translate3d(0px, 0px, ' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
             this.world.style.webkitTransform = transform;
@@ -242,7 +250,7 @@ function Renderer(container, image, imageType) {
         if (this.imageType != 'multires') {
             // Calculate focal length from vertical field of view
             var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (this.canvas.width / this.canvas.height));
-            var focal = 1 / Math.tan(vfov * 0.5);
+            focal = 1 / Math.tan(vfov * 0.5);
             
             // Pass psi, theta, and focal length
             gl.uniform1f(program.psi, yaw);
@@ -272,8 +280,8 @@ function Renderer(container, image, imageType) {
             // Find current nodes
             var rotPersp = this.rotatePersp(perspMatrix, matrix);
             program.nodeCache.sort(this.multiresNodeSort);
-            if (program.nodeCache.length > 200
-                && program.nodeCache.length > program.currentNodes.length + 50) {
+            if (program.nodeCache.length > 200 &&
+                program.nodeCache.length > program.currentNodes.length + 50) {
                 // Remove older nodes from cache
                 program.nodeCache.splice(200, program.nodeCache.length - 200);
             }
@@ -384,12 +392,12 @@ function Renderer(container, image, imageType) {
             
             // Add node to current nodes and load texture if needed
             var inCurrent = false;
-            for (var i = 0; i < program.nodeCache.length; i++) {
-                if (program.nodeCache[i].path == node.path) {
+            for (var k = 0; k < program.nodeCache.length; k++) {
+                if (program.nodeCache[k].path == node.path) {
                     inCurrent = true;
-                    program.nodeCache[i].timestamp = program.nodeCacheTimestamp++;
-                    program.nodeCache[i].diff = node.diff;
-                    program.currentNodes.push(program.nodeCache[i]);
+                    program.nodeCache[k].timestamp = program.nodeCacheTimestamp++;
+                    program.nodeCache[k].diff = node.diff;
+                    program.currentNodes.push(program.nodeCache[k]);
                     break;
                 }
             }
@@ -475,8 +483,8 @@ function Renderer(container, image, imageType) {
                     ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, this.image.fullpath);
                     children.push(ntmp);
                 }
-                if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution)
-                    && !(node.y == numTiles && doubleTileSize < this.image.tileResolution)) {
+                if (!(node.x == numTiles && doubleTileSize < this.image.tileResolution) &&
+                    !(node.y == numTiles && doubleTileSize < this.image.tileResolution)) {
                     vtmp = [v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                               v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
                                        v[6],             v[7],             v[8],
@@ -606,9 +614,9 @@ function Renderer(container, image, imageType) {
         // Find optimal level
         var newLevel = 1;
         while ( newLevel < this.image.maxLevel &&
-            this.canvas.width > this.image.cubeResolution
-            * Math.pow(2, newLevel - this.image.maxLevel)
-            * hfov / (Math.PI / 2) * 0.9 ) {
+            this.canvas.width > this.image.cubeResolution *
+            Math.pow(2, newLevel - this.image.maxLevel) *
+            hfov / (Math.PI / 2) * 0.9 ) {
             newLevel++;
         }
         

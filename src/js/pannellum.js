@@ -21,6 +21,8 @@
  * THE SOFTWARE.
  */
 
+'use strict';
+
 // Display about information on right click
 document.addEventListener('contextmenu', onRightClick, false);
 
@@ -76,9 +78,11 @@ processOptions();
 
 // Initialize viewer
 function init() {
+    var i, p;
+    
     if (config.type == 'cubemap') {
         panoImage = [];
-        for (var i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i++) {
             panoImage.push(new Image());
             panoImage[i].crossOrigin = 'anonymous';
         }
@@ -131,14 +135,16 @@ function init() {
         // Quick loading counter for synchronous loading
         var itemsToLoad = 6;
         
-        for (var i = 0; i < panoImage.length; i++) {
-            panoImage[i].onload = function() {
-                itemsToLoad--;
-                if (itemsToLoad === 0) {
-                    onImageLoad();
-                }
-            };
-            var p = config.cubeMap[i];
+        var onLoad = function() {
+            itemsToLoad--;
+            if (itemsToLoad === 0) {
+                onImageLoad();
+            }
+        };
+        
+        for (i = 0; i < panoImage.length; i++) {
+            panoImage[i].onload = onLoad;
+            p = config.cubeMap[i];
             if (config.basePath) {
                 p = config.basePath + p;
             } else if (tourConfig.basePath) {
@@ -152,9 +158,9 @@ function init() {
         panoImage.onload = function() {
             window.URL.revokeObjectURL(this.src);  // Clean up
             onImageLoad();
-        }
+        };
         
-        var p = config.panorama;
+        p = config.panorama;
         if (config.basePath) {
             p = config.basePath + p;
         } else if (tourConfig.basePath) {
@@ -165,9 +171,9 @@ function init() {
         xhr.onloadend = function() {
             var img = this.response;
             parseGPanoXMP(img);
+            document.getElementById('lmsg').innerHTML = '';
         };
         xhr.onprogress = function(e) {
-            console.log(e.loaded + ' ' + e.total);
             if (e.lengthComputable) {
                 // Display progress
                 var percent = e.loaded / e.total * 100;
@@ -207,27 +213,27 @@ function init() {
 function parseGPanoXMP(image) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
-        img = reader.result;
+        var img = reader.result;
         
         var start = img.indexOf('<x:xmpmeta');
-        if (start > -1 && config.ignoreGPanoXMP != true) {
+        if (start > -1 && config.ignoreGPanoXMP !== true) {
             var xmpData = img.substring(start, img.indexOf('</x:xmpmeta>') + 12);
             
             // Extract the requested tag from the XMP data
-            function getTag(tag) {
+            var getTag = function(tag) {
                 tag = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
                 return tag.substring(0, tag.indexOf('"'));
-            }
+            };
             
             // Relevant XMP data
-            xmp = {
+            var xmp = {
                 fullWidth: Number(getTag('GPano:FullPanoWidthPixels')),
                 croppedWidth: Number(getTag('GPano:CroppedAreaImageWidthPixels')),
                 fullHeight: Number(getTag('GPano:FullPanoHeightPixels')),
                 croppedHeight: Number(getTag('GPano:CroppedAreaImageHeightPixels')),
                 topPixels: Number(getTag('GPano:CroppedAreaTopPixels')),
                 heading: Number(getTag('GPano:PoseHeadingDegrees'))
-            }
+            };
             
             // Set up viewer using GPano XMP data
             config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
@@ -550,9 +556,6 @@ function keyRepeat() {
     }
     var diff = (newTime - prevTime) * config.hfov / 1700;
     
-    var pitch = config.pitch;
-    var yaw = config.yaw;
-    
     // If minus key is down
     if (keysDown[0]) {
         setHfov(config.hfov + (zoomSpeed * 0.8 + 0.2) * diff);
@@ -646,11 +649,12 @@ function animate() {
     render();
     if (isUserInteracting) {
         requestAnimationFrame(animate);
-    } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
-      || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7]
-      || keysDown[8] || keysDown[9] || config.autoRotate
-      || Math.abs(yawSpeed) > 0.01 || Math.abs(pitchSpeed) > 0.01
-      || Math.abs(zoomSpeed) > 0.01) {
+    } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
+        keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] ||
+        keysDown[8] || keysDown[9] || config.autoRotate ||
+        Math.abs(yawSpeed) > 0.01 || Math.abs(pitchSpeed) > 0.01 ||
+        Math.abs(zoomSpeed) > 0.01) {
+        
         keyRepeat();
         requestAnimationFrame(animate);
     } else if (renderer && renderer.isLoading()) {
@@ -729,10 +733,10 @@ function renderInit() {
         if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
         } else if (event.type == 'webgl size error') {
-            anError('This panorama is too big for your device! It\'s '
-                + event.width + 'px wide, but your device only supports images up to '
-                + event.maxWidth + 'px wide. Try another device.'
-                + ' (If you\'re the author, try scaling down the image.)');
+            anError('This panorama is too big for your device! It\'s ' +
+                event.width + 'px wide, but your device only supports images up to ' +
+                event.maxWidth + 'px wide. Try another device.' +
+                ' (If you\'re the author, try scaling down the image.)');
         }
     }
 }
@@ -750,8 +754,9 @@ function createHotSpots() {
             var span = document.createElement('span');
             span.innerHTML = hs.text;
             
+            var a;
             if (hs.URL) {
-                var a = document.createElement('a');
+                a = document.createElement('a');
                 a.setAttribute('href', hs.URL);
                 a.setAttribute('target', '_blank');
                 document.getElementById('container').appendChild(a);
@@ -766,7 +771,7 @@ function createHotSpots() {
                 document.getElementById('container').appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
-                var a = document.createElement('a');
+                a = document.createElement('a');
                 a.setAttribute('href', hs.image);
                 a.setAttribute('target', '_blank');
                 span.appendChild(a);
@@ -865,10 +870,12 @@ function parseURLParameters() {
     json += '}';
     configFromURL = JSON.parse(json);
     
+    var request;
+    
     // Check for JSON configuration file
     if (configFromURL.config) {
         // Get JSON configuration file
-        var request = new XMLHttpRequest();
+        request = new XMLHttpRequest();
         request.open('GET', configFromURL.config, false);
         request.send();
         var c = JSON.parse(request.responseText);
@@ -888,7 +895,7 @@ function parseURLParameters() {
     var firstScene = null;
     if (configFromURL.tour) {
         // Get JSON configuration file
-        var request = new XMLHttpRequest();
+        request = new XMLHttpRequest();
         request.open('GET', configFromURL.tour, false);
         request.send();
         tourConfig = JSON.parse(request.responseText);
@@ -910,29 +917,38 @@ function parseURLParameters() {
 
 function mergeConfig(sceneId) {
     config = {};
+    var k;
     
     // Merge default config
-    for (var k in defaultConfig) {
-        config[k] = defaultConfig[k];
+    for (k in defaultConfig) {
+        if (defaultConfig.hasOwnProperty(k)) {
+            config[k] = defaultConfig[k];
+        }
     }
     
     // Merge default scene config
-    for (var k in tourConfig.default) {
-        config[k] = tourConfig.default[k];
+    for (k in tourConfig.default) {
+        if (tourConfig.hasOwnProperty(k)) {
+            config[k] = tourConfig.default[k];
+        }
     }
     
     // Merge current scene config
     if ((sceneId !== null) && (sceneId !== '') && (tourConfig.scenes) && (tourConfig.scenes[sceneId])) {
         var scene = tourConfig.scenes[sceneId];
-        for (var k in scene) {
-            config[k] = scene[k];
+        for (k in scene) {
+            if (scene.hasOwnProperty(k)) {
+                config[k] = scene[k];
+            }
         }
         config.activeScene = sceneId;
     }
     
     // Merge URL and config file
-    for (var k in configFromURL) {
-        config[k] = configFromURL[k];
+    for (k in configFromURL) {
+        if (configFromURL.hasOwnProperty(k)) {
+            config[k] = configFromURL[k];
+        }
     }
 }
 
@@ -941,7 +957,7 @@ function processOptions() {
     // maximum number of connections to a server as can happen with cubic
     // panoramas
     if ('preview' in config) {
-        var p = config['preview'];
+        var p = config.preview;
         if (config.basePath) {
             p = config.basePath + p;
         } else if (tourConfig.basePath) {
@@ -957,6 +973,7 @@ function processOptions() {
     
     // Process other options
     for (var key in config) {
+      if (config.hasOwnProperty(key)) {
         switch(key) {
             case 'title':
                 document.getElementById('title_box').innerHTML = config[key];
@@ -982,7 +999,7 @@ function processOptions() {
                 break;
             
             case 'autoLoad':
-                if (config[key] == true) {
+                if (config[key] === true) {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
                     // Hide load button
@@ -1019,8 +1036,9 @@ function processOptions() {
                 break;
             
             case 'showFullscreenCtrl':
-                if (config[key] && ('fullscreen' in document || 'mozFullScreen' in document
-                    || 'webkitIsFullScreen' in document || 'msFullscreenElement' in document)) {
+                if (config[key] && ('fullscreen' in document || 'mozFullScreen' in document ||
+                    'webkitIsFullScreen' in document || 'msFullscreenElement' in document)) {
+                    
                     // Show fullscreen control
                     document.getElementById('fullscreentoggle_button').style.display = 'block';
                 } else {
@@ -1029,6 +1047,7 @@ function processOptions() {
                 }
                 break;
         }
+      }
     }
 }
 
@@ -1089,8 +1108,9 @@ function setHfov(i) {
     // Keep field of view within bounds
     if (i < config.minHfov && config.type != 'multires') {
         config.hfov = config.minHfov;
-    } else if (config.type == 'multires' && i < canvas.width
-        / (config.multiRes.cubeResolution / 90 * 0.9)) {
+    } else if (config.type == 'multires' && i < canvas.width /
+        (config.multiRes.cubeResolution / 90 * 0.9)) {
+        
         config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
     } else if (i > config.maxHfov) {
         config.hfov = config.maxHfov;
