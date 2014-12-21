@@ -928,7 +928,7 @@ function mergeConfig(sceneId) {
     
     // Merge default scene config
     for (k in tourConfig.default) {
-        if (tourConfig.hasOwnProperty(k)) {
+        if (tourConfig.default.hasOwnProperty(k)) {
             config[k] = tourConfig.default[k];
         }
     }
