@@ -136,13 +136,14 @@ body {
     color: #fff;
 }
 
-.lbox {
+#lbox {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 20px;
     height: 20px;
     margin: -10px 0 0 -10px;
+    display: none;
 }
 
 .loading {
@@ -378,4 +379,21 @@ div.tooltip:hover:after {
     top: 0;
     left: 0;
     background-size: 100% 100%;
+}
+
+#lbar {
+    width: 150px;
+    margin: 0 auto;
+    border: #fff 1px solid;
+    height: 6px;
+}
+
+#lbar_fill {
+    background: #fff;
+    height: 100%;
+    width: 0;
+}
+
+#lmsg {
+    font-size: 12px;
 }

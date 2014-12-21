@@ -82,6 +82,8 @@ function init() {
             panoImage.push(new Image());
             panoImage[i].crossOrigin = 'anonymous';
         }
+        document.getElementById('lbox').style.display = 'block';
+        document.getElementById('lbar').style.display = 'none';
     } else if (config.type == 'multires') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
         if (config.basePath) {
@@ -163,6 +165,34 @@ function init() {
         xhr.onloadend = function() {
             var img = this.response;
             parseGPanoXMP(img);
+        };
+        xhr.onprogress = function(e) {
+            console.log(e.loaded + ' ' + e.total);
+            if (e.lengthComputable) {
+                // Display progress
+                var percent = e.loaded / e.total * 100;
+                document.getElementById('lbar_fill').style.width = percent + '%';
+                var unit, numerator, denominator;
+                if (e.total > 1e6) {
+                    unit = 'MB';
+                    numerator = (e.loaded / 1e6).toFixed(2);
+                    denominator = (e.total / 1e6).toFixed(2);
+                } else if (e.total > 1e3) {
+                    unit = 'kB';
+                    numerator = (e.loaded / 1e3).toFixed(1);
+                    denominator = (e.total / 1e3).toFixed(1);
+                } else {
+                    unit = 'B';
+                    numerator = e.loaded;
+                    denominator = e.total;
+                }
+                var msg = numerator + ' / ' + denominator + ' ' + unit;
+                document.getElementById('lmsg').innerHTML = msg;
+            } else {
+                // Display loading spinner
+                document.getElementById('lbox').style.display = 'block';
+                document.getElementById('lbar').style.display = 'none';
+            }
         };
         xhr.open('GET', p, true);
         xhr.responseType = 'blob';
