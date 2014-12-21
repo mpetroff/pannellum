@@ -39,7 +39,7 @@ def JScompress(text):
     with os.fdopen(in_tuple[0], 'w') as handle:
         handle.write(text)
     out_tuple = tempfile.mkstemp()
-    os.system("java -jar compiler.jar --language_in=ECMASCRIPT5 --js %s --js_output_file %s" % (in_tuple[1], out_tuple[1]))
+    os.system("java -jar compiler.jar --language_in=ECMASCRIPT5 --warning_level=QUIET --js %s --js_output_file %s" % (in_tuple[1], out_tuple[1]))
     with os.fdopen(out_tuple[0], 'r') as handle:
         compressed = handle.read()
     os.unlink(in_tuple[1])
