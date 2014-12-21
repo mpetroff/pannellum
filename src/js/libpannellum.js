@@ -614,9 +614,8 @@ function Renderer(container, image, imageType) {
         // Find optimal level
         var newLevel = 1;
         while ( newLevel < this.image.maxLevel &&
-            this.canvas.width > this.image.cubeResolution *
-            Math.pow(2, newLevel - this.image.maxLevel) *
-            hfov / (Math.PI / 2) * 0.9 ) {
+            this.canvas.width > this.image.tileResolution *
+            Math.pow(2, newLevel - 1) * Math.tan(hfov / 2) * 0.707 ) {
             newLevel++;
         }
         
