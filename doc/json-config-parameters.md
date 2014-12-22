@@ -258,6 +258,27 @@ tiles were created from.
 
 
 
+## Video specific options
+
+Currently, only equirectangular videos are supported.
+
+### `video`
+
+The panorama is considered a video when this is set to `true`. Defaults to
+`false`.
+
+### `panoramas`
+
+This parameter's value contains an array of objects designating the
+equirectangular video in various formats. Each object has a `file` property
+that contains the video's URL and a `type` property that contains the video's
+MIME type. Pannellum attempts to use video files in the order they are
+specified, so preferred formats should be placed first. An error is displayed
+if the user's browser does not support any of the specified formats. This
+parameter only has an effect is `video` is set to `true`.
+
+
+
 ## Additional information for tour configuration files
 
 A tour configuration file contains two top level properties, `default` and

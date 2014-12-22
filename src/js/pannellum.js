@@ -69,7 +69,8 @@ var defaultConfig = {
     autoRotateInactivityDelay: -1,
     type: 'equirectangular',
     northOffset: 0,
-    showFullscreenCtrl: true
+    showFullscreenCtrl: true,
+    video: false
 };
 
 // Process options
@@ -97,11 +98,15 @@ function init() {
         }
         panoImage = c;
     } else {
-        panoImage = new Image();
+        if (config.video === true) {
+            panoImage = document.createElement('video');
+        } else {
+            panoImage = new Image();
+        }
     }
     
     function onImageLoad() {
-        renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type);
+        renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type, config.video);
         
         // Only add event listeners once
         if (!listenersAdded) {
@@ -155,54 +160,75 @@ function init() {
     } else if (config.type == 'multires') {
         onImageLoad();
     } else {
-        panoImage.onload = function() {
-            window.URL.revokeObjectURL(this.src);  // Clean up
-            onImageLoad();
-        };
-        
-        p = config.panorama;
+        p = '';
         if (config.basePath) {
-            p = config.basePath + p;
+            p = config.basePath;
         } else if (tourConfig.basePath) {
-            p = tourConfig.basePath + p;
+            p = tourConfig.basePath;
         }
         
-        var xhr = new XMLHttpRequest();
-        xhr.onloadend = function() {
-            var img = this.response;
-            parseGPanoXMP(img);
-            document.getElementById('lmsg').innerHTML = '';
-        };
-        xhr.onprogress = function(e) {
-            if (e.lengthComputable) {
-                // Display progress
-                var percent = e.loaded / e.total * 100;
-                document.getElementById('lbar_fill').style.width = percent + '%';
-                var unit, numerator, denominator;
-                if (e.total > 1e6) {
-                    unit = 'MB';
-                    numerator = (e.loaded / 1e6).toFixed(2);
-                    denominator = (e.total / 1e6).toFixed(2);
-                } else if (e.total > 1e3) {
-                    unit = 'kB';
-                    numerator = (e.loaded / 1e3).toFixed(1);
-                    denominator = (e.total / 1e3).toFixed(1);
-                } else {
-                    unit = 'B';
-                    numerator = e.loaded;
-                    denominator = e.total;
+        if (config.video === true) {
+            for (i = 0; i < config.panoramas.length; i++) {
+                if (panoImage.canPlayType(config.panoramas[i].type).length > 0) {
+                    panoImage.src = p + config.panoramas[i].file;
+                    break;
                 }
-                var msg = numerator + ' / ' + denominator + ' ' + unit;
-                document.getElementById('lmsg').innerHTML = msg;
-            } else {
-                // Display loading spinner
-                document.getElementById('lbox').style.display = 'block';
-                document.getElementById('lbar').style.display = 'none';
             }
-        };
-        xhr.open('GET', p, true);
-        xhr.responseType = 'blob';
-        xhr.send();
+            if (panoImage.src.length < 1) {
+                // Browser doesn't support any provide video formats
+                console.log('Error: provided video formats are not supported');
+                anError('Your browser doesn\'t support any of the provided' +
+                    ' video formats. Please try using a different browser or' +
+                    ' device.');
+            }
+            panoImage.play();
+            onImageLoad();
+        } else {
+            // Still image
+            p += config.panorama;
+            
+            panoImage.onload = function() {
+                window.URL.revokeObjectURL(this.src);  // Clean up
+                onImageLoad();
+            };
+            
+            var xhr = new XMLHttpRequest();
+            xhr.onloadend = function() {
+                var img = this.response;
+                parseGPanoXMP(img);
+                document.getElementById('lmsg').innerHTML = '';
+            };
+            xhr.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    // Display progress
+                    var percent = e.loaded / e.total * 100;
+                    document.getElementById('lbar_fill').style.width = percent + '%';
+                    var unit, numerator, denominator;
+                    if (e.total > 1e6) {
+                        unit = 'MB';
+                        numerator = (e.loaded / 1e6).toFixed(2);
+                        denominator = (e.total / 1e6).toFixed(2);
+                    } else if (e.total > 1e3) {
+                        unit = 'kB';
+                        numerator = (e.loaded / 1e3).toFixed(1);
+                        denominator = (e.total / 1e3).toFixed(1);
+                    } else {
+                        unit = 'B';
+                        numerator = e.loaded;
+                        denominator = e.total;
+                    }
+                    var msg = numerator + ' / ' + denominator + ' ' + unit;
+                    document.getElementById('lmsg').innerHTML = msg;
+                } else {
+                    // Display loading spinner
+                    document.getElementById('lbox').style.display = 'block';
+                    document.getElementById('lbar').style.display = 'none';
+                }
+            };
+            xhr.open('GET', p, true);
+            xhr.responseType = 'blob';
+            xhr.send();
+        }
     }
     
     document.getElementById('page').className = 'grab';
@@ -657,7 +683,8 @@ function animate() {
         
         keyRepeat();
         requestAnimationFrame(animate);
-    } else if (renderer && renderer.isLoading()) {
+    } else if (renderer && (renderer.isLoading() || (config.video === true &&
+        !panoImage.paused && !panoImage.ended))) {
         requestAnimationFrame(animate);
     }
 }

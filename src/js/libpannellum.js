@@ -30,10 +30,11 @@ window.libpannellum = (function(window, document, undefined) {
  * instead of a single image.  They should be the order of:
  * +z, +x, -z, -x, +y, -y.
  */
-function Renderer(container, image, imageType) {
+function Renderer(container, image, imageType, video) {
     this.container = container;
     this.canvas = container.querySelector('#canvas');
     this.image = image;
+    this.video = video;
 
     // Default argument for image type
     this.imageType = 'equirectangular';
@@ -256,6 +257,14 @@ function Renderer(container, image, imageType) {
             gl.uniform1f(program.psi, yaw);
             gl.uniform1f(program.theta, pitch);
             gl.uniform1f(program.f, focal);
+            
+            if (this.video === true) {
+                // Update texture if video
+                if (this.imageType == 'equirectangular') {
+                    gl.bindTexture(gl.TEXTURE_2D, program.texture);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image);
+                }
+            }
             
             // Draw using current buffer
             gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -823,8 +832,8 @@ var fragMulti = [
 ].join('');
 
 return {
-    renderer: function(canvas, image, imagetype) {
-        return new Renderer(canvas, image, imagetype);
+    renderer: function(canvas, image, imagetype, video) {
+        return new Renderer(canvas, image, imagetype, video);
     }
 };
 
