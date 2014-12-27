@@ -71,7 +71,11 @@ function Renderer(container, image, imageType, video) {
             console.log('Error: no WebGL support detected!');
             throw {type: 'no webgl'};
         }
-        this.image.fullpath = this.image.basePath + this.image.path;
+        if (this.image.basePath) {
+            this.image.fullpath = this.image.basePath + this.image.path;
+        } else {
+            this.image.fullpath = this.image.path;
+        }
         this.image.invTileResolution = 1 / this.image.tileResolution;
         
         var vertices = this.createCube();
