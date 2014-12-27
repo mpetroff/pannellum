@@ -26,6 +26,7 @@
 import argparse
 from PIL import Image
 import os
+import sys
 import math
 from distutils.spawn import find_executable
 import subprocess
@@ -34,7 +35,7 @@ import subprocess
 nona = find_executable('nona')
 
 # Parse input
-parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an equirectangular panorama.',
+parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an full equirectangular panorama.',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('inputFile', metavar='INPUT',
                     help='full equirectangular panorama to be processed')
@@ -49,12 +50,13 @@ parser.add_argument('-n', '--nona', default=nona, required=nona is None,
                     help='location of the nona executable to use')
 args = parser.parse_args()
 
-# Create output directory
-os.makedirs(args.output)
-
 # Process input image information
 print('Processing input image information...')
 origWidth, origHeight = Image.open(args.inputFile).size
+if origWidth / origHeight != 2:
+    print('Error: the image width is not twice the image height.')
+    print('Input image must be a full, not partial, equirectangular panorama!')
+    sys.exit(1)
 cubeSize = 8 * int(origWidth / 3.14159265 / 8)
 levels = math.ceil(math.log(cubeSize / args.tileSize, 2)) + 1
 origHeight = str(origHeight)
@@ -63,6 +65,9 @@ origFilename = os.path.join(os.getcwd(), args.inputFile)
 extension = '.jpg'
 if args.png:
     extension = '.png'
+
+# Create output directory
+os.makedirs(args.output)
 
 # Generate PTO file for nona to generate cube faces
 # Face order: front, back, up, down, left, right
