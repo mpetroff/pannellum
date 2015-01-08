@@ -248,30 +248,39 @@ function parseGPanoXMP(image) {
             // Extract the requested tag from the XMP data
             var getTag = function(tag) {
                 tag = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
-                return tag.substring(0, tag.indexOf('"'));
+                tag = tag.substring(0, tag.indexOf('"'));
+                if (tag.length === 0) {
+                    return null;
+                }
+                return Number(tag);
             };
             
             // Relevant XMP data
             var xmp = {
-                fullWidth: Number(getTag('GPano:FullPanoWidthPixels')),
-                croppedWidth: Number(getTag('GPano:CroppedAreaImageWidthPixels')),
-                fullHeight: Number(getTag('GPano:FullPanoHeightPixels')),
-                croppedHeight: Number(getTag('GPano:CroppedAreaImageHeightPixels')),
-                topPixels: Number(getTag('GPano:CroppedAreaTopPixels')),
-                heading: Number(getTag('GPano:PoseHeadingDegrees'))
+                fullWidth: getTag('GPano:FullPanoWidthPixels'),
+                croppedWidth: getTag('GPano:CroppedAreaImageWidthPixels'),
+                fullHeight: getTag('GPano:FullPanoHeightPixels'),
+                croppedHeight: getTag('GPano:CroppedAreaImageHeightPixels'),
+                topPixels: getTag('GPano:CroppedAreaTopPixels'),
+                heading: getTag('GPano:PoseHeadingDegrees')
             };
             
-            // Set up viewer using GPano XMP data
-            config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
-            config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
-            config.vOffset = [(xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5] * -90;
-            if (xmp.heading) {
-                // TODO: make sure this works correctly for partial panoramas
-                config.northOffset = xmp.heading;
-                config.compass = true;
+            if (xmp.fullWidth !== null && xmp.croppedWidth !== null &&
+                xmp.fullHeight !== null && xmp.croppedHeight !== null &&
+                xmp.topPixels !== null) {
+                
+                // Set up viewer using GPano XMP data
+                config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
+                config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
+                config.vOffset = [(xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5] * -90;
+                if (xmp.heading !== null) {
+                    // TODO: make sure this works correctly for partial panoramas
+                    config.northOffset = xmp.heading;
+                    config.compass = true;
+                }
+                
+                // TODO: add support for initial view settings
             }
-            
-            // TODO: add support for initial view settings
         }
         
         // Load panorama
