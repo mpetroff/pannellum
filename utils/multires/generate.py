@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Requires Python 3.2+
+# Requires Python 3.2+ (or Python 2.7)
 
 # generate.py - A multires tile set generator for Pannellum
 # Copyright (c) 2014 Matthew Petroff
@@ -22,6 +22,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+from __future__ import print_function
 
 import argparse
 from PIL import Image
@@ -53,12 +55,12 @@ args = parser.parse_args()
 # Process input image information
 print('Processing input image information...')
 origWidth, origHeight = Image.open(args.inputFile).size
-if origWidth / origHeight != 2:
+if float(origWidth) / origHeight != 2:
     print('Error: the image width is not twice the image height.')
     print('Input image must be a full, not partial, equirectangular panorama!')
     sys.exit(1)
 cubeSize = 8 * int(origWidth / 3.14159265 / 8)
-levels = math.ceil(math.log(cubeSize / args.tileSize, 2)) + 1
+levels = int(math.ceil(math.log(float(cubeSize) / args.tileSize, 2))) + 1
 origHeight = str(origHeight)
 origWidth = str(origWidth)
 origFilename = os.path.join(os.getcwd(), args.inputFile)
@@ -98,8 +100,9 @@ for f in range(0, 6):
     size = cubeSize
     face = Image.open(os.path.join(args.output, faces[f]))
     for level in range(levels, 0, -1):
-        os.makedirs(os.path.join(args.output, str(level)), exist_ok=True)
-        tiles = math.ceil(size / args.tileSize)
+        if not os.path.exists(os.path.join(args.output, str(level))):
+            os.makedirs(os.path.join(args.output, str(level)))
+        tiles = int(math.ceil(float(size) / args.tileSize))
         if (level < levels):
             face = face.resize([size, size], Image.ANTIALIAS)
         for i in range(0, tiles):
@@ -116,7 +119,8 @@ for f in range(0, 6):
 # Generate fallback tiles
 print('Generating fallback tiles...')
 for f in range(0, 6):
-    os.makedirs(os.path.join(args.output, 'fallback'), exist_ok=True)
+    if not os.path.exists(os.path.join(args.output, 'fallback')):
+        os.makedirs(os.path.join(args.output, 'fallback'))
     face = Image.open(os.path.join(args.output, faces[f]))
     face = face.resize([1024, 1024], Image.ANTIALIAS)
     # Create 1px border by duplicating border pixels
