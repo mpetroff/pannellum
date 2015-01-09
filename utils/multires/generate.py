@@ -3,7 +3,7 @@
 # Requires Python 3.2+ (or Python 2.7)
 
 # generate.py - A multires tile set generator for Pannellum
-# Copyright (c) 2014 Matthew Petroff
+# Copyright (c) 2014-2015 Matthew Petroff
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
