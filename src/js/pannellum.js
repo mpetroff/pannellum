@@ -79,6 +79,15 @@ processOptions();
 
 // Initialize viewer
 function init() {
+    // Display an error for IE 9 as it doesn't work but also doesn't otherwise
+    // show an error (older versions don't work at all)
+    // Based on: http://stackoverflow.com/a/10965203
+    var div = document.createElement("div");
+    div.innerHTML = "<!--[if lte IE 9]><i></i><![endif]-->";
+    if (div.getElementsByTagName("i").length == 1) {
+        anError();
+    }
+    
     var i, p;
     
     if (config.type == 'cubemap') {
