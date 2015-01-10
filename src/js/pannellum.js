@@ -362,6 +362,9 @@ function onDocumentMouseMove(event) {
 }
 
 function onDocumentMouseUp() {
+    if (!isUserInteracting) {
+        return;
+    }
     isUserInteracting = false;
     if (Date.now() - latestInteraction > 15) {
         pitchSpeed = yawSpeed = 0;
