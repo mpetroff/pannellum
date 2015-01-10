@@ -1,0 +1,14 @@
+{
+    
+    "type": "equirectangular",
+    
+    "video": true,
+    
+    "panoramas": [
+        {
+            "file": "video-name.webm",
+            "type": "video/webm"
+        }
+    ]
+
+}
