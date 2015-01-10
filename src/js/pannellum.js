@@ -363,6 +363,9 @@ function onDocumentMouseMove(event) {
 
 function onDocumentMouseUp() {
     isUserInteracting = false;
+    if (Date.now() - latestInteraction > 15) {
+        pitchSpeed = yawSpeed = 0;
+    }
     document.getElementById('page').className = 'grab';
 }
 
@@ -424,6 +427,9 @@ function onDocumentTouchMove(event) {
 
 function onDocumentTouchEnd() {
     isUserInteracting = false;
+    if (Date.now() - latestInteraction > 15) {
+        pitchSpeed = yawSpeed = 0;
+    }
     onPointerDownPointerDist = -1;
 }
 
@@ -664,6 +670,17 @@ function keyRepeat() {
         yawSpeed = Math.min(maxSpeed, Math.max(yawSpeed, -maxSpeed));
         pitchSpeed = Math.min(maxSpeed, Math.max(pitchSpeed, -maxSpeed));
         zoomSpeed = Math.min(maxSpeed, Math.max(zoomSpeed, -maxSpeed));
+    }
+    
+    // Stop movement if opposite controls are pressed
+    if (keysDown[0] && keysDown[0]) {
+        zoomSpeed = 0;
+    }
+    if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {
+        pitchSpeed = 0;
+    }
+    if ((keysDown[4] || keysDown[8]) && (keysDown[5] || keysDown[9])) {
+        yawSpeed = 0;
     }
 }
 
