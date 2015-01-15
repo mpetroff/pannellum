@@ -2,7 +2,7 @@
 
 ## About
 
-Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 11kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding.
+Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 13kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding.
 
 ## How to use
 1. Upload `build/pannellum.htm` and a full equirectangular panorama to a web server.
@@ -21,13 +21,16 @@ Since Pannellum is built with emerging web standards, it requires a modern brows
 #### Full support (with appropriate graphics drivers):
 * Firefox 10+
 * Chrome 15+
-* Safari 5.1+ (WebGL support must first be enabled in preferences)
+* Safari 8+
 * Internet Explorer 11+
 
 #### Almost full support (no full screen):
 * Firefox 4+
 * Chrome 9+
-* Opera 12+ (WebGL support must first be enabled in preferences)
+
+#### Partial support (WebGL support must first be enabled in preferences)
+
+* Safari 5.1+
 
 #### No support:
 Internet Explorer 10 and previous
@@ -36,7 +39,7 @@ Internet Explorer 10 and previous
 The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
 
 ## License
-Pannellum is distributed under the MIT License. For more information, read the file `COPYING` or peruse the license [online](http://www.opensource.org/licenses/MIT).
+Pannellum is distributed under the MIT License. For more information, read the file `COPYING` or peruse the license [online](https://github.com/mpetroff/pannellum/blob/master/COPYING).
 
 In the past, parts of Pannellum were based on [three.js](https://github.com/mrdoob/three.js) r40, which is licensed under the [MIT License](https://github.com/mrdoob/three.js/blob/44a8652c37e576d51a7edd97b0f99f00784c3db7/LICENSE).
 
@@ -44,5 +47,5 @@ The panoramic image provided with the examples is licensed under the [Creative C
 
 ## Credits
 
-* [Matthew Petroff](http://www.mpetroff.net/), Original Author
+* [Matthew Petroff](http://mpetroff.net/), Original Author
 * [three.js](https://github.com/mrdoob/three.js) r40, Former Underlying Framework
