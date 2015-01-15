@@ -157,6 +157,14 @@ Not applicable for `scene` hot spots.
 Specifies the ID of the scene to link to for `scene` hot spots. Not applicable
 for `info` hot spots.
 
+#### `targetPitch`
+
+Specifies the pitch of the target scene.
+
+#### `targetYaw`
+
+Specifies the yaw of the target scene.
+
 
 
 ## `equirectangular` specific options
