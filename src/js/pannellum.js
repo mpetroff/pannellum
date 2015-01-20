@@ -896,9 +896,9 @@ function renderHotSpots() {
             hs.div.style.visibility = 'hidden';
         } else {
             hs.div.style.visibility = 'visible';
-            // Rotate is to force subpixel rendering on Firefox
+            // Subpixel rendering doesn't work in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
-            hs.div.style.transform = 'translate(' + (-canvas.width /
+            var transform = 'translate(' + (-canvas.width /
                 Math.tan(config.hfov * Math.PI / 360) * Math.sin((hs.yaw +
                 config.yaw) * Math.PI / 180) * Math.cos(hs.pitch * Math.PI /
                 180) / z / 2 + canvas.width / 2 - 13) + 'px, ' +
@@ -907,7 +907,10 @@ function renderHotSpots() {
                 Math.PI / 180) - Math.cos(hs.pitch * Math.PI / 180) *
                 Math.cos((hs.yaw + config.yaw) * Math.PI / 180) *
                 Math.sin(config.pitch * Math.PI / 180)) / z / 2 +
-                canvas.height / 2 - 13) + 'px) rotate(0.0001deg)';
+                canvas.height / 2 - 13) + 'px)';
+            hs.div.style.webkitTransform = transform;
+            hs.div.style.MozTransform = transform;
+            hs.div.style.transform = transform;
         }
     });
 }
