@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.1.1
+--------------------------
+
+Bugfixes:
+ - Force subpixel rendering for hot spots
+
+
 Changes in Pannellum 2.1.0
 --------------------------
 
