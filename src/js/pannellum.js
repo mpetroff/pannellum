@@ -896,14 +896,18 @@ function renderHotSpots() {
             hs.div.style.visibility = 'hidden';
         } else {
             hs.div.style.visibility = 'visible';
-            hs.div.style.top = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
-                (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch * Math.PI /
-                180) - Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw +
-                config.yaw) * Math.PI / 180) * Math.sin(config.pitch * Math.PI / 180)) / z /
-                2 + canvas.height / 2 - 13 + 'px';
-            hs.div.style.left = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
-                Math.sin((hs.yaw + config.yaw) * Math.PI / 180) * Math.cos(hs.pitch *
-                Math.PI / 180) / z / 2 + canvas.width / 2 - 13 + 'px';
+            // Rotate is to force subpixel rendering on Firefox
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
+            hs.div.style.transform = 'translate(' + (-canvas.width /
+                Math.tan(config.hfov * Math.PI / 360) * Math.sin((hs.yaw +
+                config.yaw) * Math.PI / 180) * Math.cos(hs.pitch * Math.PI /
+                180) / z / 2 + canvas.width / 2 - 13) + 'px, ' +
+                (-canvas.width / Math.tan(config.hfov * Math.PI / 360) *
+                (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch *
+                Math.PI / 180) - Math.cos(hs.pitch * Math.PI / 180) *
+                Math.cos((hs.yaw + config.yaw) * Math.PI / 180) *
+                Math.sin(config.pitch * Math.PI / 180)) / z / 2 +
+                canvas.height / 2 - 13) + 'px) rotate(0.0001deg)';
         }
     });
 }

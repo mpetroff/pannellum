@@ -264,6 +264,7 @@ body {
     cursor: default;
     border-radius: 13px;
     vertical-align: middle;
+    top: 0;
 }
 .hotspot:hover {
     background-color: rgba(255,255,255,0.2);
