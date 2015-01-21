@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Requires Python 3.2+ (or Python 2.7)
+# Requires Python 3.2+ (or Python 2.7) and nona (from Hugin)
 
 # generate.py - A multires tile set generator for Pannellum
 # Copyright (c) 2014-2015 Matthew Petroff
