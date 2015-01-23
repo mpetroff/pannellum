@@ -184,7 +184,6 @@ body {
     width: 200px;
     height: 100px;
     margin: -50px 0 0 -100px;
-    background-color: #222;
     background-color: rgba(0,0,0,.7);
     border-radius: 3px;
     text-align: center;
@@ -195,7 +194,6 @@ body {
 }
 
 #load_button:hover {
-    background-color: #111;
     background-color: rgba(0,0,0,.8);
 }
 
@@ -294,7 +292,7 @@ div.tooltip:hover span{
     visibility: visible;
 }
 div.tooltip:hover:after {
-    content: "";
+    content: '';
     position: absolute;
     width: 0;
     height: 0;
@@ -312,8 +310,8 @@ div.tooltip:hover:after {
     bottom: 4px;
     border-radius: 25px;
     background-image: url('img/compass.svg');
-    cursor:default;
-    display:none;
+    cursor: default;
+    display: none;
 }
 
 .viewport {
