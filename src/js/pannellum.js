@@ -608,6 +608,7 @@ function keyRepeat() {
         newTime = Date.now();
     }
     var diff = (newTime - prevTime) * config.hfov / 1700;
+    diff = Math.min(diff, 1.0);
     
     // If minus key is down
     if (keysDown[0]) {
