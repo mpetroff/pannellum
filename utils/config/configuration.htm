@@ -23,10 +23,10 @@
                         embed_code.innerHTML += '&amp;amp;author=' + escape(form.pano_author.value);
                     }
                     if(form.autoload.checked) {
-                        embed_code.innerHTML += '&amp;amp;autoload=yes';
+                        embed_code.innerHTML += '&amp;amp;autoLoad=true';
                     }
                     if(form.autorotate.value != 'none') {
-                        embed_code.innerHTML += '&amp;amp;autorotate=' + escape(form.autorotate.value);
+                        embed_code.innerHTML += '&amp;amp;autoRotate=' + escape(form.autorotate.value);
                     }
                     if(form.fallback_url.value != '') {
                         embed_code.innerHTML += '&amp;amp;fallback=' + escape(form.fallback_url.value);
@@ -50,7 +50,7 @@
                         embed_code.innerHTML += '&amp;amp;vaov=' + escape(form.vaov.value);
                     }
                     if(form.voffset.value != 0) {
-                        embed_code.innerHTML += '&amp;amp;voffset=' + escape(form.voffset.value);
+                        embed_code.innerHTML += '&amp;amp;vOffset=' + escape(form.voffset.value);
                     }
                     embed_code.innerHTML += '"></iframe>';
                 return false;

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-# Requires Python 3.2+
+# Requires Python 3.2+ (or Python 2.7) and nona (from Hugin)
 
 # generate.py - A multires tile set generator for Pannellum
-# Copyright (c) 2014 Matthew Petroff
+# Copyright (c) 2014-2015 Matthew Petroff
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import print_function
+
 import argparse
 from PIL import Image
 import os
+import sys
 import math
 from distutils.spawn import find_executable
 import subprocess
@@ -34,7 +37,7 @@ import subprocess
 nona = find_executable('nona')
 
 # Parse input
-parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an equirectangular panorama.',
+parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an full equirectangular panorama.',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('inputFile', metavar='INPUT',
                     help='full equirectangular panorama to be processed')
@@ -49,20 +52,24 @@ parser.add_argument('-n', '--nona', default=nona, required=nona is None,
                     help='location of the nona executable to use')
 args = parser.parse_args()
 
-# Create output directory
-os.makedirs(args.output)
-
 # Process input image information
 print('Processing input image information...')
 origWidth, origHeight = Image.open(args.inputFile).size
+if float(origWidth) / origHeight != 2:
+    print('Error: the image width is not twice the image height.')
+    print('Input image must be a full, not partial, equirectangular panorama!')
+    sys.exit(1)
 cubeSize = 8 * int(origWidth / 3.14159265 / 8)
-levels = math.ceil(math.log(cubeSize / args.tileSize, 2)) + 1
+levels = int(math.ceil(math.log(float(cubeSize) / args.tileSize, 2))) + 1
 origHeight = str(origHeight)
 origWidth = str(origWidth)
 origFilename = os.path.join(os.getcwd(), args.inputFile)
 extension = '.jpg'
 if args.png:
     extension = '.png'
+
+# Create output directory
+os.makedirs(args.output)
 
 # Generate PTO file for nona to generate cube faces
 # Face order: front, back, up, down, left, right
@@ -93,8 +100,9 @@ for f in range(0, 6):
     size = cubeSize
     face = Image.open(os.path.join(args.output, faces[f]))
     for level in range(levels, 0, -1):
-        os.makedirs(os.path.join(args.output, str(level)), exist_ok=True)
-        tiles = math.ceil(size / args.tileSize)
+        if not os.path.exists(os.path.join(args.output, str(level))):
+            os.makedirs(os.path.join(args.output, str(level)))
+        tiles = int(math.ceil(float(size) / args.tileSize))
         if (level < levels):
             face = face.resize([size, size], Image.ANTIALIAS)
         for i in range(0, tiles):
@@ -111,7 +119,8 @@ for f in range(0, 6):
 # Generate fallback tiles
 print('Generating fallback tiles...')
 for f in range(0, 6):
-    os.makedirs(os.path.join(args.output, 'fallback'), exist_ok=True)
+    if not os.path.exists(os.path.join(args.output, 'fallback')):
+        os.makedirs(os.path.join(args.output, 'fallback'))
     face = Image.open(os.path.join(args.output, faces[f]))
     face = face.resize([1024, 1024], Image.ANTIALIAS)
     # Create 1px border by duplicating border pixels
@@ -140,7 +149,7 @@ text.append('    ')
 text.append('    "multiRes": {')
 text.append('        "path": "./%l/%s%y_%x",')
 text.append('        "fallbackPath": "./fallback/%s",')
-text.append('        "extension": "jpg",')
+text.append('        "extension": "' + extension[1:] + '",')
 text.append('        "tileResolution": ' + str(args.tileSize) + ',')
 text.append('        "maxLevel": ' + str(levels) + ',')
 text.append('        "cubeResolution": ' + str(cubeSize))

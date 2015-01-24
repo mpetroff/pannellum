@@ -1,6 +1,6 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
- * Copyright (c) 2011-2014 Matthew Petroff
+ * Copyright (c) 2011-2015 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,8 @@
  * THE SOFTWARE.
  */
 
+'use strict';
+
 // Display about information on right click
 document.addEventListener('contextmenu', onRightClick, false);
 
@@ -28,7 +30,6 @@ document.addEventListener('contextmenu', onRightClick, false);
 var config,
     tourConfig = {},
     configFromURL,
-    popoutMode = false,
     renderer,
     isUserInteracting = false,
     latestInteraction = Date.now(),
@@ -38,7 +39,7 @@ var config,
     onPointerDownYaw = 0,
     onPointerDownPitch = 0,
     keysDown = new Array(10),
-    fullWindowActive = false,
+    fullscreenActive = false,
     loaded = false,
     error = false,
     isTimedOut = false,
@@ -46,25 +47,30 @@ var config,
     canvas = document.getElementById('canvas'),
     panoImage,
     prevTime,
+    yawSpeed = 0,
+    pitchSpeed = 0,
+    zoomSpeed = 0,
     hotspotsCreated = false;
 
 var defaultConfig = {
     hfov: 100,
-    minhfov: 50,
-    maxhfov: 120,
+    minHfov: 50,
+    maxHfov: 120,
     pitch: 0,
-    minpitch: -85,
-    maxpitch: 85,
+    minPitch: -85,
+    maxPitch: 85,
     yaw: 0,
-    minyaw: -360,
-    maxyaw: 360,
+    minYaw: -360,
+    maxYaw: 360,
     haov: 360,
     vaov: 180,
-    voffset: 0,
+    vOffset: 0,
     autoRotate: false,
-    autoRotateDelayMillis: -1,
+    autoRotateInactivityDelay: -1,
     type: 'equirectangular',
-    northOffset: 0
+    northOffset: 0,
+    showFullscreenCtrl: true,
+    video: false
 };
 
 // Process options
@@ -73,12 +79,25 @@ processOptions();
 
 // Initialize viewer
 function init() {
+    // Display an error for IE 9 as it doesn't work but also doesn't otherwise
+    // show an error (older versions don't work at all)
+    // Based on: http://stackoverflow.com/a/10965203
+    var div = document.createElement("div");
+    div.innerHTML = "<!--[if lte IE 9]><i></i><![endif]-->";
+    if (div.getElementsByTagName("i").length == 1) {
+        anError();
+    }
+    
+    var i, p;
+    
     if (config.type == 'cubemap') {
         panoImage = [];
-        for (var i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i++) {
             panoImage.push(new Image());
             panoImage[i].crossOrigin = 'anonymous';
         }
+        document.getElementById('lbox').style.display = 'block';
+        document.getElementById('lbar').style.display = 'none';
     } else if (config.type == 'multires') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
         if (config.basePath) {
@@ -88,12 +107,15 @@ function init() {
         }
         panoImage = c;
     } else {
-        panoImage = new Image();
-        panoImage.crossOrigin = 'anonymous';
+        if (config.video === true) {
+            panoImage = document.createElement('video');
+        } else {
+            panoImage = new Image();
+        }
     }
     
     function onImageLoad() {
-        renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type);
+        renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type, config.video);
         
         // Only add event listeners once
         if (!listenersAdded) {
@@ -108,10 +130,6 @@ function init() {
             document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
             document.addEventListener('msfullscreenchange', onFullScreenChange, false);
             document.addEventListener('fullscreenchange', onFullScreenChange, false);
-            document.addEventListener('mozfullscreenerror', fullScreenError, false);
-            document.addEventListener('webkitfullscreenerror', fullScreenError, false);
-            document.addEventListener('msfullscreenerror', fullScreenError, false);
-            document.addEventListener('fullscreenerror', fullScreenError, false);
             window.addEventListener('resize', onDocumentResize, false);
             document.addEventListener('keydown', onDocumentKeyPress, false);
             document.addEventListener('keyup', onDocumentKeyUp, false);
@@ -131,14 +149,16 @@ function init() {
         // Quick loading counter for synchronous loading
         var itemsToLoad = 6;
         
-        for (var i = 0; i < panoImage.length; i++) {
-            panoImage[i].onload = function() {
-                itemsToLoad--;
-                if (itemsToLoad === 0) {
-                    onImageLoad();
-                }
-            };
-            var p = config.cubeMap[i];
+        var onLoad = function() {
+            itemsToLoad--;
+            if (itemsToLoad === 0) {
+                onImageLoad();
+            }
+        };
+        
+        for (i = 0; i < panoImage.length; i++) {
+            panoImage[i].onload = onLoad;
+            p = config.cubeMap[i];
             if (config.basePath) {
                 p = config.basePath + p;
             } else if (tourConfig.basePath) {
@@ -149,17 +169,133 @@ function init() {
     } else if (config.type == 'multires') {
         onImageLoad();
     } else {
-        panoImage.onload = onImageLoad;
-        var p = config.panorama;
+        p = '';
         if (config.basePath) {
-            p = config.basePath + p;
+            p = config.basePath;
         } else if (tourConfig.basePath) {
-            p = tourConfig.basePath + p;
+            p = tourConfig.basePath;
         }
-        panoImage.src = p;
+        
+        if (config.video === true) {
+            for (i = 0; i < config.panoramas.length; i++) {
+                if (panoImage.canPlayType(config.panoramas[i].type).length > 0) {
+                    panoImage.src = p + config.panoramas[i].file;
+                    break;
+                }
+            }
+            if (panoImage.src.length < 1) {
+                // Browser doesn't support any provide video formats
+                console.log('Error: provided video formats are not supported');
+                anError('Your browser doesn\'t support any of the provided' +
+                    ' video formats. Please try using a different browser or' +
+                    ' device.');
+            }
+            panoImage.play();
+            onImageLoad();
+        } else {
+            // Still image
+            p += config.panorama;
+            
+            panoImage.onload = function() {
+                window.URL.revokeObjectURL(this.src);  // Clean up
+                onImageLoad();
+            };
+            
+            var xhr = new XMLHttpRequest();
+            xhr.onloadend = function() {
+                var img = this.response;
+                parseGPanoXMP(img);
+                document.getElementById('lmsg').innerHTML = '';
+            };
+            xhr.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    // Display progress
+                    var percent = e.loaded / e.total * 100;
+                    document.getElementById('lbar_fill').style.width = percent + '%';
+                    var unit, numerator, denominator;
+                    if (e.total > 1e6) {
+                        unit = 'MB';
+                        numerator = (e.loaded / 1e6).toFixed(2);
+                        denominator = (e.total / 1e6).toFixed(2);
+                    } else if (e.total > 1e3) {
+                        unit = 'kB';
+                        numerator = (e.loaded / 1e3).toFixed(1);
+                        denominator = (e.total / 1e3).toFixed(1);
+                    } else {
+                        unit = 'B';
+                        numerator = e.loaded;
+                        denominator = e.total;
+                    }
+                    var msg = numerator + ' / ' + denominator + ' ' + unit;
+                    document.getElementById('lmsg').innerHTML = msg;
+                } else {
+                    // Display loading spinner
+                    document.getElementById('lbox').style.display = 'block';
+                    document.getElementById('lbar').style.display = 'none';
+                }
+            };
+            xhr.open('GET', p, true);
+            xhr.responseType = 'blob';
+            xhr.send();
+        }
     }
     
     document.getElementById('page').className = 'grab';
+}
+
+// Parse Google Photo Sphere XMP Metadata
+// https://developers.google.com/photo-sphere/metadata/
+function parseGPanoXMP(image) {
+    var reader = new FileReader();
+    reader.addEventListener('loadend', function() {
+        var img = reader.result;
+        
+        var start = img.indexOf('<x:xmpmeta');
+        if (start > -1 && config.ignoreGPanoXMP !== true) {
+            var xmpData = img.substring(start, img.indexOf('</x:xmpmeta>') + 12);
+            
+            // Extract the requested tag from the XMP data
+            var getTag = function(tag) {
+                tag = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
+                tag = tag.substring(0, tag.indexOf('"'));
+                if (tag.length === 0) {
+                    return null;
+                }
+                return Number(tag);
+            };
+            
+            // Relevant XMP data
+            var xmp = {
+                fullWidth: getTag('GPano:FullPanoWidthPixels'),
+                croppedWidth: getTag('GPano:CroppedAreaImageWidthPixels'),
+                fullHeight: getTag('GPano:FullPanoHeightPixels'),
+                croppedHeight: getTag('GPano:CroppedAreaImageHeightPixels'),
+                topPixels: getTag('GPano:CroppedAreaTopPixels'),
+                heading: getTag('GPano:PoseHeadingDegrees')
+            };
+            
+            if (xmp.fullWidth !== null && xmp.croppedWidth !== null &&
+                xmp.fullHeight !== null && xmp.croppedHeight !== null &&
+                xmp.topPixels !== null) {
+                
+                // Set up viewer using GPano XMP data
+                config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
+                config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
+                config.vOffset = [(xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5] * -90;
+                if (xmp.heading !== null) {
+                    // TODO: make sure this works correctly for partial panoramas
+                    config.northOffset = xmp.heading;
+                    config.compass = true;
+                }
+                
+                // TODO: add support for initial view settings
+            }
+        }
+        
+        // Load panorama
+        panoImage.src = window.URL.createObjectURL(image);
+    });
+    reader.readAsText(image);
 }
 
 function anError(error) {
@@ -223,19 +359,25 @@ function onDocumentMouseMove(event) {
         latestInteraction = Date.now();
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        yawSpeed = (yaw - config.yaw) * 0.2;
+        config.yaw = yaw;
         
         var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
         
         var pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        pitchSpeed = (pitch - config.pitch) * 0.2;
+        config.pitch = pitch;
     }
 }
 
 function onDocumentMouseUp() {
+    if (!isUserInteracting) {
+        return;
+    }
     isUserInteracting = false;
+    if (Date.now() - latestInteraction > 15) {
+        pitchSpeed = yawSpeed = 0;
+    }
     document.getElementById('page').className = 'grab';
 }
 
@@ -286,17 +428,20 @@ function onDocumentTouchMove(event) {
         }
         
         var yaw = (onPointerDownPointerX - clientX) * 0.1 + onPointerDownYaw;
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        yawSpeed = (yaw - config.yaw) * 0.2;
+        config.yaw = yaw;
         
         var pitch = (clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        pitchSpeed = (pitch - config.pitch) * 0.2;
+        config.pitch = pitch;
     }
 }
 
 function onDocumentTouchEnd() {
     isUserInteracting = false;
+    if (Date.now() - latestInteraction > 15) {
+        pitchSpeed = yawSpeed = 0;
+    }
     onPointerDownPointerDist = -1;
 }
 
@@ -320,6 +465,20 @@ function onDocumentMouseWheel(event) {
         setHfov(config.hfov += event.detail * 1.5);
     }
     
+    if (event.detail) {
+        if (event.detail > 0) {
+            zoomSpeed = 1;
+        } else {
+            zoomSpeed = -1;
+        }
+    } else {
+        if (event.detail < 0) {
+            zoomSpeed = 1;
+        } else {
+            zoomSpeed = -1;
+        }
+    }
+    
     requestAnimationFrame(animate);
 }
 
@@ -338,9 +497,9 @@ function onDocumentKeyPress(event) {
     
     // If escape key is pressed
     if (keynumber == 27) {
-        // If in full window / popout mode
-        if (fullWindowActive || popoutMode) {
-            toggleFullWindow();
+        // If in fullscreen mode
+        if (fullscreenActive) {
+            toggleFullscreen();
         }
     } else {
         // Change key
@@ -438,6 +597,10 @@ function keyRepeat() {
         return;
     }
     
+    var prevPitch = config.pitch;
+    var prevYaw = config.yaw;
+    var prevZoom = config.hfov;
+    
     var newTime;
     if (typeof performance !== 'undefined' && performance.now()) {
         newTime = performance.now();
@@ -446,65 +609,91 @@ function keyRepeat() {
     }
     var diff = (newTime - prevTime) * config.hfov / 1700;
     
-    var pitch = config.pitch;
-    var yaw = config.yaw;
-    
     // If minus key is down
     if (keysDown[0]) {
-        zoomOut(diff);
+        setHfov(config.hfov + (zoomSpeed * 0.8 + 0.2) * diff);
     }
     
     // If plus key is down
     if (keysDown[1]) {
-        zoomIn(diff);
+        setHfov(config.hfov + (zoomSpeed * 0.8 - 0.2) * diff);
     }
     
     // If up arrow or "w" is down
     if (keysDown[2] || keysDown[6]) {
         // Pan up
-        pitch += diff;
-        
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        config.pitch += (pitchSpeed * 0.8 + 0.2) * diff;
     }
     
     // If down arrow or "s" is down
     if (keysDown[3] || keysDown[7]) {
         // Pan down
-        pitch -= diff;
-        
-        // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, pitch));
+        config.pitch += (pitchSpeed * 0.8 - 0.2) * diff;
     }
     
     // If left arrow or "a" is down
     if (keysDown[4] || keysDown[8]) {
         // Pan left
-        yaw -= diff;
-        
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        config.yaw += (yawSpeed * 0.8 - 0.2) * diff;
     }
     
     // If right arrow or "d" is down
     if (keysDown[5] || keysDown[9]) {
         // Pan right
-        yaw += diff;
-        
-        // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, yaw));
+        config.yaw += (yawSpeed * 0.8 + 0.2) * diff;
     }
     
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
-    if (config.autoRotate && inactivityInterval > config.autoRotateDelayMillis) {
+    if (config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay) {
         // Pan
         if (diff > 0.000001) {
             config.yaw -= config.autoRotate / 60 * diff;
         }
     }
 
+    // "Inertia"
+    if (diff > 0) {
+        // "Friction"
+        var friction = 0.85;
+        
+        // Yaw
+        if (!keysDown[4] && !keysDown[5] && !keysDown[8] && !keysDown[9]) {
+            config.yaw += yawSpeed * diff * friction;
+        }
+        // Pitch
+        if (!keysDown[2] && !keysDown[3] && !keysDown[6] && !keysDown[7]) {
+            config.pitch += pitchSpeed * diff * friction;
+        }
+        // Zoom
+        if (!keysDown[0] && !keysDown[1]) {
+            setHfov(config.hfov + zoomSpeed * diff * friction);
+        }
+    }
+
     prevTime = newTime;
+    if (diff > 0) {
+        yawSpeed = yawSpeed * 0.8 + (config.yaw - prevYaw) / diff * 0.2;
+        pitchSpeed = pitchSpeed * 0.8 + (config.pitch - prevPitch) / diff * 0.2;
+        zoomSpeed = zoomSpeed * 0.8 + (config.hfov - prevZoom) / diff * 0.2;
+        
+        // Limit speed
+        var maxSpeed = 5;
+        yawSpeed = Math.min(maxSpeed, Math.max(yawSpeed, -maxSpeed));
+        pitchSpeed = Math.min(maxSpeed, Math.max(pitchSpeed, -maxSpeed));
+        zoomSpeed = Math.min(maxSpeed, Math.max(zoomSpeed, -maxSpeed));
+    }
+    
+    // Stop movement if opposite controls are pressed
+    if (keysDown[0] && keysDown[0]) {
+        zoomSpeed = 0;
+    }
+    if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {
+        pitchSpeed = 0;
+    }
+    if ((keysDown[4] || keysDown[8]) && (keysDown[5] || keysDown[9])) {
+        yawSpeed = 0;
+    }
 }
 
 function onDocumentResize() {
@@ -524,12 +713,16 @@ function animate() {
     render();
     if (isUserInteracting) {
         requestAnimationFrame(animate);
-    } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3]
-      || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7]
-      || keysDown[8] || keysDown[9] || config.autoRotate) {
+    } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
+        keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] ||
+        keysDown[8] || keysDown[9] || config.autoRotate ||
+        Math.abs(yawSpeed) > 0.01 || Math.abs(pitchSpeed) > 0.01 ||
+        Math.abs(zoomSpeed) > 0.01) {
+        
         keyRepeat();
         requestAnimationFrame(animate);
-    } else if (renderer && renderer.isLoading()) {
+    } else if (renderer && (renderer.isLoading() || (config.video === true &&
+        !panoImage.paused && !panoImage.ended))) {
         requestAnimationFrame(animate);
     }
 }
@@ -548,7 +741,7 @@ function render() {
         tmpyaw = config.yaw;
 
         // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minyaw, Math.min(config.maxyaw, config.yaw));
+        config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, config.yaw));
         
 		// Check if we autoRotate in a limited by min and max yaw
 		// If so reverse direction
@@ -557,7 +750,7 @@ function render() {
 		}
 
         // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, config.pitch));
+        config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
         
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180);
         
@@ -577,9 +770,9 @@ function renderInit() {
     try {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.voffset * Math.PI / 180);
+        renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180);
         
-        animate();
+        requestAnimationFrame(animate);
         
         // Show compass if applicable
         if (config.compass) {
@@ -605,10 +798,10 @@ function renderInit() {
         if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
         } else if (event.type == 'webgl size error') {
-            anError('This panorama is too big for your device! It\'s '
-                + event.width + 'px wide, but your device only supports images up to '
-                + event.maxWidth + 'px wide. Try another device.'
-                + ' (If you\'re the author, try scaling down the image.)');
+            anError('This panorama is too big for your device! It\'s ' +
+                event.width + 'px wide, but your device only supports images up to ' +
+                event.maxWidth + 'px wide. Try another device.' +
+                ' (If you\'re the author, try scaling down the image.)');
         }
     }
 }
@@ -626,8 +819,9 @@ function createHotSpots() {
             var span = document.createElement('span');
             span.innerHTML = hs.text;
             
+            var a;
             if (hs.URL) {
-                var a = document.createElement('a');
+                a = document.createElement('a');
                 a.setAttribute('href', hs.URL);
                 a.setAttribute('target', '_blank');
                 document.getElementById('container').appendChild(a);
@@ -642,7 +836,7 @@ function createHotSpots() {
                 document.getElementById('container').appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
-                var a = document.createElement('a');
+                a = document.createElement('a');
                 a.setAttribute('href', hs.image);
                 a.setAttribute('target', '_blank');
                 span.appendChild(a);
@@ -702,14 +896,21 @@ function renderHotSpots() {
             hs.div.style.visibility = 'hidden';
         } else {
             hs.div.style.visibility = 'visible';
-            hs.div.style.top = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
-                (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch * Math.PI /
-                180) - Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw +
-                config.yaw) * Math.PI / 180) * Math.sin(config.pitch * Math.PI / 180)) / z /
-                2 + canvas.height / 2 - 13 + 'px';
-            hs.div.style.left = -canvas.width / Math.tan(config.hfov * Math.PI / 360) *
-                Math.sin((hs.yaw + config.yaw) * Math.PI / 180) * Math.cos(hs.pitch *
-                Math.PI / 180) / z / 2 + canvas.width / 2 - 13 + 'px';
+            // Subpixel rendering doesn't work in Firefox
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
+            var transform = 'translate(' + (-canvas.width /
+                Math.tan(config.hfov * Math.PI / 360) * Math.sin((hs.yaw +
+                config.yaw) * Math.PI / 180) * Math.cos(hs.pitch * Math.PI /
+                180) / z / 2 + canvas.width / 2 - 13) + 'px, ' +
+                (-canvas.width / Math.tan(config.hfov * Math.PI / 360) *
+                (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch *
+                Math.PI / 180) - Math.cos(hs.pitch * Math.PI / 180) *
+                Math.cos((hs.yaw + config.yaw) * Math.PI / 180) *
+                Math.sin(config.pitch * Math.PI / 180)) / z / 2 +
+                canvas.height / 2 - 13) + 'px)';
+            hs.div.style.webkitTransform = transform;
+            hs.div.style.MozTransform = transform;
+            hs.div.style.transform = transform;
         }
     });
 }
@@ -725,11 +926,14 @@ function parseURLParameters() {
         json += '"' + option + '":';
         switch(option) {
             case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
-            case 'voffset':
+            case 'vOffset':
                 json += value;
                 break;
+            case 'autoLoad': case 'ignoreGPanoXMP':
+                json += JSON.parse(value);
+                break;
             default:
-                json += '"' + value + '"';
+                json += '"' + decodeURIComponent(value) + '"';
         }
         if (i < URL.length - 1) {
             json += ',';
@@ -738,10 +942,12 @@ function parseURLParameters() {
     json += '}';
     configFromURL = JSON.parse(json);
     
+    var request;
+    
     // Check for JSON configuration file
     if (configFromURL.config) {
         // Get JSON configuration file
-        var request = new XMLHttpRequest();
+        request = new XMLHttpRequest();
         request.open('GET', configFromURL.config, false);
         request.send();
         var c = JSON.parse(request.responseText);
@@ -761,7 +967,7 @@ function parseURLParameters() {
     var firstScene = null;
     if (configFromURL.tour) {
         // Get JSON configuration file
-        var request = new XMLHttpRequest();
+        request = new XMLHttpRequest();
         request.open('GET', configFromURL.tour, false);
         request.send();
         tourConfig = JSON.parse(request.responseText);
@@ -783,29 +989,38 @@ function parseURLParameters() {
 
 function mergeConfig(sceneId) {
     config = {};
+    var k;
     
     // Merge default config
-    for (var k in defaultConfig) {
-        config[k] = defaultConfig[k];
+    for (k in defaultConfig) {
+        if (defaultConfig.hasOwnProperty(k)) {
+            config[k] = defaultConfig[k];
+        }
     }
     
     // Merge default scene config
-    for (var k in tourConfig.default) {
-        config[k] = tourConfig.default[k];
+    for (k in tourConfig.default) {
+        if (tourConfig.default.hasOwnProperty(k)) {
+            config[k] = tourConfig.default[k];
+        }
     }
     
     // Merge current scene config
     if ((sceneId !== null) && (sceneId !== '') && (tourConfig.scenes) && (tourConfig.scenes[sceneId])) {
         var scene = tourConfig.scenes[sceneId];
-        for (var k in scene) {
-            config[k] = scene[k];
+        for (k in scene) {
+            if (scene.hasOwnProperty(k)) {
+                config[k] = scene[k];
+            }
         }
         config.activeScene = sceneId;
     }
     
     // Merge URL and config file
-    for (var k in configFromURL) {
-        config[k] = configFromURL[k];
+    for (k in configFromURL) {
+        if (configFromURL.hasOwnProperty(k)) {
+            config[k] = configFromURL[k];
+        }
     }
 }
 
@@ -814,7 +1029,7 @@ function processOptions() {
     // maximum number of connections to a server as can happen with cubic
     // panoramas
     if ('preview' in config) {
-        var p = config['preview'];
+        var p = config.preview;
         if (config.basePath) {
             p = config.basePath + p;
         } else if (tourConfig.basePath) {
@@ -830,6 +1045,7 @@ function processOptions() {
     
     // Process other options
     for (var key in config) {
+      if (config.hasOwnProperty(key)) {
         switch(key) {
             case 'title':
                 document.getElementById('title_box').innerHTML = config[key];
@@ -839,13 +1055,6 @@ function processOptions() {
             case 'author':
                 document.getElementById('author_box').innerHTML = 'by ' + config[key];
                 document.getElementById('panorama_info').style.display = 'inline';
-                break;
-                
-            case 'popout':
-                if (config[key] == 'yes') {
-                    document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
-                    popoutMode = true;
-                }
                 break;
             
             case 'fallback':
@@ -858,38 +1067,36 @@ function processOptions() {
             
             case 'pitch':
                 // Keep pitch within bounds
-                config.pitch = Math.max(config.minpitch, Math.min(config.maxpitch, config.pitch));
+                config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
                 break;
             
-            case 'autoload':
-                if (config[key] == 'yes') {
+            case 'autoLoad':
+                if (config[key] === true) {
                     // Show loading box
                     document.getElementById('load_box').style.display = 'inline';
+                    // Hide load button
+                    document.getElementById('load_button').style.display = 'none';
+                    // Initialize
+                    init();
+                    requestAnimationFrame(animate);
                 }
-                //fallthrough
-            case 'popoutautoload':
-                // Hide load button
-                document.getElementById('load_button').style.display = 'none';
-                // Initialize
-                init();
-                animate();
                 break;
             
-            case 'autorotate':
+            case 'autoRotate':
                 // Rotation speed in degrees/second (+ccw, -cw)
                 config.autoRotate = config[key];
                 break;
 
-            case 'autorotateDelayMillis':
+            case 'autoRotateInactivityDelay':
                 // Start the auto-rotate only after user inactivity (milliseconds):
-                config.autoRotateDelayMillis = config[key];
+                config.autoRotateInactivityDelay = config[key];
                 break;
             
             case 'header':
                 // Add contents to header
                 document.getElementsByTagName('head')[0].innerHTML += config[key];
                 break;
-
+            
             case 'showZoomCtrl':
                 if (config[key]) {
                     // Show zoom controls
@@ -901,21 +1108,24 @@ function processOptions() {
                 break;
             
             case 'showFullscreenCtrl':
-                if (config[key]) {
+                if (config[key] && ('fullscreen' in document || 'mozFullScreen' in document ||
+                    'webkitIsFullScreen' in document || 'msFullscreenElement' in document)) {
+                    
                     // Show fullscreen control
-                    document.getElementById('fullwindowtoggle_button').style.display = 'block';
+                    document.getElementById('fullscreentoggle_button').style.display = 'block';
                 } else {
                     // Hide fullscreen control
-                    document.getElementById('fullwindowtoggle_button').style.display = 'none';
+                    document.getElementById('fullscreentoggle_button').style.display = 'none';
                 }
                 break;
         }
+      }
     }
 }
 
-function toggleFullWindow() {
+function toggleFullscreen() {
     if (loaded && !error) {
-        if (!fullWindowActive && !popoutMode) {
+        if (!fullscreenActive) {
             try {
                 var page = document.getElementById('page');
                 if (page.requestFullscreen) {
@@ -928,7 +1138,7 @@ function toggleFullWindow() {
                     page.webkitRequestFullScreen();
                 }
             } catch(event) {
-                fullScreenError();
+                // Fullscreen doesn't work
             }
         } else {
             if (document.exitFullscreen) {
@@ -940,33 +1150,17 @@ function toggleFullWindow() {
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             }
-
-            if (popoutMode) {
-                window.close();
-            }
         }
     }
 }
 
 function onFullScreenChange() {
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
-        document.getElementById('fullwindowtoggle_button').classList.add('fullwindowtoggle_button_active');
-        fullWindowActive = true;
+        document.getElementById('fullscreentoggle_button').classList.add('fullscreentoggle_button_active');
+        fullscreenActive = true;
     } else {
-        document.getElementById('fullwindowtoggle_button').classList.remove('fullwindowtoggle_button_active');
-        fullWindowActive = false;
-    }
-}
-
-function fullScreenError() {
-    if (!popoutMode) {
-        // Open new window instead
-        var windowspecs = 'width=' + screen.width + ',height=' + screen.height + ',left=0,top=0';
-        var windowlocation = window.location.href + '&popout=yes';
-        windowlocation += '&popoutautoload';
-        window.open(windowlocation, null, windowspecs);
-    } else {
-        window.close();
+        document.getElementById('fullscreentoggle_button').classList.remove('fullscreentoggle_button_active');
+        fullscreenActive = false;
     }
 }
 
@@ -984,13 +1178,14 @@ function zoomOut(amount) {
 
 function setHfov(i) {
     // Keep field of view within bounds
-    if (i < config.minhfov && config.type != 'multires') {
-        config.hfov = config.minhfov;
-    } else if (config.type == 'multires' && i < canvas.width
-        / (config.multiRes.cubeResolution / 90 * 0.9)) {
+    if (i < config.minHfov && config.type != 'multires') {
+        config.hfov = config.minHfov;
+    } else if (config.type == 'multires' && i < canvas.width /
+        (config.multiRes.cubeResolution / 90 * 0.9)) {
+        
         config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
-    } else if (i > config.maxhfov) {
-        config.hfov = config.maxhfov;
+    } else if (i > config.maxHfov) {
+        config.hfov = config.maxHfov;
     } else {
         config.hfov = i;
     }
@@ -1005,7 +1200,7 @@ function load() {
     document.getElementById('load_button').style.display = 'none';
     document.getElementById('load_box').style.display = 'inline';
     init();
-    animate();
+    requestAnimationFrame(animate);
 }
 
 function loadScene(sceneId, targetPitch, targetYaw) {

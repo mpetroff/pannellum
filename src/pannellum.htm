@@ -32,9 +32,14 @@
             <div id="zoom_out" onclick="zoomOut(5)" class="sprite control"></div>
         </div>
         
-        <div id="fullwindowtoggle_button" onclick="toggleFullWindow()" class="sprite fullwindowtoggle_button_inactive controls control"></div>
+        <div id="fullscreentoggle_button" onclick="toggleFullscreen()" class="sprite fullscreentoggle_button_inactive controls control"></div>
         
-        <div id="load_box"><p>Loading...<div class="lbox"><div class="loading"></div></div></div>
+        <div id="load_box">
+          <p>Loading...</p>
+          <div id="lbox"><div class="loading"></div></div>
+          <div id="lbar"><div id="lbar_fill"></div></div>
+          <p id="lmsg"></p>
+        </div>
         
         <div id="load_button" onclick="load()"><p>Click to<br>Load<br>Panorama<p></div>
         

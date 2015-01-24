@@ -80,18 +80,18 @@ body {
     border-radius: 0 0 3px 3px;
 }
 
-#fullwindowtoggle_button {
+#fullscreentoggle_button {
     top: 66px;
     left: 4px;
     width: 26px;
     height: 26px;
 }
 
-.fullwindowtoggle_button_inactive {
+.fullscreentoggle_button_inactive {
     background-position: 0 -52px;
 }
 
-.fullwindowtoggle_button_active {
+.fullscreentoggle_button_active {
     background-position: 0 -78px;
 }
 
@@ -136,13 +136,14 @@ body {
     color: #fff;
 }
 
-.lbox {
+#lbox {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 20px;
     height: 20px;
     margin: -10px 0 0 -10px;
+    display: none;
 }
 
 .loading {
@@ -183,7 +184,6 @@ body {
     width: 200px;
     height: 100px;
     margin: -50px 0 0 -100px;
-    background-color: #222;
     background-color: rgba(0,0,0,.7);
     border-radius: 3px;
     text-align: center;
@@ -194,7 +194,6 @@ body {
 }
 
 #load_button:hover {
-    background-color: #111;
     background-color: rgba(0,0,0,.8);
 }
 
@@ -263,6 +262,7 @@ body {
     cursor: default;
     border-radius: 13px;
     vertical-align: middle;
+    top: 0;
 }
 .hotspot:hover {
     background-color: rgba(255,255,255,0.2);
@@ -292,7 +292,7 @@ div.tooltip:hover span{
     visibility: visible;
 }
 div.tooltip:hover:after {
-    content: "";
+    content: '';
     position: absolute;
     width: 0;
     height: 0;
@@ -310,8 +310,8 @@ div.tooltip:hover:after {
     bottom: 4px;
     border-radius: 25px;
     background-image: url('img/compass.svg');
-    cursor:default;
-    display:none;
+    cursor: default;
+    display: none;
 }
 
 .viewport {
@@ -378,4 +378,21 @@ div.tooltip:hover:after {
     top: 0;
     left: 0;
     background-size: 100% 100%;
+}
+
+#lbar {
+    width: 150px;
+    margin: 0 auto;
+    border: #fff 1px solid;
+    height: 6px;
+}
+
+#lbar_fill {
+    background: #fff;
+    height: 100%;
+    width: 0;
+}
+
+#lmsg {
+    font-size: 12px;
 }
