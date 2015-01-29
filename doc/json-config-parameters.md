@@ -49,6 +49,13 @@ after user activity ceases. This parameter only has an effect if the
 `autoRotate` parameter is set.
 
 
+### `autoRotateStopDelay`
+
+Sets the delay, in milliseconds, to stop automatically rotating the panorama
+after it is loaded. This parameter only has an effect if the `autoRotate`
+parameter is set.
+
+
 ### `fallback`
 
 If set, the value is used as a URL for a fallback viewer in case Pannellum is

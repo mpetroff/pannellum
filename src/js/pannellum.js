@@ -50,7 +50,6 @@ var config,
     yawSpeed = 0,
     pitchSpeed = 0,
     zoomSpeed = 0,
-    rotationStarted = 0,
     hotspotsCreated = false;
 
 var defaultConfig = {
@@ -608,6 +607,9 @@ function keyRepeat() {
     } else {
         newTime = Date.now();
     }
+    if (prevTime === undefined) {
+        prevTime = newTime;
+    }
     var diff = (newTime - prevTime) * config.hfov / 1700;
     diff = Math.min(diff, 1.0);
     
@@ -647,11 +649,19 @@ function keyRepeat() {
     
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
-    if ((config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay) && (rotationStarted == 0 || ((Date.now() - rotationStarted) < config.autoRotateStopAfter))) {
+    if (config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay
+        && config.autoRotateStopDelay !== false) {
         // Pan
         if (diff > 0.000001) {
-	    rotationStarted = rotationStarted == 0 ? Date.now() : rotationStarted;
             config.yaw -= config.autoRotate / 60 * diff;
+        }
+        
+        // Deal with stopping auto rotation after a set delay
+        if (config.autoRotateStopDelay) {
+            config.autoRotateStopDelay -= newTime - prevTime;
+            if (config.autoRotateStopDelay <= 0) {
+                config.autoRotateStopDelay = false;
+            }
         }
     }
 
@@ -1095,10 +1105,10 @@ function processOptions() {
                 config.autoRotateInactivityDelay = config[key];
                 break;
                 
-            case 'autoRotateStopAfter':
-                // Stop the auto-rotate after a certain time (milliseconds):
-                config.autoRotateStopAfter = config[key];
-                break;                
+            case 'autoRotateStopDelay':
+                // Stop the auto-rotate after a certain delay (milliseconds):
+                config.autoRotateStopDelay = config[key];
+                break;
             
             case 'header':
                 // Add contents to header
