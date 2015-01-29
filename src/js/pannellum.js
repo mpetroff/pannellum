@@ -50,6 +50,7 @@ var config,
     yawSpeed = 0,
     pitchSpeed = 0,
     zoomSpeed = 0,
+    rotationStarted = 0,
     hotspotsCreated = false;
 
 var defaultConfig = {
@@ -646,9 +647,10 @@ function keyRepeat() {
     
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
-    if (config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay) {
+    if ((config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay) && (rotationStarted == 0 || ((Date.now() - rotationStarted) < config.autoRotateStopAfter))) {
         // Pan
         if (diff > 0.000001) {
+	    rotationStarted = rotationStarted == 0 ? Date.now() : rotationStarted;
             config.yaw -= config.autoRotate / 60 * diff;
         }
     }
@@ -1092,6 +1094,11 @@ function processOptions() {
                 // Start the auto-rotate only after user inactivity (milliseconds):
                 config.autoRotateInactivityDelay = config[key];
                 break;
+                
+            case 'autoRotateStopAfter':
+                // Stop the auto-rotate after a certain time (milliseconds):
+                config.autoRotateStopAfter = config[key];
+                break;                
             
             case 'header':
                 // Add contents to header
