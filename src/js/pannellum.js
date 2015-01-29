@@ -741,7 +741,7 @@ function animate() {
 }
 
 function render() {
-	var tmpyaw;
+    var tmpyaw;
 
     try {
         if (config.yaw > 180) {
@@ -756,11 +756,11 @@ function render() {
         // Ensure the yaw is within min and max allowed
         config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, config.yaw));
         
-		// Check if we autoRotate in a limited by min and max yaw
-		// If so reverse direction
-		if (config.autoRotate !== false && tmpyaw != config.yaw) {
-			config.autoRotate *= -1;
-		}
+        // Check if we autoRotate in a limited by min and max yaw
+        // If so reverse direction
+        if (config.autoRotate !== false && tmpyaw != config.yaw) {
+            config.autoRotate *= -1;
+        }
 
         // Ensure the calculated pitch is within min and max allowed
         config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
