@@ -200,8 +200,8 @@ vertical.
 ### `vOffset`
 
 Sets the vertical offset of the center of the equirectangular image from the
-horizon, in degrees. Defaults to `0`. This is used if `vaov` is not zero and
-the equirectangular image is not cropped symmetrically.
+horizon, in degrees. Defaults to `0`. This is used if `vaov` is less than `180`
+and the equirectangular image is not cropped symmetrically.
 
 ### `ignoreGPanoXMP`
 
