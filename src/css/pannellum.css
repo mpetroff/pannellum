@@ -396,3 +396,15 @@ div.tooltip:hover:after {
 #lmsg {
     font-size: 12px;
 }
+div.hotspot img{
+    -webkit-filter: drop-shadow(3px 3px 3px black);
+    filter: drop-shadow(3px 3px 3px black);
+    display: block;
+    position: absolute;
+}
+.hotspot >div{
+    position:relative;
+    display:inline-block;
+	margin-left: 12px;
+	margin-top: 12px;
+}
