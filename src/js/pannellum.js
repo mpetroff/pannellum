@@ -67,6 +67,8 @@ var defaultConfig = {
     vOffset: 0,
     autoRotate: false,
     autoRotateInactivityDelay: -1,
+	hotspotImageWidth: 100,
+	hotspotImage: "../css/img/sprites.svg",
     type: 'equirectangular',
     northOffset: 0,
     showFullscreenCtrl: true,
@@ -827,8 +829,24 @@ function createHotSpots() {
     } else {
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
-            div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
-            
+			if(hs.type == "scene"){
+				var img = new Image();
+				var divInner = document.createElement('div');
+				img.onload = function() {
+				  divInner.style.width = img.width + "px";
+				  divInner.style.height = img.height + "px";
+				  img.style.width = config.hotspotImageWidth + "%";
+				  img.style.left= "-" + config.hotspotImageWidth/2 + "%";
+				  img.style.top= "-" + config.hotspotImageWidth/2 + "%";
+				  console.log(img.style.left);
+				}
+				img.src=config.hotspotImage;
+				div.setAttribute('class', 'hotspot tooltip');
+				divInner.appendChild(img);
+				div.appendChild(divInner);
+			}else{
+				div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+			}
             var span = document.createElement('span');
             span.innerHTML = hs.text;
             
@@ -1109,6 +1127,15 @@ function processOptions() {
                 // Stop the auto-rotate after a certain delay (milliseconds):
                 config.autoRotateStopDelay = config[key];
                 break;
+            case 'hotspotImage':
+                // Set the hotspots image url
+                config.hotspotImage = config[key];
+                break;
+				
+            case 'hotspotImageWidth':
+                // Set the default width (%) fir the image
+                config.hotspotImageWidth = config[key];
+                break;	
             
             case 'header':
                 // Add contents to header
