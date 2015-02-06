@@ -396,3 +396,85 @@ div.tooltip:hover:after {
 #lmsg {
     font-size: 12px;
 }
+/* Example animation: starts with opacity 100, goes to 0 and comes back to 100*/
+@-o-keyframes imagebulger {
+    0%, 100% {
+		opacity: 100;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+@-moz-keyframes imagebulger {
+    0%, 100% {
+		opacity: 100;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+@-webkit-keyframes imagebulger {
+    0%, 100% {
+		opacity: 100;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+@keyframes imagebulger {
+    0%, 100% {
+		opacity: 100;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+/* Example animation END*/
+
+/* WIDTH, LEFT AND TOP CALCULATIONS:
+width: desired_image_size * 2 (%)
+top: -width/2 +50 (%)
+left: -width/2 +50 (%)*/
+div.hotspot img{
+    -webkit-filter: drop-shadow(3px 3px 3px black);
+    filter: drop-shadow(3px 3px 3px black);
+    display: block;
+    position: absolute;
+	/* Starting value of 70% width */
+    top: -20%;
+    left: -20%;
+	width: 140%;
+	
+/* Example of animation
+	-webkit-animation: imagebulger 1s infinite;
+    -moz-animation: imagebulger 1s infinite;
+    -o-animation: imagebulger 1s infinite;
+    animation: imagebulger 1s infinite;
+*/	
+	
+	
+	-webkit-transition: all .2s;
+    -moz-transition: all .2s;
+    -o-transition: all .2s;
+    transition: all .2s;
+    -webkit-transition-property: width, left, top, animation;
+    -moz-transition-property: width, left, top, animation;
+    -o-transition-property: width, left, top, animation;
+    transition-property: width, left, top, animation;
+	
+	}
+/* transition: goes to 100% width */
+div.hotspot img:hover{
+    left: -50%;
+    top: -50%;
+	width: 200%;
+
+    -webkit-animation: 0;
+    -moz-animation: 0;
+    -o-animation: 0;
+    animation: 0;
+}
+.hotspot >div{
+    position:relative;
+    display:inline-block;
+}
