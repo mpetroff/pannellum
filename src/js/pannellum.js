@@ -67,6 +67,7 @@ var defaultConfig = {
     vOffset: 0,
     autoRotate: false,
     autoRotateInactivityDelay: -1,
+	hotspotImage: "../css/img/sprites.svg",
     type: 'equirectangular',
     northOffset: 0,
     showFullscreenCtrl: true,
@@ -827,7 +828,24 @@ function createHotSpots() {
     } else {
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
-            div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+			var divInner;
+			if(hs.type == "scene"){
+				var img = new Image();
+				divInner = document.createElement('div');
+				img.onload = function() {
+					//Setting div to half of the real image width. With that, I avoid that the clickable (hover) area won't be too long.
+					//It implies that for the css styles, 100% means real image size of 50%.
+				  divInner.style.width = img.naturalWidth/2 + "px";
+				  divInner.style.height = img.naturalHeight/2 + "px";
+				  divInner.style.marginTop = "-" + (img.naturalHeight/2 - 26)/2 + "px";
+				  divInner.style.marginLeft = "-" + (img.naturalWidth/2 - 26)/2 + "px";
+				}
+				img.src=config.hotspotImage;
+				div.setAttribute('class', 'hotspot tooltip');
+				divInner.appendChild(img);
+			}else{
+				div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+			}
             
             var span = document.createElement('span');
             span.innerHTML = hs.text;
@@ -875,7 +893,10 @@ function createHotSpots() {
                 document.getElementById('container').appendChild(div);
             }
             
-            div.appendChild(span);
+            div.appendChild(span);			
+			if(divInner){
+				div.appendChild(divInner);
+			}
             span.style.width = span.scrollWidth - 20 + 'px';
             span.style.marginLeft = -(span.scrollWidth - 26) / 2 + 'px';
             span.style.marginTop = -span.scrollHeight - 12 + 'px';
@@ -1109,6 +1130,11 @@ function processOptions() {
                 // Stop the auto-rotate after a certain delay (milliseconds):
                 config.autoRotateStopDelay = config[key];
                 break;
+				
+            case 'hotspotImage':
+                // Set the hotspots image url
+                config.hotspotImage = config[key];
+                break;	
             
             case 'header':
                 // Add contents to header
