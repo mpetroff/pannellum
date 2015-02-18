@@ -55,7 +55,6 @@ function Renderer(container, image, imageType, video) {
         // fallback viewer only really works with WebKit/Blink
         if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) || this.imageType == 'cubemap') && 'WebkitAppearance' in document.documentElement.style) {
             // Initialize renderer
-            container.className = 'viewport';
             this.world = container.querySelector('.world');
             this.world.style.display = 'block';
             
