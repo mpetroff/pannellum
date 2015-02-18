@@ -44,7 +44,6 @@ var config,
     error = false,
     isTimedOut = false,
     listenersAdded = false,
-    canvas = document.getElementById('canvas'),
     panoImage,
     prevTime,
     yawSpeed = 0,
@@ -358,13 +357,13 @@ function onDocumentMouseMove(event) {
     if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         //TODO: This still isn't quite right
-        var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
+        var yaw = ((Math.atan(onPointerDownPointerX / renderer.canvas.width * 2 - 1) - Math.atan(event.clientX / renderer.canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
         yawSpeed = (yaw - config.yaw) * 0.2;
         config.yaw = yaw;
         
-        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
+        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * renderer.canvas.height / renderer.canvas.width) * 180 / Math.PI;
         
-        var pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
+        var pitch = ((Math.atan(event.clientY / renderer.canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / renderer.canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
         pitchSpeed = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
     }
@@ -781,28 +780,9 @@ function render() {
 
 function renderInit() {
     try {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180);
-        
-        requestAnimationFrame(animate);
-        
-        // Show compass if applicable
-        if (config.compass) {
-            document.getElementById('compass').style.display = 'inline';
-        } else {
-            document.getElementById('compass').style.display = 'none';
-        }
-        
-        // Show hotspots
-        createHotSpots();
-        
-        // Hide loading display
-        document.getElementById('load_box').style.display = 'none';
-        if (document.getElementById('preview') !== null) {
-            document.getElementById('container').removeChild(document.getElementById('preview'));
-        }
-        loaded = true;
+        renderer.canvas.width = window.innerWidth;
+        renderer.canvas.height = window.innerHeight;
+        renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback);
         
     } catch(event) {
         // Panorama not loaded
@@ -817,6 +797,27 @@ function renderInit() {
                 ' (If you\'re the author, try scaling down the image.)');
         }
     }
+}
+
+function renderInitCallback() {
+    requestAnimationFrame(animate);
+    
+    // Show compass if applicable
+    if (config.compass) {
+        document.getElementById('compass').style.display = 'inline';
+    } else {
+        document.getElementById('compass').style.display = 'none';
+    }
+    
+    // Show hotspots
+    createHotSpots();
+    
+    // Hide loading display
+    document.getElementById('load_box').style.display = 'none';
+    if (document.getElementById('preview') !== null) {
+        document.getElementById('container').removeChild(document.getElementById('preview'));
+    }
+    loaded = true;
 }
 
 function createHotSpots() {
@@ -911,16 +912,16 @@ function renderHotSpots() {
             hs.div.style.visibility = 'visible';
             // Subpixel rendering doesn't work in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
-            var transform = 'translate(' + (-canvas.width /
+            var transform = 'translate(' + (-renderer.canvas.width /
                 Math.tan(config.hfov * Math.PI / 360) * Math.sin((hs.yaw +
                 config.yaw) * Math.PI / 180) * Math.cos(hs.pitch * Math.PI /
-                180) / z / 2 + canvas.width / 2 - 13) + 'px, ' +
-                (-canvas.width / Math.tan(config.hfov * Math.PI / 360) *
+                180) / z / 2 + renderer.canvas.width / 2 - 13) + 'px, ' +
+                (-renderer.canvas.width / Math.tan(config.hfov * Math.PI / 360) *
                 (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch *
                 Math.PI / 180) - Math.cos(hs.pitch * Math.PI / 180) *
                 Math.cos((hs.yaw + config.yaw) * Math.PI / 180) *
                 Math.sin(config.pitch * Math.PI / 180)) / z / 2 +
-                canvas.height / 2 - 13) + 'px)';
+                renderer.canvas.height / 2 - 13) + 'px)';
             hs.div.style.webkitTransform = transform;
             hs.div.style.MozTransform = transform;
             hs.div.style.transform = transform;
@@ -1198,10 +1199,10 @@ function setHfov(i) {
     // Keep field of view within bounds
     if (i < config.minHfov && config.type != 'multires') {
         config.hfov = config.minHfov;
-    } else if (config.type == 'multires' && i < canvas.width /
+    } else if (config.type == 'multires' && i < renderer.canvas.width /
         (config.multiRes.cubeResolution / 90 * 0.9)) {
         
-        config.hfov = canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
+        config.hfov = renderer.canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
     } else if (i > config.maxHfov) {
         config.hfov = config.maxHfov;
     } else {

@@ -32,7 +32,8 @@ window.libpannellum = (function(window, document, undefined) {
  */
 function Renderer(container, image, imageType, video) {
     this.container = container;
-    this.canvas = container.querySelector('#canvas');
+    this.canvas = document.createElement('canvas');
+    this.container.appendChild(this.canvas);
     this.image = image;
     this.video = video;
 
@@ -44,7 +45,7 @@ function Renderer(container, image, imageType, video) {
 
     var program, gl;
 
-    this.init = function(haov, vaov, voffset) {
+    this.init = function(haov, vaov, voffset, callback) {
         var s;
         
         // Enable WebGL on canvas
@@ -55,20 +56,24 @@ function Renderer(container, image, imageType, video) {
         // fallback viewer only really works with WebKit/Blink
         if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) || this.imageType == 'cubemap') && 'WebkitAppearance' in document.documentElement.style) {
             // Initialize renderer
-            this.world = container.querySelector('.world');
-            this.world.style.display = 'block';
+            this.world = document.createElement('div');
+            this.world.className = 'world';
             
             // Add images
             var path = this.image.basePath + this.image.fallbackPath;
             var sides = ['f', 'r', 'b', 'l', 'u', 'd'];
+            var loaded = 0;
             for (s = 0; s < 6; s++) {
                 var faceImg = new Image();
                 var world = this.world;
+                var container = this.container;
                 faceImg.crossOrigin = 'anonymous';
                 faceImg.side = s;
                 faceImg.onload = function() {
                     // Draw image on canvas
-                    var faceCanvas = world.querySelector('.' + sides[this.side] + 'face');
+                    var faceCanvas = document.createElement('canvas');
+                    faceCanvas.className = 'face ' + sides[this.side] + 'face';
+                    world.appendChild(faceCanvas);
                     var faceContext = faceCanvas.getContext('2d');
                     faceCanvas.width = this.width + 2;
                     faceCanvas.height = this.height + 2;
@@ -100,6 +105,12 @@ function Renderer(container, image, imageType, video) {
                     
                     // Draw image width duplicated edge pixels on canvas
                     faceContext.putImageData(imgData, 0, 0);
+                    
+                    loaded++;
+                    if (loaded == 6) {
+                        container.appendChild(world);
+                        callback();
+                    }
                 };
                 if (this.imageType == 'multires') {
                     faceImg.src = path.replace('%s',sides[s]) + '.' + this.image.extension;
@@ -277,6 +288,8 @@ function Renderer(container, image, imageType, video) {
             }
             throw {type: 'webgl error'};
         }
+        
+        callback();
     };
 
     this.render = function(pitch, yaw, hfov, returnImage) {
