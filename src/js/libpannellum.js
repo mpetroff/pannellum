@@ -53,7 +53,7 @@ function Renderer(container, image, imageType, video) {
         // If there is no WebGL, fall back to CSS 3D transform renderer.
         // While browser specific tests are usually frowned upon, the
         // fallback viewer only really works with WebKit/Blink
-        if (!gl && this.imageType == 'multires' && this.image.fallbackPath && 'WebkitAppearance' in document.documentElement.style) {
+        if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) || this.imageType == 'cubemap') && 'WebkitAppearance' in document.documentElement.style) {
             // Initialize renderer
             container.className = 'viewport';
             this.world = container.querySelector('.world');
@@ -61,9 +61,52 @@ function Renderer(container, image, imageType, video) {
             
             // Add images
             var path = this.image.basePath + this.image.fallbackPath;
-            var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
+            var sides = ['f', 'r', 'b', 'l', 'u', 'd'];
             for (s = 0; s < 6; s++) {
-                this.world.querySelector('.' + sides[s] + 'face').style.backgroundImage = 'url("' + path.replace('%s',sides[s]) + '.' + this.image.extension + '")';
+                var faceImg = new Image();
+                var world = this.world;
+                faceImg.crossOrigin = 'anonymous';
+                faceImg.side = s;
+                faceImg.onload = function() {
+                    // Draw image on canvas
+                    var faceCanvas = world.querySelector('.' + sides[this.side] + 'face');
+                    var faceContext = faceCanvas.getContext('2d');
+                    faceCanvas.width = this.width + 2;
+                    faceCanvas.height = this.height + 2;
+                    faceContext.drawImage(this, 1, 1);
+                    var imgData = faceContext.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
+                    var data = imgData.data;
+                    
+                    // Duplicate edge pixels
+                    var i;
+                    var j;
+                    for (i = 1; i < faceCanvas.width - 1; i++) {
+                        for (j = 0; j < 4; j++) {
+                            data[i * 4 + j] = data[(i + faceCanvas.width) * 4 + j];
+                            data[(i + faceCanvas.width * (faceCanvas.height - 1)) * 4 + j] = data[(i + faceCanvas.width * (faceCanvas.height - 2)) * 4 + j];
+                        }
+                    }
+                    for (i = 1; i < faceCanvas.height - 1; i++) {
+                        for (j = 0; j < 4; j++) {
+                            data[(i * faceCanvas.width) * 4 + j] = data[(i * faceCanvas.width + 1) * 4 + j];
+                            data[((i + 1) * faceCanvas.width - 1) * 4 + j] = data[((i + 1) * faceCanvas.width - 2) * 4 + j];
+                        }
+                    }
+                    for (j = 0; j < 4; j++) {
+                        data[j] = data[(faceCanvas.width + 1) * 4 + j];
+                        data[(faceCanvas.width - 1) * 4 + j] = data[(faceCanvas.width * 2 - 2) * 4 + j];
+                        data[(faceCanvas.width * (faceCanvas.height - 1)) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 2) + 1) * 4 + j];
+                        data[(faceCanvas.width * faceCanvas.height - 1) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 1) - 2) * 4 + j];
+                    }
+                    
+                    // Draw image width duplicated edge pixels on canvas
+                    faceContext.putImageData(imgData, 0, 0);
+                };
+                if (this.imageType == 'multires') {
+                    faceImg.src = path.replace('%s',sides[s]) + '.' + this.image.extension;
+                } else {
+                    faceImg.src = this.image[s].src;
+                }
             }
             
             return;
@@ -238,17 +281,30 @@ function Renderer(container, image, imageType, video) {
     };
 
     this.render = function(pitch, yaw, hfov) {
-        var focal;
+        var focal, i;
         
         // If no WebGL
-        if (!gl && this.imageType == 'multires') {
+        if (!gl && (this.imageType == 'multires' || this.imageType == 'cubemap')) {
+            // Determine face transforms
+            var transforms = {
+                f: 'translate3d(-502px, -502px, -500px)',
+                b: 'translate3d(502px, -502px, 500px) rotateX(180deg) rotateZ(180deg)',
+                u: 'translate3d(-502px, -500px, 502px) rotateX(270deg)',
+                d: 'translate3d(-502px, 500px, -502px) rotateX(90deg)',
+                l: 'translate3d(-500px, -502px, 502px) rotateX(180deg) rotateY(90deg) rotateZ(180deg)',
+                r: 'translate3d(500px, -502px, -502px) rotateY(270deg)'
+            };
             focal = 1 / Math.tan(hfov / 2);
             var zoom = focal * this.canvas.width / 2 + 'px';
-            var transform = 'translate3d(0px, 0px, ' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) rotateZ(0rad)';
-            this.world.style.webkitTransform = transform;
-            this.world.style.transform = transform;
-            this.container.style.webkitPerspective = zoom;
-            this.container.style.perspective = zoom;
+            var transform = 'perspective(' + zoom + ') translateZ(' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) ';
+            
+            // Apply face transforms
+            var faces = Object.keys(transforms);
+            for (i = 0; i < 6; i++) {
+                var face = this.world.querySelector('.' + faces[i] + 'face').style;
+                face.webkitTransform = transform + transforms[faces[i]];
+                face.transform = transform + transforms[faces[i]];
+            }
             return;
         }
         
@@ -307,7 +363,7 @@ function Renderer(container, image, imageType, video) {
             }
             program.currentNodes.sort(this.multiresNodeRenderSort);
             // Only process one tile per frame to improve responsiveness
-            for ( var i = 0; i < program.currentNodes.length; i++ ) {
+            for (i = 0; i < program.currentNodes.length; i++) {
                 if (!program.currentNodes[i].texture) {
                     setTimeout(this.processNextTile(program.currentNodes[i]), 0);
                     break;

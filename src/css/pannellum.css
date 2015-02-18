@@ -320,52 +320,19 @@ div.tooltip:hover:after {
     overflow: hidden;
     width: 100%;
     height: 100%;
-    -webkit-perspective: 700px;
-    perspective: 700px;
 }
 .world {
     display: none;
     position: absolute;
     left: 50%;
     top: 50%;
-    -webkit-transform-style: preserve-3d;
-    transform-style: preserve-3d;
-    -webkit-transform: translate3d(0px, 0px, 700px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-    transform: translate3d(0px, 0px, 700px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
 }
 .face {
     position: absolute;
     -webkit-transform-origin: 0 0 0;
     transform-origin: 0 0 0;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    height: 1002px;
-    width: 1002px;
-    background-size: 100% 100%;
-}
-.fface {
-    -webkit-transform: translate3d(-501px, -501px, -500px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-    transform: translate3d(-501px, -501px, -500px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-}
-.bface {
-    -webkit-transform: translate3d(501px, -501px, 500px) rotateX(180deg) rotateY(0deg) rotateZ(180deg);
-    transform: translate3d(501px, -501px, 500px) rotateX(180deg) rotateY(0deg) rotateZ(180deg);
-}
-.uface {
-    -webkit-transform: translate3d(-501px, -500px, 501px) rotateX(270deg) rotateY(0deg) rotateZ(0deg);
-    transform: translate3d(-501px, -500px, 501px) rotateX(270deg) rotateY(0deg) rotateZ(0deg);
-}
-.dface {
-    -webkit-transform: translate3d(-501px, 500px, -501px) rotateX(90deg) rotateY(0deg) rotateZ(0deg);
-    transform: translate3d(-501px, 500px, -501px) rotateX(90deg) rotateY(0deg) rotateZ(0deg);
-}
-.lface {
-    -webkit-transform: translate3d(-500px, -501px, 501px) rotateX(180deg) rotateY(90deg) rotateZ(180deg);
-    transform: translate3d(-500px, -501px, 501px) rotateX(180deg) rotateY(90deg) rotateZ(180deg);
-}
-.rface {
-    -webkit-transform: translate3d(500px, -501px, -501px) rotateX(0deg) rotateY(270deg) rotateZ(0deg);
-    transform: translate3d(500px, -501px, -501px) rotateX(0deg) rotateY(270deg) rotateZ(0deg);
+    height: 1004px;
+    width: 1004px;
 }
 
 .dragfix, #preview {
