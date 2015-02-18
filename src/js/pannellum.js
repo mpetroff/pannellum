@@ -1261,7 +1261,6 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     if (targetYaw) {
         config.yaw = targetYaw;
     }
-    console.log()
     load();
     
     // Fade if specified
@@ -1269,7 +1268,7 @@ function loadScene(sceneId, targetPitch, targetYaw) {
         // For some unclear reason, the fade doesn't work without the timeout
         setTimeout(function() {
             fadeImg.style.opacity = 0;
-        }, 1);
+        }, 10);
         
         // Remove image
         setTimeout(function() {
