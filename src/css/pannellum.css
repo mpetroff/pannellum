@@ -363,3 +363,9 @@ div.tooltip:hover:after {
 #lmsg {
     font-size: 12px;
 }
+
+.fade_img {
+    position: absolute;
+    top: 0;
+    left: 0;
+}

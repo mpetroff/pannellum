@@ -1,13 +1,13 @@
 ﻿{
     "default": {
         "author": "Matthew Petroff",
-        "firstScene": "pond"
+        "firstScene": "pond",
+        "sceneFadeDuration": 2000
     },
     
     "scenes": {
         "pondCube": {
             "title": "Jordan Pond (Cube)",
-            "preview": "./examplepano-preview.jpg",
             "type": "cubemap",
             "cubeMap": [
                 "./examplepanocube0.jpg",

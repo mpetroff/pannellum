@@ -1224,6 +1224,20 @@ function load() {
 function loadScene(sceneId, targetPitch, targetYaw) {
     loaded = false;
     
+    // Set up fade if specified
+    var fadeImg;
+    if (config.sceneFadeDuration) {
+        fadeImg = new Image();
+        fadeImg.className = 'fade_img';
+        fadeImg.style.transition = 'opacity ' + (config.sceneFadeDuration / 1000) + 's';
+        var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, true);
+        if (data !== undefined) {
+            fadeImg.src = data;
+        }
+        document.getElementById('container').appendChild(fadeImg);
+    }
+    
+    // Set new pointing
     if (targetPitch === 'same') {
         targetPitch = config.pitch;
     }
@@ -1247,5 +1261,19 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     if (targetYaw) {
         config.yaw = targetYaw;
     }
+    console.log()
     load();
+    
+    // Fade if specified
+    if (config.sceneFadeDuration) {
+        // For some unclear reason, the fade doesn't work without the timeout
+        setTimeout(function() {
+            fadeImg.style.opacity = 0;
+        }, 1);
+        
+        // Remove image
+        setTimeout(function() {
+            document.getElementById('container').removeChild(fadeImg);
+        }, config.sceneFadeDuration);
+    }
 }

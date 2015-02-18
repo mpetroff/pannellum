@@ -280,7 +280,7 @@ function Renderer(container, image, imageType, video) {
         }
     };
 
-    this.render = function(pitch, yaw, hfov) {
+    this.render = function(pitch, yaw, hfov, returnImage) {
         var focal, i;
         
         // If no WebGL
@@ -372,6 +372,10 @@ function Renderer(container, image, imageType, video) {
             
             // Draw tiles
             this.multiresDraw();
+        }
+        
+        if (returnImage !== undefined) {
+            return this.canvas.toDataURL('image/png');
         }
     };
     

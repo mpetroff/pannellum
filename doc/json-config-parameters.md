@@ -172,6 +172,12 @@ Specifies the pitch of the target scene.
 
 Specifies the yaw of the target scene.
 
+### `sceneFadeDuration`
+
+Specifies the fade duration, in milliseconds, when transitioning between
+scenes. Not defined by default. Only applicable for tours. Only works with
+WebGL renderer.
+
 
 
 ## `equirectangular` specific options
