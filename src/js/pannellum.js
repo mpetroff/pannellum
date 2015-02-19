@@ -167,7 +167,6 @@ container.appendChild(compass);
 
 // Process options
 parseURLParameters();
-processOptions();
 
 // Initialize viewer
 function init() {
@@ -1073,19 +1072,25 @@ function parseURLParameters() {
     if (configFromURL.config) {
         // Get JSON configuration file
         request = new XMLHttpRequest();
-        request.open('GET', configFromURL.config, false);
-        request.send();
-        var c = JSON.parse(request.responseText);
-        
-        // Set JSON file location
-        c.basePath = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
-        
-        // Merge options
-        for (var k in c) {
-            if (!configFromURL[k]) {
-                configFromURL[k] = c[k];
+        request.onload = function() {
+            var c = JSON.parse(request.responseText);
+            
+            // Set JSON file location
+            c.basePath = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
+            
+            // Merge options
+            for (var k in c) {
+                if (!configFromURL[k]) {
+                    configFromURL[k] = c[k];
+                }
             }
-        }
+            
+            mergeConfig(firstScene);
+            processOptions();
+        };
+        request.open('GET', configFromURL.config);
+        request.send();
+        return;
     }
     
     // Check for virtual tour JSON configuration file
@@ -1093,23 +1098,30 @@ function parseURLParameters() {
     if (configFromURL.tour) {
         // Get JSON configuration file
         request = new XMLHttpRequest();
-        request.open('GET', configFromURL.tour, false);
+        request.onload = function() {
+            tourConfig = JSON.parse(request.responseText);
+            
+            // Set JSON file location
+            tourConfig.basePath = configFromURL.tour.substring(0,configFromURL.tour.lastIndexOf('/')+1);
+            
+            // Activate first scene if specified
+            if (tourConfig.default.firstScene) {
+                firstScene = tourConfig.default.firstScene;
+            }
+            if (configFromURL.firstScene) {
+                firstScene = configFromURL.firstScene;
+            }
+            
+            mergeConfig(firstScene);
+            processOptions();
+        };
+        request.open('GET', configFromURL.tour);
         request.send();
-        tourConfig = JSON.parse(request.responseText);
-        
-        // Set JSON file location
-        tourConfig.basePath = configFromURL.tour.substring(0,configFromURL.tour.lastIndexOf('/')+1);
-        
-        // Activate first scene if specified
-        if (tourConfig.default.firstScene) {
-            firstScene = tourConfig.default.firstScene;
-        }
-        if (configFromURL.firstScene) {
-            firstScene = configFromURL.firstScene;
-        }
+        return;
     }
     
     mergeConfig(firstScene);
+    processOptions();
 }
 
 function mergeConfig(sceneId) {
