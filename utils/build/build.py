@@ -108,7 +108,7 @@ def build(files, css, html, filename):
     print('=' * 40)
     
     html = merge(html)
-    html = html.replace('<link type="text/css" rel="Stylesheet" href="css/pannellum.css" />','<style type="text/css">' + css + '</style>')
+    html = html.replace('<link type="text/css" rel="Stylesheet" href="css/pannellum.css"/>','<style type="text/css">' + css + '</style>')
     html = html.replace('<script type="text/javascript" src="js/libpannellum.js"></script>','')
     html = html.replace('<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>','')
     html = html.replace('<script type="text/javascript" src="js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
