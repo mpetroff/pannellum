@@ -31,6 +31,7 @@ var config,
     tourConfig = {},
     configFromURL,
     renderer,
+    oldRenderer,
     isUserInteracting = false,
     latestInteraction = Date.now(),
     onPointerDownPointerX = 0,
@@ -800,6 +801,19 @@ function renderInit() {
 }
 
 function renderInitCallback() {
+    if (oldRenderer !== undefined) {
+        oldRenderer.destroy();
+        
+        // Fade if specified
+        if (config.sceneFadeDuration && oldRenderer.fadeImg !== undefined) {
+            oldRenderer.fadeImg.style.opacity = 0;
+            // Remove image
+            setTimeout(function() {
+                oldRenderer.container.removeChild(oldRenderer.fadeImg);
+            }, config.sceneFadeDuration);
+        }
+    }
+    
     requestAnimationFrame(animate);
     
     // Show compass if applicable
@@ -1224,6 +1238,7 @@ function load() {
 
 function loadScene(sceneId, targetPitch, targetYaw) {
     loaded = false;
+    oldRenderer = renderer;
     
     // Set up fade if specified
     var fadeImg;
@@ -1236,6 +1251,7 @@ function loadScene(sceneId, targetPitch, targetYaw) {
             fadeImg.src = data;
         }
         document.getElementById('container').appendChild(fadeImg);
+        oldRenderer.fadeImg = fadeImg;
     }
     
     // Set new pointing
@@ -1263,17 +1279,4 @@ function loadScene(sceneId, targetPitch, targetYaw) {
         config.yaw = targetYaw;
     }
     load();
-    
-    // Fade if specified
-    if (config.sceneFadeDuration) {
-        // For some unclear reason, the fade doesn't work without the timeout
-        setTimeout(function() {
-            fadeImg.style.opacity = 0;
-        }, 10);
-        
-        // Remove image
-        setTimeout(function() {
-            document.getElementById('container').removeChild(fadeImg);
-        }, config.sceneFadeDuration);
-    }
 }

@@ -292,6 +292,17 @@ function Renderer(container, image, imageType, video) {
         callback();
     };
 
+    this.destroy = function() {
+        if (this.container !== undefined) {
+            if (this.canvas !== undefined) {
+                this.container.removeChild(this.canvas);
+            }
+            if (this.world !== undefined) {
+                this.container.removeChild(this.world);
+            }
+        }
+    };
+
     this.render = function(pitch, yaw, hfov, returnImage) {
         var focal, i;
         

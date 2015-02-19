@@ -43,7 +43,6 @@
 
         "pond": {
             "title": "Jordan Pond",
-            "preview": "./examplepano-preview.jpg",
             "panorama": "./examplepano.jpg",
             "hotSpots": [
                 {
