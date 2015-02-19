@@ -88,6 +88,7 @@ def build(files, css, html, filename):
     print('=' * 40)
     
     js = merge(files)
+    js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + read('../VERSION'))
     js = JScompress(js)
     
     print('=' * 40)
@@ -111,7 +112,6 @@ def build(files, css, html, filename):
     html = html.replace('<script type="text/javascript" src="js/libpannellum.js"></script>','')
     html = html.replace('<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>','')
     html = html.replace('<script type="text/javascript" src="js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
-    html = html.replace('"_blank">Pannellum</a></span>','"_blank">Pannellum</a> ' + read('../VERSION') + '</span>')
     html = htmlCompress(html)
     
     output(addHeader(html), folder + htmlfilename)

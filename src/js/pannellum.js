@@ -23,15 +23,14 @@
 
 'use strict';
 
-// Display about information on right click
-document.addEventListener('contextmenu', onRightClick, false);
-
 // Declare variables
 var config,
     tourConfig = {},
     configFromURL,
     renderer,
     oldRenderer,
+    preview,
+    container = document.getElementById('container'),
     isUserInteracting = false,
     latestInteraction = Date.now(),
     onPointerDownPointerX = 0,
@@ -73,6 +72,99 @@ var defaultConfig = {
     video: false
 };
 
+container.classList.add('container');
+
+// Display about information on right click
+var aboutMsg = document.createElement('span');
+aboutMsg.className = 'about_msg';
+aboutMsg.innerHTML = '<a href="http://pannellum.org/" target="_blank">Pannellum</a>';
+container.appendChild(aboutMsg);
+document.addEventListener('contextmenu', onRightClick);
+
+
+// Create container for renderer
+var renderContainer = document.createElement('div');
+renderContainer.className = 'render_container';
+container.appendChild(renderContainer);
+var dragFix = document.createElement('div');
+dragFix.className = 'dragfix';
+container.appendChild(dragFix);
+
+
+// Create info display
+var infoDisplay = {};
+
+// Panorama info
+infoDisplay.container = document.createElement('div');
+infoDisplay.container.className = 'panorama_info';
+infoDisplay.title = document.createElement('div');
+infoDisplay.title.className = 'title_box';
+infoDisplay.container.appendChild(infoDisplay.title);
+infoDisplay.author = document.createElement('div');
+infoDisplay.author.className = 'author_box';
+infoDisplay.container.appendChild(infoDisplay.author);
+container.appendChild(infoDisplay.container);
+
+// Load box
+infoDisplay.load = {};
+infoDisplay.load.box = document.createElement('div');
+infoDisplay.load.box.className = 'load_box';
+infoDisplay.load.box.innerHTML = '<p>Loading...</p>';
+infoDisplay.load.lbox = document.createElement('div');
+infoDisplay.load.lbox.className = 'lbox';
+infoDisplay.load.lbox.innerHTML = '<div class="loading"></div>';
+infoDisplay.load.box.appendChild(infoDisplay.load.lbox);
+infoDisplay.load.lbar = document.createElement('div');
+infoDisplay.load.lbar.className = 'lbar';
+infoDisplay.load.lbarFill = document.createElement('div');
+infoDisplay.load.lbarFill.className = 'lbar_fill';
+infoDisplay.load.lbar.appendChild(infoDisplay.load.lbarFill);
+infoDisplay.load.box.appendChild(infoDisplay.load.lbar);
+infoDisplay.load.msg = document.createElement('p');
+infoDisplay.load.msg.className = 'lmsg';
+infoDisplay.load.box.appendChild(infoDisplay.load.msg);
+container.appendChild(infoDisplay.load.box);
+
+// Error message
+infoDisplay.errorMsg = document.createElement('div');
+infoDisplay.errorMsg.className = 'error_msg infobox';
+container.appendChild(infoDisplay.errorMsg);
+
+
+// Create controls
+var controls = {};
+
+// Load button
+controls.load = document.createElement('div');
+controls.load.className = 'load_button';
+controls.load.innerHTML = '<p>Click to<br>Load<br>Panorama<p>';
+controls.load.addEventListener('click', load);
+container.appendChild(controls.load);
+
+// Zoom controls
+controls.zoom = document.createElement('div');
+controls.zoom.className = 'zoom_controls controls';
+controls.zoomIn = document.createElement('div');
+controls.zoomIn.className = 'zoom_in sprite control';
+controls.zoomIn.addEventListener('click', zoomIn);
+controls.zoom.appendChild(controls.zoomIn);
+controls.zoomOut = document.createElement('div');
+controls.zoomOut.className = 'zoom_out sprite control';
+controls.zoomOut.addEventListener('click', zoomOut);
+controls.zoom.appendChild(controls.zoomOut);
+container.appendChild(controls.zoom);
+
+// Fullscreen toggle
+controls.fullscreen = document.createElement('div');
+controls.fullscreen.addEventListener('click', toggleFullscreen);
+controls.fullscreen.className = 'fullscreentoggle_button sprite fullscreentoggle_button_inactive controls control';
+container.appendChild(controls.fullscreen);
+
+// Compass
+var compass = document.createElement('div');
+compass.className = 'compass controls control';
+container.appendChild(compass);
+
 // Process options
 parseURLParameters();
 processOptions();
@@ -96,8 +188,8 @@ function init() {
             panoImage.push(new Image());
             panoImage[i].crossOrigin = 'anonymous';
         }
-        document.getElementById('lbox').style.display = 'block';
-        document.getElementById('lbar').style.display = 'none';
+        infoDisplay.load.lbox.style.display = 'block';
+        infoDisplay.load.lbar.style.display = 'none';
     } else if (config.type == 'multires') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
         if (config.basePath) {
@@ -115,7 +207,7 @@ function init() {
     }
     
     function onImageLoad() {
-        renderer = new libpannellum.renderer(document.getElementById('container'), panoImage, config.type, config.video);
+        renderer = new libpannellum.renderer(renderContainer, panoImage, config.type, config.video);
         
         // Only add event listeners once
         if (!listenersAdded) {
@@ -205,13 +297,13 @@ function init() {
             xhr.onloadend = function() {
                 var img = this.response;
                 parseGPanoXMP(img);
-                document.getElementById('lmsg').innerHTML = '';
+                infoDisplay.load.msg.innerHTML = '';
             };
             xhr.onprogress = function(e) {
                 if (e.lengthComputable) {
                     // Display progress
                     var percent = e.loaded / e.total * 100;
-                    document.getElementById('lbar_fill').style.width = percent + '%';
+                    infoDisplay.load.lbarFill.style.width = percent + '%';
                     var unit, numerator, denominator;
                     if (e.total > 1e6) {
                         unit = 'MB';
@@ -227,11 +319,11 @@ function init() {
                         denominator = e.total;
                     }
                     var msg = numerator + ' / ' + denominator + ' ' + unit;
-                    document.getElementById('lmsg').innerHTML = msg;
+                    infoDisplay.load.msg.innerHTML = msg;
                 } else {
                     // Display loading spinner
-                    document.getElementById('lbox').style.display = 'block';
-                    document.getElementById('lbar').style.display = 'none';
+                    infoDisplay.load.lbox.style.display = 'block';
+                    infoDisplay.load.lbar.style.display = 'none';
                 }
             };
             xhr.open('GET', p, true);
@@ -240,7 +332,8 @@ function init() {
         }
     }
     
-    document.getElementById('page').className = 'grab';
+    container.classList.add('grab');
+    container.classList.remove('grabbing');
 }
 
 // Parse Google Photo Sphere XMP Metadata
@@ -300,29 +393,30 @@ function parseGPanoXMP(image) {
 
 function anError(error) {
     if (error !== undefined) {
-        document.getElementById('nocanvas').innerHTML = '<p>' + error + '</p>';
+        infoDisplay.errorMsg.innerHTML = '<p>' + error + '</p>';
     }
-    document.getElementById('load_box').style.display = 'none';
-    document.getElementById('nocanvas').style.display = 'table';
+    infoDisplay.load.box.style.display = 'none';
+    infoDisplay.errorMsg.innerHTML = '<p>Your browser does not have the necessary WebGL support to display this panorama.</p>';
+    infoDisplay.errorMsg.style.display = 'table';
     error = true;
-    document.getElementById('container').style.display = 'none';
+    renderContainer.style.display = 'none';
 }
 
 function clearError() {
-    document.getElementById('load_box').style.display = 'none';
-    document.getElementById('nocanvas').style.display = 'none';
+    infoDisplay.load.box.style.display = 'none';
+    infoDisplay.errorMsg.style.display = 'none';
     error = false;
 }
 
 function onRightClick(event) {
-    document.getElementById('about').style.left = event.clientX + 'px';
-    document.getElementById('about').style.top = event.clientY + 'px';
+    aboutMsg.style.left = event.clientX + 'px';
+    aboutMsg.style.top = event.clientY + 'px';
     clearTimeout(onRightClick.t1);
     clearTimeout(onRightClick.t2);
-    document.getElementById('about').style.display = 'block';
-    document.getElementById('about').style.opacity = 1;
-    onRightClick.t1 = setTimeout(function() {document.getElementById('about').style.opacity = 0;}, 2000);
-    onRightClick.t2 = setTimeout(function() {document.getElementById('about').style.display = 'none';}, 2500);
+    aboutMsg.style.display = 'block';
+    aboutMsg.style.opacity = 1;
+    onRightClick.t1 = setTimeout(function() {aboutMsg.style.opacity = 0;}, 2000);
+    onRightClick.t2 = setTimeout(function() {aboutMsg.style.display = 'none';}, 2500);
     event.preventDefault();
 }
 
@@ -349,7 +443,8 @@ function onDocumentMouseDown(event) {
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
     
-    document.getElementById('page').className = 'grabbing';
+    container.classList.add('grabbing');
+    container.classList.remove('grab');
     
     requestAnimationFrame(animate);
 }
@@ -378,7 +473,8 @@ function onDocumentMouseUp() {
     if (Date.now() - latestInteraction > 15) {
         pitchSpeed = yawSpeed = 0;
     }
-    document.getElementById('page').className = 'grab';
+    container.classList.add('grab');
+    container.classList.remove('grabbing');
 }
 
 function onDocumentTouchStart(event) {
@@ -771,8 +867,8 @@ function render() {
         
         // Update compass
         if (config.compass) {
-            document.getElementById('compass').style.transform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
-            document.getElementById('compass').style.webkitTransform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
+            compass.style.transform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
+            compass.style.webkitTransform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
         }
     } catch(event) {
         // Panorama not loaded
@@ -809,7 +905,7 @@ function renderInitCallback() {
             oldRenderer.fadeImg.style.opacity = 0;
             // Remove image
             setTimeout(function() {
-                oldRenderer.container.removeChild(oldRenderer.fadeImg);
+                renderContainer.removeChild(oldRenderer.fadeImg);
             }, config.sceneFadeDuration);
         }
     }
@@ -818,18 +914,19 @@ function renderInitCallback() {
     
     // Show compass if applicable
     if (config.compass) {
-        document.getElementById('compass').style.display = 'inline';
+        compass.style.display = 'inline';
     } else {
-        document.getElementById('compass').style.display = 'none';
+        compass.style.display = 'none';
     }
     
     // Show hotspots
     createHotSpots();
     
     // Hide loading display
-    document.getElementById('load_box').style.display = 'none';
-    if (document.getElementById('preview') !== null) {
-        document.getElementById('container').removeChild(document.getElementById('preview'));
+    infoDisplay.load.box.style.display = 'none';
+    if (preview !== undefined) {
+        renderContainer.removeChild(preview);
+        preview = undefined;
     }
     loaded = true;
 }
@@ -852,7 +949,7 @@ function createHotSpots() {
                 a = document.createElement('a');
                 a.setAttribute('href', hs.URL);
                 a.setAttribute('target', '_blank');
-                document.getElementById('container').appendChild(a);
+                renderContainer.appendChild(a);
                 div.style.cursor = 'pointer';
                 span.style.cursor = 'pointer';
                 a.appendChild(div);
@@ -861,7 +958,7 @@ function createHotSpots() {
                 video.setAttribute('src',hs.video);
                 video.setAttribute('controls',true);
                 video.setAttribute('style','width:' + hs.width + 'px');
-                document.getElementById('container').appendChild(div);
+                renderContainer.appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
                 a = document.createElement('a');
@@ -871,7 +968,7 @@ function createHotSpots() {
                 var image = document.createElement('img');
                 image.setAttribute('src',hs.image);
                 image.setAttribute('style','width:' + hs.width + 'px');
-                document.getElementById('container').appendChild(div);
+                renderContainer.appendChild(div);
                 a.appendChild(image);
                 
             } else {
@@ -887,7 +984,7 @@ function createHotSpots() {
                     div.style.cursor = 'pointer';
                     span.style.cursor = 'pointer';
                 }
-                document.getElementById('container').appendChild(div);
+                renderContainer.appendChild(div);
             }
             
             div.appendChild(span);
@@ -905,10 +1002,10 @@ function destroyHotSpots() {
     if (config.hotSpots) {
         config.hotSpots.forEach(function(hs) {
             var current = hs.div;
-            while(current.parentNode.id != 'container') {
+            while(current.parentNode != renderContainer) {
                 current = current.parentNode;
             }
-            document.getElementById('container').removeChild(current);
+            renderContainer.removeChild(current);
         });
     }
     hotspotsCreated = false;
@@ -1064,11 +1161,11 @@ function processOptions() {
             p = tourConfig.basePath + p;
         }
         
-        var img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.id = 'preview';
-        img.src = p;
-        document.getElementById('container').appendChild(img);
+        preview = new Image();
+        preview.crossOrigin = 'anonymous';
+        preview.src = p;
+        preview.className = 'preview_img';
+        renderContainer.appendChild(preview);
     }
     
     // Process other options
@@ -1076,17 +1173,17 @@ function processOptions() {
       if (config.hasOwnProperty(key)) {
         switch(key) {
             case 'title':
-                document.getElementById('title_box').innerHTML = config[key];
-                document.getElementById('panorama_info').style.display = 'inline';
+                infoDisplay.title.innerHTML = config[key];
+                infoDisplay.container.style.display = 'inline';
                 break;
             
             case 'author':
-                document.getElementById('author_box').innerHTML = 'by ' + config[key];
-                document.getElementById('panorama_info').style.display = 'inline';
+                infoDisplay.author.innerHTML = 'by ' + config[key];
+                infoDisplay.container.style.display = 'inline';
                 break;
             
             case 'fallback':
-                document.getElementById('nocanvas').innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + config[key] + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
+                infoDisplay.errorMsg.innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + config[key] + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
                 break;
             
             case 'hfov':
@@ -1101,9 +1198,9 @@ function processOptions() {
             case 'autoLoad':
                 if (config[key] === true) {
                     // Show loading box
-                    document.getElementById('load_box').style.display = 'inline';
+                    infoDisplay.load.box.style.display = 'inline';
                     // Hide load button
-                    document.getElementById('load_button').style.display = 'none';
+                    controls.load.style.display = 'none';
                     // Initialize
                     init();
                     requestAnimationFrame(animate);
@@ -1133,10 +1230,10 @@ function processOptions() {
             case 'showZoomCtrl':
                 if (config[key]) {
                     // Show zoom controls
-                    document.getElementById('zoomcontrols').style.display = 'block';
+                    controls.zoom.style.display = 'block';
                 } else {
                     // Hide zoom controls
-                    document.getElementById('zoomcontrols').style.display = 'none';
+                    controls.zoom.style.display = 'none';
                 }
                 break;
             
@@ -1145,10 +1242,10 @@ function processOptions() {
                     'webkitIsFullScreen' in document || 'msFullscreenElement' in document)) {
                     
                     // Show fullscreen control
-                    document.getElementById('fullscreentoggle_button').style.display = 'block';
+                    controls.fullscreen.style.display = 'block';
                 } else {
                     // Hide fullscreen control
-                    document.getElementById('fullscreentoggle_button').style.display = 'none';
+                    controls.fullscreen.style.display = 'none';
                 }
                 break;
         }
@@ -1160,15 +1257,14 @@ function toggleFullscreen() {
     if (loaded && !error) {
         if (!fullscreenActive) {
             try {
-                var page = document.getElementById('page');
-                if (page.requestFullscreen) {
-                    page.requestFullscreen();
-                } else if (page.mozRequestFullScreen) {
-                    page.mozRequestFullScreen();
-                } else if (page.msRequestFullscreen) {
-                    page.msRequestFullscreen();
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.mozRequestFullScreen) {
+                    container.mozRequestFullScreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
                 } else {
-                    page.webkitRequestFullScreen();
+                    container.webkitRequestFullScreen();
                 }
             } catch(event) {
                 // Fullscreen doesn't work
@@ -1189,23 +1285,23 @@ function toggleFullscreen() {
 
 function onFullScreenChange() {
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
-        document.getElementById('fullscreentoggle_button').classList.add('fullscreentoggle_button_active');
+        controls.fullscreen.classList.add('fullscreentoggle_button_active');
         fullscreenActive = true;
     } else {
-        document.getElementById('fullscreentoggle_button').classList.remove('fullscreentoggle_button_active');
+        controls.fullscreen.classList.remove('fullscreentoggle_button_active');
         fullscreenActive = false;
     }
 }
 
-function zoomIn(amount) {
+function zoomIn() {
     if (loaded) {
-        setHfov(config.hfov -= amount);
+        setHfov(config.hfov -= 5);
     }
 }
 
-function zoomOut(amount) {
+function zoomOut() {
     if (loaded) {
-        setHfov(config.hfov += amount);
+        setHfov(config.hfov += 5);
     }
 }
 
@@ -1230,8 +1326,8 @@ function load() {
     // memory etc and not because of a lack of WebGL support etc
     clearError();
 
-    document.getElementById('load_button').style.display = 'none';
-    document.getElementById('load_box').style.display = 'inline';
+    controls.load.style.display = 'none';
+    infoDisplay.load.box.style.display = 'inline';
     init();
     requestAnimationFrame(animate);
 }
@@ -1250,7 +1346,7 @@ function loadScene(sceneId, targetPitch, targetYaw) {
         if (data !== undefined) {
             fadeImg.src = data;
         }
-        document.getElementById('container').appendChild(fadeImg);
+        renderContainer.appendChild(fadeImg);
         oldRenderer.fadeImg = fadeImg;
     }
     
