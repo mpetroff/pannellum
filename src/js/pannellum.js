@@ -710,7 +710,7 @@ function keyRepeat() {
     
     // If minus key is down
     if (keysDown[0]) {
-        setHfov(config.hfov + (zoomSpeed * 0.8 + 0.2) * diff);
+        setHfov(config.hfov + (zoomSpeed * 0.8 + 0.5) * diff);
     }
     
     // If plus key is down
