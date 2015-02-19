@@ -1208,7 +1208,7 @@ function processOptions() {
                 break;
             
             case 'autoLoad':
-                if (config[key] === true) {
+                if (config[key] === true && oldRenderer === undefined) {
                     // Show loading box
                     infoDisplay.load.box.style.display = 'inline';
                     // Hide load button
