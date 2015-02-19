@@ -1303,6 +1303,7 @@ function onFullScreenChange() {
         controls.fullscreen.classList.remove('fullscreentoggle_button_active');
         fullscreenActive = false;
     }
+    requestAnimationFrame(animate);
 }
 
 function zoomIn() {
