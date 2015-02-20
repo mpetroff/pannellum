@@ -936,6 +936,10 @@ function createHotSpots() {
     if (!config.hotSpots) {
         config.hotSpots = [];
     } else {
+        // Sort by pitch so tooltip is never obscured by another hot spot
+        config.hotSpots = config.hotSpots.sort(function(a, b) {
+            return a.pitch < b.pitch;
+        });
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
             div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
