@@ -1326,7 +1326,7 @@ function setHfov(i) {
     // Keep field of view within bounds
     if (i < config.minHfov && config.type != 'multires') {
         config.hfov = config.minHfov;
-    } else if (config.type == 'multires' && i < renderer.canvas.width /
+    } else if (config.type == 'multires' && renderer && i < renderer.canvas.width /
         (config.multiRes.cubeResolution / 90 * 0.9)) {
         
         config.hfov = renderer.canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
