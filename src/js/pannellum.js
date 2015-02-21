@@ -1035,7 +1035,7 @@ function renderHotSpots() {
                 Math.PI / 180) - Math.cos(hs.pitch * Math.PI / 180) *
                 Math.cos((hs.yaw + config.yaw) * Math.PI / 180) *
                 Math.sin(config.pitch * Math.PI / 180)) / z / 2 +
-                renderer.canvas.height / 2 - 13) + 'px)';
+                renderer.canvas.height / 2 - 13) + 'px) translateZ(1000000000px)';
             hs.div.style.webkitTransform = transform;
             hs.div.style.MozTransform = transform;
             hs.div.style.transform = transform;

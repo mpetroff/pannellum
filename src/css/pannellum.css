@@ -61,6 +61,9 @@ body {
     border-color: rgba(0,0,0,0.4);
     border-radius: 3px;
     cursor: pointer;
+    /* Fix Safari fullscreen bug */
+    -webkit-transform: translateZ(1000000000px);
+    transform: translateZ(1000000000px);
 }
 
 .control:hover {
@@ -117,6 +120,9 @@ body {
     color: #fff;
     text-align: left;
     display: none;
+    /* Fix Safari fullscreen bug */
+    -webkit-transform: translateZ(1000000000px);
+    transform: translateZ(1000000000px);
 }
 
 .title_box {
