@@ -56,6 +56,11 @@ function Renderer(container, image, imageType, video) {
         // While browser specific tests are usually frowned upon, the
         // fallback viewer only really works with WebKit/Blink
         if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) || this.imageType == 'cubemap') && 'WebkitAppearance' in document.documentElement.style) {
+            // Remove old world if it exists
+            if (this.world) {
+                this.container.removeChild(this.world);
+            }
+            
             // Initialize renderer
             this.world = document.createElement('div');
             this.world.className = 'world';
