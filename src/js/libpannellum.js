@@ -44,6 +44,7 @@ function Renderer(container, image, imageType, video) {
     }
 
     var program, gl;
+    var fallbackImgSize;
 
     this.init = function(haov, vaov, voffset, callback) {
         var s;
@@ -75,15 +76,35 @@ function Renderer(container, image, imageType, video) {
                     faceCanvas.className = 'face ' + sides[this.side] + 'face';
                     world.appendChild(faceCanvas);
                     var faceContext = faceCanvas.getContext('2d');
-                    faceCanvas.width = this.width + 2;
-                    faceCanvas.height = this.height + 2;
-                    faceContext.drawImage(this, 1, 1);
+                    faceCanvas.style.width = this.width + 4 + 'px';
+                    faceCanvas.style.height = this.height + 4 + 'px';
+                    faceCanvas.width = this.width + 4;
+                    faceCanvas.height = this.height + 4;
+                    faceContext.drawImage(this, 2, 2);
                     var imgData = faceContext.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
                     var data = imgData.data;
                     
                     // Duplicate edge pixels
                     var i;
                     var j;
+                    for (i = 2; i < faceCanvas.width - 2; i++) {
+                        for (j = 0; j < 4; j++) {
+                            data[(i + faceCanvas.width) * 4 + j] = data[(i + faceCanvas.width * 2) * 4 + j];
+                            data[(i + faceCanvas.width * (faceCanvas.height - 2)) * 4 + j] = data[(i + faceCanvas.width * (faceCanvas.height - 3)) * 4 + j];
+                        }
+                    }
+                    for (i = 2; i < faceCanvas.height - 2; i++) {
+                        for (j = 0; j < 4; j++) {
+                            data[(i * faceCanvas.width + 1) * 4 + j] = data[(i * faceCanvas.width + 2) * 4 + j];
+                            data[((i + 1) * faceCanvas.width - 2) * 4 + j] = data[((i + 1) * faceCanvas.width - 3) * 4 + j];
+                        }
+                    }
+                    for (j = 0; j < 4; j++) {
+                        data[(faceCanvas.width + 1) * 4 + j] = data[(faceCanvas.width * 2 + 2) * 4 + j];
+                        data[(faceCanvas.width * 2 - 2) * 4 + j] = data[(faceCanvas.width * 3 - 3) * 4 + j];
+                        data[(faceCanvas.width * (faceCanvas.height - 2) + 1) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 3) + 2) * 4 + j];
+                        data[(faceCanvas.width * (faceCanvas.height - 1) - 2) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 2) - 3) * 4 + j];
+                    }
                     for (i = 1; i < faceCanvas.width - 1; i++) {
                         for (j = 0; j < 4; j++) {
                             data[i * 4 + j] = data[(i + faceCanvas.width) * 4 + j];
@@ -108,6 +129,7 @@ function Renderer(container, image, imageType, video) {
                     
                     loaded++;
                     if (loaded == 6) {
+                        fallbackImgSize = this.width;
                         container.appendChild(world);
                         callback();
                     }
@@ -309,13 +331,15 @@ function Renderer(container, image, imageType, video) {
         // If no WebGL
         if (!gl && (this.imageType == 'multires' || this.imageType == 'cubemap')) {
             // Determine face transforms
+            var s = fallbackImgSize / 2;
+            
             var transforms = {
-                f: 'translate3d(-502px, -502px, -500px)',
-                b: 'translate3d(502px, -502px, 500px) rotateX(180deg) rotateZ(180deg)',
-                u: 'translate3d(-502px, -500px, 502px) rotateX(270deg)',
-                d: 'translate3d(-502px, 500px, -502px) rotateX(90deg)',
-                l: 'translate3d(-500px, -502px, 502px) rotateX(180deg) rotateY(90deg) rotateZ(180deg)',
-                r: 'translate3d(500px, -502px, -502px) rotateY(270deg)'
+                f: 'translate3d(-' + (s + 2) + 'px, -' + (s + 2) + 'px, -' + s + 'px)',
+                b: 'translate3d(' + (s + 2) + 'px, -' + (s + 2) + 'px, ' + s + 'px) rotateX(180deg) rotateZ(180deg)',
+                u: 'translate3d(-' + (s + 2) + 'px, -' + s + 'px, ' + (s + 2) + 'px) rotateX(270deg)',
+                d: 'translate3d(-' + (s + 2) + 'px, ' + s + 'px, -' + (s + 2) + 'px) rotateX(90deg)',
+                l: 'translate3d(-' + s + 'px, -' + (s + 2) + 'px, ' + (s + 2) + 'px) rotateX(180deg) rotateY(90deg) rotateZ(180deg)',
+                r: 'translate3d(' + s + 'px, -' + (s + 2) + 'px, -' + (s + 2) + 'px) rotateY(270deg)'
             };
             focal = 1 / Math.tan(hfov / 2);
             var zoom = focal * this.canvas.width / 2 + 'px';

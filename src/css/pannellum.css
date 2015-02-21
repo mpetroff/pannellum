@@ -336,8 +336,6 @@ div.tooltip:hover:after {
     position: absolute;
     -webkit-transform-origin: 0 0 0;
     transform-origin: 0 0 0;
-    height: 1004px;
-    width: 1004px;
 }
 
 .dragfix, #preview {
