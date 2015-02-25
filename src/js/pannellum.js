@@ -247,8 +247,16 @@ function init() {
             }
         };
         
+        var onError = function(e) {
+            var a = document.createElement('a');
+            a.href = e.target.src;
+            a.innerHTML = a.href;
+            anError('The file ' + a.outerHTML + ' could not be accessed.');
+        };
+        
         for (i = 0; i < panoImage.length; i++) {
             panoImage[i].onload = onLoad;
+            panoImage[i].onerror = onError;
             p = config.cubeMap[i];
             if (config.basePath) {
                 p = config.basePath + p;
@@ -294,6 +302,13 @@ function init() {
             
             var xhr = new XMLHttpRequest();
             xhr.onloadend = function() {
+                if (xhr.status != 200) {
+                    // Display error if image can't be loaded
+                    var a = document.createElement('a');
+                    a.href = p;
+                    a.innerHTML = a.href;
+                    anError('The file ' + a.outerHTML + ' could not be accessed.');
+                }
                 var img = this.response;
                 parseGPanoXMP(img);
                 infoDisplay.load.msg.innerHTML = '';
@@ -396,6 +411,7 @@ function anError(error) {
     } else {
         infoDisplay.errorMsg.innerHTML = '<p>Your browser does not have the necessary WebGL support to display this panorama.</p>';
     }
+    controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'none';
     infoDisplay.errorMsg.style.display = 'table';
     error = true;
@@ -1047,6 +1063,11 @@ function renderHotSpots() {
 function parseURLParameters() {
     var URL = decodeURI(window.location.href).split('?');
     URL.shift();
+    if (URL.length < 1) {
+        // Display error if no configuration parameters are specified
+        anError('No configuration options were specified.');
+        return;
+    }
     URL = URL[0].split('&');
     var json = '{';
     for (var i = 0; i < URL.length; i++) {
@@ -1078,6 +1099,14 @@ function parseURLParameters() {
         // Get JSON configuration file
         request = new XMLHttpRequest();
         request.onload = function() {
+            if (request.status != 200) {
+                // Display error if JSON can't be loaded
+                var a = document.createElement('a');
+                a.href = configFromURL.config;
+                a.innerHTML = a.href;
+                anError('The file ' + a.outerHTML + ' could not be accessed.');
+            }
+            
             var c = JSON.parse(request.responseText);
             
             // Set JSON file location
@@ -1104,6 +1133,14 @@ function parseURLParameters() {
         // Get JSON configuration file
         request = new XMLHttpRequest();
         request.onload = function() {
+            if (request.status != 200) {
+                // Display error if JSON can't be loaded
+                var a = document.createElement('a');
+                a.href = configFromURL.tour;
+                a.innerHTML = a.href;
+                anError('The file ' + a.outerHTML + ' could not be accessed.');
+            }
+            
             tourConfig = JSON.parse(request.responseText);
             
             // Set JSON file location

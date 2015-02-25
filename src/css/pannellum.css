@@ -236,6 +236,10 @@ body {
     color: #fff;
 }
 
+.infobox a {
+    color: #fff;
+}
+
 .infobox p {
     display: table-cell;
     vertical-align: middle;
