@@ -49,12 +49,17 @@ function Renderer(container, image, imageType, video) {
     this.init = function(haov, vaov, voffset, callback) {
         var s;
         
-        // Enable WebGL on canvas
-        gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
+        // This awful browser specific test exists because iOS 8 (like IE 11)
+        // doesn't display non-power-of-two cubemap textures but also doesn't
+        // throw an error (tested on an iPhone 5c / iOS 8.1.3).
+        if (!(this.imageType == 'cubemap' && /(iphone|ipod|ipad).* os 8_/.test(navigator.userAgent.toLowerCase()))) {
+            // Enable WebGL on canvas
+            gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
+        }
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
         // While browser specific tests are usually frowned upon, the
-        // fallback viewer only really works with WebKit/Blink
+        // fallback viewer only really works with WebKit/Blink.
         if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) || this.imageType == 'cubemap') && 'WebkitAppearance' in document.documentElement.style) {
             // Remove old world if it exists
             if (this.world) {
