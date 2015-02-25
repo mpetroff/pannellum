@@ -165,6 +165,23 @@ function Renderer(container, image, imageType, video) {
             vertices = this.createCube();
         }
         
+        // Make sure image isn't too big
+        var width, maxWidth;
+        if (this.imageType == 'equirectangular') {
+            width = Math.max(this.image.width, this.image.height);
+            maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            if (width > maxWidth) {
+                console.log('Error: The image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
+                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
+            }
+        } else if (this.imageType == 'cubemap') {
+            width = this.image[0].width;
+            maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+            if (width > maxWidth) {
+                console.log('Error: The cube face image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
+                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
+            }
+        }
         
         // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
@@ -296,23 +313,7 @@ function Renderer(container, image, imageType, video) {
         
         // Check if there was an error
         if (gl.getError() !== 0) {
-            var width, maxWidth;
             console.log('Error: Something went wrong with WebGL!');
-            if (this.imageType == 'equirectangular') {
-                width = Math.max(this.image.width, this.image.height);
-                maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-                if (width > maxWidth) {
-                    console.log('Error: The image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
-                    throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
-                }
-            } else if (this.imageType == 'cubemap') {
-                width = this.image[0].width;
-                maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
-                if (width > maxWidth) {
-                    console.log('Error: The cube face image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
-                    throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
-                }
-            }
             throw {type: 'webgl error'};
         }
         
