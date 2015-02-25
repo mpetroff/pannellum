@@ -393,9 +393,10 @@ function parseGPanoXMP(image) {
 function anError(error) {
     if (error !== undefined) {
         infoDisplay.errorMsg.innerHTML = '<p>' + error + '</p>';
+    } else {
+        infoDisplay.errorMsg.innerHTML = '<p>Your browser does not have the necessary WebGL support to display this panorama.</p>';
     }
     infoDisplay.load.box.style.display = 'none';
-    infoDisplay.errorMsg.innerHTML = '<p>Your browser does not have the necessary WebGL support to display this panorama.</p>';
     infoDisplay.errorMsg.style.display = 'table';
     error = true;
     renderContainer.style.display = 'none';
