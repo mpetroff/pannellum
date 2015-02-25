@@ -49,10 +49,20 @@ function Renderer(container, image, imageType, video) {
     this.init = function(haov, vaov, voffset, callback) {
         var s;
         
-        // This awful browser specific test exists because iOS 8 (like IE 11)
-        // doesn't display non-power-of-two cubemap textures but also doesn't
-        // throw an error (tested on an iPhone 5c / iOS 8.1.3).
-        if (!(this.imageType == 'cubemap' && /(iphone|ipod|ipad).* os 8_/.test(navigator.userAgent.toLowerCase()))) {
+        // This awful browser specific test exists because iOS 8 and IE 11
+        // don't display non-power-of-two cubemap textures but also don't
+        // throw an error (tested on an iPhone 5c / iOS 8.1.3). Therefore, the
+        // WebGL context is never created for these browsers for NPOT cubemaps.
+        // Under iOS, the CSS 3D fallback renderer will be used; under IE 11,
+        // an error message will be displayed.
+        if (this.imageType == 'cubemap' &&
+            (this.image[0].width & (this.image[0].width - 1)) != 0 &&
+            (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/) || navigator.userAgent.match(/Trident.*rv[ :]*11\./))) {
+            if (navigator.userAgent.match(/Trident.*rv[ :]*11\./)) {
+                console.log('Error: IE 11 doesn\'t support non-power-of-two cubemaps.');
+                throw {type: 'no webgl'};
+            }
+        } else {
             // Enable WebGL on canvas
             gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         }
