@@ -10,6 +10,13 @@ Pannellum is a lightweight, free, and open source panorama viewer for the web. B
 2. Use the included multi-resolution generator (`utils/multires/generate.py`) or configuration tool (`utils/config/configuration.htm`).
 3. Insert the generated `<iframe>` code into a page.
 
+### How to use generate.py
+To be able to create multires images you need to have [nona](http://hugin.sourceforge.net/docs/nona/nona.txt) program that is available as part of [Hugins](http://hugin.sourceforge.net/download/) to be able to generate multires images. Then you will be able to run:
+
+```python generate.py -n nona pano_image.jpg```
+
+This will generate all images and the ***config.json*** file in the ***./output*** folder by default.
+
 ## Examples
 
 Examples using both the minified version and the version in the `src` directory are included in the `examples` directory.
