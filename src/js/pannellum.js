@@ -761,8 +761,8 @@ function keyRepeat() {
     
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
-    if (config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay
-        && config.autoRotateStopDelay !== false) {
+    if (config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay &&
+        config.autoRotateStopDelay !== false) {
         // Pan
         if (diff > 0.000001) {
             config.yaw -= config.autoRotate / 60 * diff;

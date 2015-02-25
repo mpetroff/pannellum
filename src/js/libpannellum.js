@@ -56,7 +56,7 @@ function Renderer(container, image, imageType, video) {
         // Under iOS, the CSS 3D fallback renderer will be used; under IE 11,
         // an error message will be displayed.
         if (this.imageType == 'cubemap' &&
-            (this.image[0].width & (this.image[0].width - 1)) != 0 &&
+            (this.image[0].width & (this.image[0].width - 1)) !== 0 &&
             (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/) || navigator.userAgent.match(/Trident.*rv[ :]*11\./))) {
             if (navigator.userAgent.match(/Trident.*rv[ :]*11\./)) {
                 console.log('Error: IE 11 doesn\'t support non-power-of-two cubemaps.');
@@ -84,76 +84,77 @@ function Renderer(container, image, imageType, video) {
             var path = this.image.basePath + this.image.fallbackPath;
             var sides = ['f', 'r', 'b', 'l', 'u', 'd'];
             var loaded = 0;
+            var world = this.world;
+            var container = this.container;
+            var onLoad = function() {
+                // Draw image on canvas
+                var faceCanvas = document.createElement('canvas');
+                faceCanvas.className = 'face ' + sides[this.side] + 'face';
+                world.appendChild(faceCanvas);
+                var faceContext = faceCanvas.getContext('2d');
+                faceCanvas.style.width = this.width + 4 + 'px';
+                faceCanvas.style.height = this.height + 4 + 'px';
+                faceCanvas.width = this.width + 4;
+                faceCanvas.height = this.height + 4;
+                faceContext.drawImage(this, 2, 2);
+                var imgData = faceContext.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
+                var data = imgData.data;
+                
+                // Duplicate edge pixels
+                var i;
+                var j;
+                for (i = 2; i < faceCanvas.width - 2; i++) {
+                    for (j = 0; j < 4; j++) {
+                        data[(i + faceCanvas.width) * 4 + j] = data[(i + faceCanvas.width * 2) * 4 + j];
+                        data[(i + faceCanvas.width * (faceCanvas.height - 2)) * 4 + j] = data[(i + faceCanvas.width * (faceCanvas.height - 3)) * 4 + j];
+                    }
+                }
+                for (i = 2; i < faceCanvas.height - 2; i++) {
+                    for (j = 0; j < 4; j++) {
+                        data[(i * faceCanvas.width + 1) * 4 + j] = data[(i * faceCanvas.width + 2) * 4 + j];
+                        data[((i + 1) * faceCanvas.width - 2) * 4 + j] = data[((i + 1) * faceCanvas.width - 3) * 4 + j];
+                    }
+                }
+                for (j = 0; j < 4; j++) {
+                    data[(faceCanvas.width + 1) * 4 + j] = data[(faceCanvas.width * 2 + 2) * 4 + j];
+                    data[(faceCanvas.width * 2 - 2) * 4 + j] = data[(faceCanvas.width * 3 - 3) * 4 + j];
+                    data[(faceCanvas.width * (faceCanvas.height - 2) + 1) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 3) + 2) * 4 + j];
+                    data[(faceCanvas.width * (faceCanvas.height - 1) - 2) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 2) - 3) * 4 + j];
+                }
+                for (i = 1; i < faceCanvas.width - 1; i++) {
+                    for (j = 0; j < 4; j++) {
+                        data[i * 4 + j] = data[(i + faceCanvas.width) * 4 + j];
+                        data[(i + faceCanvas.width * (faceCanvas.height - 1)) * 4 + j] = data[(i + faceCanvas.width * (faceCanvas.height - 2)) * 4 + j];
+                    }
+                }
+                for (i = 1; i < faceCanvas.height - 1; i++) {
+                    for (j = 0; j < 4; j++) {
+                        data[(i * faceCanvas.width) * 4 + j] = data[(i * faceCanvas.width + 1) * 4 + j];
+                        data[((i + 1) * faceCanvas.width - 1) * 4 + j] = data[((i + 1) * faceCanvas.width - 2) * 4 + j];
+                    }
+                }
+                for (j = 0; j < 4; j++) {
+                    data[j] = data[(faceCanvas.width + 1) * 4 + j];
+                    data[(faceCanvas.width - 1) * 4 + j] = data[(faceCanvas.width * 2 - 2) * 4 + j];
+                    data[(faceCanvas.width * (faceCanvas.height - 1)) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 2) + 1) * 4 + j];
+                    data[(faceCanvas.width * faceCanvas.height - 1) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 1) - 2) * 4 + j];
+                }
+                
+                // Draw image width duplicated edge pixels on canvas
+                faceContext.putImageData(imgData, 0, 0);
+                
+                loaded++;
+                if (loaded == 6) {
+                    fallbackImgSize = this.width;
+                    container.appendChild(world);
+                    callback();
+                }
+            };
             for (s = 0; s < 6; s++) {
                 var faceImg = new Image();
-                var world = this.world;
-                var container = this.container;
                 faceImg.crossOrigin = 'anonymous';
                 faceImg.side = s;
-                faceImg.onload = function() {
-                    // Draw image on canvas
-                    var faceCanvas = document.createElement('canvas');
-                    faceCanvas.className = 'face ' + sides[this.side] + 'face';
-                    world.appendChild(faceCanvas);
-                    var faceContext = faceCanvas.getContext('2d');
-                    faceCanvas.style.width = this.width + 4 + 'px';
-                    faceCanvas.style.height = this.height + 4 + 'px';
-                    faceCanvas.width = this.width + 4;
-                    faceCanvas.height = this.height + 4;
-                    faceContext.drawImage(this, 2, 2);
-                    var imgData = faceContext.getImageData(0, 0, faceCanvas.width, faceCanvas.height);
-                    var data = imgData.data;
-                    
-                    // Duplicate edge pixels
-                    var i;
-                    var j;
-                    for (i = 2; i < faceCanvas.width - 2; i++) {
-                        for (j = 0; j < 4; j++) {
-                            data[(i + faceCanvas.width) * 4 + j] = data[(i + faceCanvas.width * 2) * 4 + j];
-                            data[(i + faceCanvas.width * (faceCanvas.height - 2)) * 4 + j] = data[(i + faceCanvas.width * (faceCanvas.height - 3)) * 4 + j];
-                        }
-                    }
-                    for (i = 2; i < faceCanvas.height - 2; i++) {
-                        for (j = 0; j < 4; j++) {
-                            data[(i * faceCanvas.width + 1) * 4 + j] = data[(i * faceCanvas.width + 2) * 4 + j];
-                            data[((i + 1) * faceCanvas.width - 2) * 4 + j] = data[((i + 1) * faceCanvas.width - 3) * 4 + j];
-                        }
-                    }
-                    for (j = 0; j < 4; j++) {
-                        data[(faceCanvas.width + 1) * 4 + j] = data[(faceCanvas.width * 2 + 2) * 4 + j];
-                        data[(faceCanvas.width * 2 - 2) * 4 + j] = data[(faceCanvas.width * 3 - 3) * 4 + j];
-                        data[(faceCanvas.width * (faceCanvas.height - 2) + 1) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 3) + 2) * 4 + j];
-                        data[(faceCanvas.width * (faceCanvas.height - 1) - 2) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 2) - 3) * 4 + j];
-                    }
-                    for (i = 1; i < faceCanvas.width - 1; i++) {
-                        for (j = 0; j < 4; j++) {
-                            data[i * 4 + j] = data[(i + faceCanvas.width) * 4 + j];
-                            data[(i + faceCanvas.width * (faceCanvas.height - 1)) * 4 + j] = data[(i + faceCanvas.width * (faceCanvas.height - 2)) * 4 + j];
-                        }
-                    }
-                    for (i = 1; i < faceCanvas.height - 1; i++) {
-                        for (j = 0; j < 4; j++) {
-                            data[(i * faceCanvas.width) * 4 + j] = data[(i * faceCanvas.width + 1) * 4 + j];
-                            data[((i + 1) * faceCanvas.width - 1) * 4 + j] = data[((i + 1) * faceCanvas.width - 2) * 4 + j];
-                        }
-                    }
-                    for (j = 0; j < 4; j++) {
-                        data[j] = data[(faceCanvas.width + 1) * 4 + j];
-                        data[(faceCanvas.width - 1) * 4 + j] = data[(faceCanvas.width * 2 - 2) * 4 + j];
-                        data[(faceCanvas.width * (faceCanvas.height - 1)) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 2) + 1) * 4 + j];
-                        data[(faceCanvas.width * faceCanvas.height - 1) * 4 + j] = data[(faceCanvas.width * (faceCanvas.height - 1) - 2) * 4 + j];
-                    }
-                    
-                    // Draw image width duplicated edge pixels on canvas
-                    faceContext.putImageData(imgData, 0, 0);
-                    
-                    loaded++;
-                    if (loaded == 6) {
-                        fallbackImgSize = this.width;
-                        container.appendChild(world);
-                        callback();
-                    }
-                };
+                faceImg.onload = onLoad;
                 if (this.imageType == 'multires') {
                     faceImg.src = path.replace('%s',sides[s]) + '.' + this.image.extension;
                 } else {
@@ -347,12 +348,12 @@ function Renderer(container, image, imageType, video) {
     };
 
     this.render = function(pitch, yaw, hfov, returnImage) {
-        var focal, i;
+        var focal, i, s;
         
         // If no WebGL
         if (!gl && (this.imageType == 'multires' || this.imageType == 'cubemap')) {
             // Determine face transforms
-            var s = fallbackImgSize / 2;
+            s = fallbackImgSize / 2;
             
             var transforms = {
                 f: 'translate3d(-' + (s + 2) + 'px, -' + (s + 2) + 'px, -' + s + 'px)',
@@ -425,7 +426,7 @@ function Renderer(container, image, imageType, video) {
             program.currentNodes = [];
             
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
-            for ( var s = 0; s < 6; s++ ) {
+            for (s = 0; s < 6; s++) {
                 var ntmp = new MultiresNode(this.vtmp[s], sides[s], 1, 0, 0, this.image.fullpath);
                 this.testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
