@@ -481,7 +481,7 @@ function onDocumentMouseMove(event) {
 
         var verbose = config.verbose || false;
         if(verbose){
-            console.log("Yaw = ", yaw);
+            console.log("Yaw = ", yaw*-1);
             console.log("Pitch = ", pitch);
         }
     }
@@ -1310,8 +1310,7 @@ function processOptions() {
                 break;
 
             case 'verbose':
-                console.log("verbose=",config[key])
-                config.verbose=config[key];
+                config.verbose = config[key];
                 break;
         }
       }
