@@ -478,6 +478,12 @@ function onDocumentMouseMove(event) {
         var pitch = ((Math.atan(event.clientY / renderer.canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / renderer.canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
         pitchSpeed = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
+
+        var verbose = config.verbose || false;
+        if(verbose){
+            console.log("Yaw = ", yaw);
+            console.log("Pitch = ", pitch);
+        }
     }
 }
 
@@ -1301,6 +1307,11 @@ function processOptions() {
                     // Hide fullscreen control
                     controls.fullscreen.style.display = 'none';
                 }
+                break;
+
+            case 'verbose':
+                console.log("verbose=",config[key])
+                config.verbose=config[key];
                 break;
         }
       }
