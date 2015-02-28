@@ -487,6 +487,8 @@ function onDocumentMouseUp() {
     }
     isUserInteracting = false;
     if (Date.now() - latestInteraction > 15) {
+        // Prevents jump when user rapidly moves mouse, stops, and then
+        // releases the mouse button
         pitchSpeed = yawSpeed = 0;
     }
     container.classList.add('grab');
@@ -551,7 +553,7 @@ function onDocumentTouchMove(event) {
 
 function onDocumentTouchEnd() {
     isUserInteracting = false;
-    if (Date.now() - latestInteraction > 15) {
+    if (Date.now() - latestInteraction > 150) {
         pitchSpeed = yawSpeed = 0;
     }
     onPointerDownPointerDist = -1;
