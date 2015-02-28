@@ -1036,7 +1036,7 @@ function destroyHotSpots() {
 function renderHotSpots() {
     config.hotSpots.forEach(function(hs) {
         var z = Math.sin(hs.pitch * Math.PI / 180) * Math.sin(config.pitch * Math.PI /
-            180) + Math.cos(hs.pitch * Math.PI / 180) * Math.cos((hs.yaw + config.yaw) *
+            180) + Math.cos(hs.pitch * Math.PI / 180) * Math.cos((-hs.yaw + config.yaw) *
             Math.PI / 180) * Math.cos(config.pitch * Math.PI / 180);
         if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
           ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
@@ -1046,13 +1046,13 @@ function renderHotSpots() {
             // Subpixel rendering doesn't work in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
             var transform = 'translate(' + (-renderer.canvas.width /
-                Math.tan(config.hfov * Math.PI / 360) * Math.sin((hs.yaw +
+                Math.tan(config.hfov * Math.PI / 360) * Math.sin((-hs.yaw +
                 config.yaw) * Math.PI / 180) * Math.cos(hs.pitch * Math.PI /
                 180) / z / 2 + renderer.canvas.width / 2 - 13) + 'px, ' +
                 (-renderer.canvas.width / Math.tan(config.hfov * Math.PI / 360) *
                 (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch *
                 Math.PI / 180) - Math.cos(hs.pitch * Math.PI / 180) *
-                Math.cos((hs.yaw + config.yaw) * Math.PI / 180) *
+                Math.cos((-hs.yaw + config.yaw) * Math.PI / 180) *
                 Math.sin(config.pitch * Math.PI / 180)) / z / 2 +
                 renderer.canvas.height / 2 - 13) + 'px) translateZ(1000000000px)';
             hs.div.style.webkitTransform = transform;

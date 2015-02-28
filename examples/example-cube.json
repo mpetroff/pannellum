@@ -19,13 +19,13 @@
     "hotSpots": [
         {
             "pitch": -12,
-            "yaw": -170,
+            "yaw": 170,
             "type": "info",
             "text": "This is Jordan Pond, located in Acadia National Park."
         },
         {
             "pitch": -10,
-            "yaw": 50,
+            "yaw": -50,
             "type": "info",
             "text": "This is a link.",
             "URL": "https://github.com/mpetroff/pannellum"
