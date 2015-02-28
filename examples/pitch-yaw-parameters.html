@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>pannellum embed example</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style type="text/css">
+        div{position: absolute; z-index: 99; }
+        div > div {background-color: #000;}
+        #horizontal{height: 1px; width: 100%;top: 50%;}
+        #vertical{width: 1px; left: 50%; top: 0; bottom: 0;}
+    </style>
+</head>
+<body>
+    <div>
+        <iframe id="pannellum" title="pannellum panorama viewer" width="480" height="390" webkitAllowFullScreen mozallowfullscreen allowFullScreen style="border-style:none;" src="../src/pannellum.htm?tour=../examples/example-tour.json&verbose=true"></iframe>
+        <div id="horizontal"></div>
+        <div id="vertical"></div>
+    </div>
+    <p>Open the console to see pitch and yaw values of the eyehole in order to know where to place the hotspots</p>
+</body>
+</html>
