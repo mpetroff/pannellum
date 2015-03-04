@@ -447,6 +447,20 @@ function onDocumentMouseDown(event) {
         return;
     }
     
+    // Log pitch / yaw of mouse click when debugging / placing hot spots
+    if (config.hotSpotDebug) {
+        var x = event.clientX / renderer.canvas.width * 2 - 1;
+        var y = (1 - event.clientY / renderer.canvas.height * 2) * renderer.canvas.height / renderer.canvas.width;
+        var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
+        var s = Math.sin(config.pitch * Math.PI / 180);
+        var c = Math.cos(config.pitch * Math.PI / 180);
+        var a = focal * c - y * s;
+        var root = Math.sqrt(x*x + a*a)
+        var pitch = Math.atan((y * c + focal * s) / root) * 180 / Math.PI;
+        var yaw = Math.atan2(x / root, a / root) * 180 / Math.PI + config.yaw;
+        console.log('Pitch: ' + pitch + ', Yaw: ' + yaw);
+    }
+    
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
     

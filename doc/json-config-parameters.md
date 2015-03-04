@@ -172,6 +172,11 @@ Specifies the pitch of the target scene.
 
 Specifies the yaw of the target scene.
 
+### `hotSpotDebug`
+
+When `true`, the mouse pointer's pitch and yaw are logged to the console when
+the mouse button is clicked. Defaults to `false`.
+
 ### `sceneFadeDuration`
 
 Specifies the fade duration, in milliseconds, when transitioning between
