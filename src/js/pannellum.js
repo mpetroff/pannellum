@@ -73,7 +73,7 @@ var defaultConfig = {
     video: false
 };
 
-container.classList.add('container');
+container.className += ' container';
 
 // Display about information on right click
 var aboutMsg = document.createElement('span');
