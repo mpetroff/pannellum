@@ -586,26 +586,15 @@ function onDocumentMouseWheel(event) {
     if (event.wheelDeltaY) {
         // WebKit
         setHfov(config.hfov -= event.wheelDeltaY * 0.05);
+        zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.wheelDelta) {
         // Opera / Explorer 9
         setHfov(config.hfov -= event.wheelDelta * 0.05);
+        zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.detail) {
         // Firefox
         setHfov(config.hfov += event.detail * 1.5);
-    }
-    
-    if (event.detail) {
-        if (event.detail > 0) {
-            zoomSpeed = 1;
-        } else {
-            zoomSpeed = -1;
-        }
-    } else {
-        if (event.detail < 0) {
-            zoomSpeed = 1;
-        } else {
-            zoomSpeed = -1;
-        }
+        zoomSpeed = event.detail > 0 ? 1 : -1;
     }
     
     animateInit();
