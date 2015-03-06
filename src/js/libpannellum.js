@@ -52,25 +52,25 @@ function Renderer(container, image, imageType, video) {
         // This awful browser specific test exists because iOS 8 and IE 11
         // don't display non-power-of-two cubemap textures but also don't
         // throw an error (tested on an iPhone 5c / iOS 8.1.3). Therefore, the
-        // WebGL context is never created for these browsers for NPOT cubemaps.
-        // Under iOS, the CSS 3D fallback renderer will be used; under IE 11,
-        // an error message will be displayed.
-        if (this.imageType == 'cubemap' &&
+        // WebGL context is never created for these browsers for NPOT cubemaps,
+        // and the CSS 3D transform fallback renderer is used instead.
+        if (!(this.imageType == 'cubemap' &&
             (this.image[0].width & (this.image[0].width - 1)) !== 0 &&
-            (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/) || navigator.userAgent.match(/Trident.*rv[ :]*11\./))) {
-            if (navigator.userAgent.match(/Trident.*rv[ :]*11\./)) {
-                console.log('Error: IE 11 doesn\'t support non-power-of-two cubemaps.');
-                throw {type: 'no webgl'};
-            }
-        } else {
+            (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/) ||
+            navigator.userAgent.match(/Trident.*rv[ :]*11\./)))) {
             // Enable WebGL on canvas
             gl = this.canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         }
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
         // While browser specific tests are usually frowned upon, the
-        // fallback viewer only really works with WebKit/Blink.
-        if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) || this.imageType == 'cubemap') && 'WebkitAppearance' in document.documentElement.style) {
+        // fallback viewer only really works with WebKit/Blink and IE 10/11
+        // (it doesn't work properly in Firefox).
+        if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) ||
+            this.imageType == 'cubemap') &&
+            ('WebkitAppearance' in document.documentElement.style ||
+            navigator.userAgent.match(/Trident.*rv[ :]*11\./) ||
+            navigator.appVersion.indexOf('MSIE 10') !== -1)) {
             // Remove old world if it exists
             if (this.world) {
                 this.container.removeChild(this.world);
