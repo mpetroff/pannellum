@@ -49,6 +49,7 @@ var config,
     yawSpeed = 0,
     pitchSpeed = 0,
     zoomSpeed = 0,
+    animating = false,
     hotspotsCreated = false;
 
 var defaultConfig = {
@@ -476,7 +477,7 @@ function onDocumentMouseDown(event) {
     container.classList.add('grabbing');
     container.classList.remove('grab');
     
-    requestAnimationFrame(animate);
+    animateInit();
 }
 
 function onDocumentMouseMove(event) {
@@ -532,7 +533,7 @@ function onDocumentTouchStart(event) {
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
 
-    requestAnimationFrame(animate);
+    animateInit();
 }
 
 function onDocumentTouchMove(event) {
@@ -607,7 +608,7 @@ function onDocumentMouseWheel(event) {
         }
     }
     
-    requestAnimationFrame(animate);
+    animateInit();
 }
 
 function onDocumentKeyPress(event) {
@@ -715,7 +716,7 @@ function changeKey(keynumber, value) {
         } else {
             prevTime = Date.now();
         }
-        requestAnimationFrame(animate);
+        animateInit();
     }
 }
 
@@ -845,12 +846,15 @@ function onDocumentResize() {
     onFullScreenChange();
 }
 
-function animate() {
-    if (!loaded) {
-        requestAnimationFrame(animate);
+function animateInit() {
+    if (animating) {
         return;
     }
-    
+    animating = true;
+    animate();
+}
+
+function animate() {
     render();
     if (isUserInteracting) {
         requestAnimationFrame(animate);
@@ -865,13 +869,15 @@ function animate() {
     } else if (renderer && (renderer.isLoading() || (config.video === true &&
         !panoImage.paused && !panoImage.ended))) {
         requestAnimationFrame(animate);
+    } else {
+        animating = false;
     }
 }
 
 function render() {
     var tmpyaw;
 
-    try {
+    if (loaded) {
         if (config.yaw > 180) {
             config.yaw -= 360;
         } else if (config.yaw < -180) {
@@ -902,8 +908,6 @@ function render() {
             compass.style.transform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
             compass.style.webkitTransform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
         }
-    } catch(event) {
-        // Panorama not loaded
     }
 }
 
@@ -942,8 +946,6 @@ function renderInitCallback() {
         }
     }
     
-    requestAnimationFrame(animate);
-    
     // Show compass if applicable
     if (config.compass) {
         compass.style.display = 'inline';
@@ -961,6 +963,8 @@ function renderInitCallback() {
         preview = undefined;
     }
     loaded = true;
+    
+    animateInit();
 }
 
 function createHotSpots() {
@@ -1049,9 +1053,13 @@ function destroyHotSpots() {
 
 function renderHotSpots() {
     config.hotSpots.forEach(function(hs) {
-        var z = Math.sin(hs.pitch * Math.PI / 180) * Math.sin(config.pitch * Math.PI /
-            180) + Math.cos(hs.pitch * Math.PI / 180) * Math.cos((-hs.yaw + config.yaw) *
-            Math.PI / 180) * Math.cos(config.pitch * Math.PI / 180);
+        var hsPitchSin = Math.sin(hs.pitch * Math.PI / 180);
+        var hsPitchCos = Math.cos(hs.pitch * Math.PI / 180);
+        var configPitchSin = Math.sin(config.pitch * Math.PI / 180);
+        var configPitchCos = Math.cos(config.pitch * Math.PI / 180);
+        var yawCos = Math.cos((-hs.yaw + config.yaw) * Math.PI / 180);
+        var hfovTan = Math.tan(config.hfov * Math.PI / 360);
+        var z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
         if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
           ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
             hs.div.style.visibility = 'hidden';
@@ -1060,14 +1068,10 @@ function renderHotSpots() {
             // Subpixel rendering doesn't work in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
             var transform = 'translate(' + (-renderer.canvas.width /
-                Math.tan(config.hfov * Math.PI / 360) * Math.sin((-hs.yaw +
-                config.yaw) * Math.PI / 180) * Math.cos(hs.pitch * Math.PI /
-                180) / z / 2 + renderer.canvas.width / 2 - 13) + 'px, ' +
-                (-renderer.canvas.width / Math.tan(config.hfov * Math.PI / 360) *
-                (Math.sin(hs.pitch * Math.PI / 180) * Math.cos(config.pitch *
-                Math.PI / 180) - Math.cos(hs.pitch * Math.PI / 180) *
-                Math.cos((-hs.yaw + config.yaw) * Math.PI / 180) *
-                Math.sin(config.pitch * Math.PI / 180)) / z / 2 +
+                hfovTan * Math.sin((-hs.yaw + config.yaw) * Math.PI / 180) *
+                hsPitchCos / z / 2 + renderer.canvas.width / 2 - 13) + 'px, ' +
+                (-renderer.canvas.width / hfovTan * (hsPitchSin *
+                configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
                 renderer.canvas.height / 2 - 13) + 'px) translateZ(1000000000px)';
             hs.div.style.webkitTransform = transform;
             hs.div.style.MozTransform = transform;
@@ -1273,7 +1277,6 @@ function processOptions() {
                     controls.load.style.display = 'none';
                     // Initialize
                     init();
-                    requestAnimationFrame(animate);
                 }
                 break;
             
@@ -1361,7 +1364,7 @@ function onFullScreenChange() {
         controls.fullscreen.classList.remove('fullscreentoggle_button_active');
         fullscreenActive = false;
     }
-    requestAnimationFrame(animate);
+    animateInit();
 }
 
 function zoomIn() {
@@ -1400,7 +1403,6 @@ function load() {
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'inline';
     init();
-    requestAnimationFrame(animate);
 }
 
 function loadScene(sceneId, targetPitch, targetYaw) {
