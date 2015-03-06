@@ -485,7 +485,7 @@ function onDocumentMouseMove(event) {
         latestInteraction = Date.now();
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / renderer.canvas.width * 2 - 1) - Math.atan(event.clientX / renderer.canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
-        yawSpeed = (yaw - config.yaw) * 0.2;
+        yawSpeed = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
         
         var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * renderer.canvas.height / renderer.canvas.width) * 180 / Math.PI;
@@ -557,7 +557,7 @@ function onDocumentTouchMove(event) {
         }
         
         var yaw = (onPointerDownPointerX - clientX) * 0.1 + onPointerDownYaw;
-        yawSpeed = (yaw - config.yaw) * 0.2;
+        yawSpeed = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
         
         var pitch = (clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
