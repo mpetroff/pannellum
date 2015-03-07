@@ -828,8 +828,9 @@ function keyRepeat() {
 }
 
 function onDocumentResize() {
-    // Reset panorama renderer
-    renderInit();
+    // Resize panorama renderer
+    renderer.resize();
+    animateInit();
     
     // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
     onFullScreenChange();
@@ -1353,7 +1354,6 @@ function onFullScreenChange() {
         controls.fullscreen.classList.remove('fullscreentoggle_button_active');
         fullscreenActive = false;
     }
-    animateInit();
 }
 
 function zoomIn() {

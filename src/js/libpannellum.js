@@ -347,6 +347,17 @@ function Renderer(container, image, imageType, video) {
         }
     };
 
+    this.resize = function() {
+        this.canvas.width = this.container.offsetWidth;
+        this.canvas.height = this.container.offsetHeight;
+        if (gl) {
+            gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            if (this.imageType != 'multires') {
+                gl.uniform1f(program.aspectRatio, this.canvas.width / this.canvas.height);
+            }
+        }
+    }
+
     this.render = function(pitch, yaw, hfov, returnImage) {
         var focal, i, s;
         
