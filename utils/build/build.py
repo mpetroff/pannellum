@@ -3,6 +3,7 @@
 import os
 import tempfile
 import sys
+import subprocess
 import urllib.parse
 
 JS = [
@@ -75,7 +76,7 @@ def addHeader(text):
     header = '<!DOCTYPE HTML>\n<!-- Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum -->\n'
     return header + text
 
-def build(files, css, html, filename):
+def build(files, css, html, filename, release=False):
     folder = ''
     os.makedirs('../../build', exist_ok=True)
     
@@ -88,7 +89,10 @@ def build(files, css, html, filename):
     print('=' * 40)
     
     js = merge(files)
-    js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + read('../VERSION'))
+    if release:
+        js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + read('../VERSION'))
+    else:
+        js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip())
     js = JScompress(js)
     
     print('=' * 40)
@@ -117,7 +121,10 @@ def build(files, css, html, filename):
     output(addHeader(html), folder + htmlfilename)
 
 def main():
-    build(JS, CSS, HTML, 'pannellum')
+    if (len(sys.argv) > 1 and sys.argv[1] == 'release'):
+        build(JS, CSS, HTML, 'pannellum', True)
+    else:
+        build(JS, CSS, HTML, 'pannellum')
 
 if __name__ == "__main__":
     main()
