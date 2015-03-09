@@ -236,6 +236,11 @@ function init() {
         setTimeout(function(){isTimedOut = true;}, 500);
     }
     
+    // From http://stackoverflow.com/a/19709846
+    var absoluteURL = function(url) {
+        returnRegExp('^(?:[a-z]+:)?//', 'i').text(url);
+    };
+    
     // Configure image loading
     if (config.type == 'cubemap') {
         // Quick loading counter for synchronous loading
@@ -259,9 +264,9 @@ function init() {
             panoImage[i].onload = onLoad;
             panoImage[i].onerror = onError;
             p = config.cubeMap[i];
-            if (config.basePath) {
+            if (config.basePath && !absoluteURL(p)) {
                 p = config.basePath + p;
-            } else if (tourConfig.basePath) {
+            } else if (tourConfig.basePath && !absoluteURL(p)) {
                 p = tourConfig.basePath + p;
             }
             panoImage[i].src = p;
@@ -279,7 +284,8 @@ function init() {
         if (config.video === true) {
             for (i = 0; i < config.panoramas.length; i++) {
                 if (panoImage.canPlayType(config.panoramas[i].type).length > 0) {
-                    panoImage.src = p + config.panoramas[i].file;
+                    panoImage.crossOrigin = 'anonymous';
+                    panoImage.src = absoluteURL(config.panoramas[i].file) ? config.panoramas[i].file : p + config.panoramas[i].file;
                     break;
                 }
             }
@@ -294,7 +300,7 @@ function init() {
             onImageLoad();
         } else {
             // Still image
-            p += config.panorama;
+            p = absoluteURL(config.panorama) ? config.panorama : p + config.panorama;
             
             panoImage.onload = function() {
                 window.URL.revokeObjectURL(this.src);  // Clean up
