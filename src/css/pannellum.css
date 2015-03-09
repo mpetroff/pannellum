@@ -267,6 +267,7 @@ body {
     -o-transition: opacity .3s ease-in-out;
     -ms-transition: opacity .3s ease-in-out;
     transition: opacity .3s ease-in-out;
+    z-index: 1;
 }
 
 .about_msg a:link, .about_msg a:visited {
