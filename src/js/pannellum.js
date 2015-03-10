@@ -201,6 +201,8 @@ function init() {
     } else {
         if (config.video === true) {
             panoImage = document.createElement('video');
+            infoDisplay.load.lbox.style.display = 'block';
+            infoDisplay.load.lbar.style.display = 'none';
         } else {
             panoImage = new Image();
         }
@@ -282,6 +284,10 @@ function init() {
         }
         
         if (config.video === true) {
+            panoImage.addEventListener('canplaythrough', function() {
+                panoImage.play();
+                onImageLoad();
+            });
             for (i = 0; i < config.panoramas.length; i++) {
                 if (panoImage.canPlayType(config.panoramas[i].type).length > 0) {
                     panoImage.crossOrigin = 'anonymous';
@@ -296,8 +302,7 @@ function init() {
                     ' video formats. Please try using a different browser or' +
                     ' device.');
             }
-            panoImage.play();
-            onImageLoad();
+            panoImage.load();
         } else {
             // Still image
             p = absoluteURL(config.panorama) ? config.panorama : p + config.panorama;
