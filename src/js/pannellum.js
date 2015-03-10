@@ -284,7 +284,7 @@ function init() {
         }
         
         if (config.video === true) {
-            panoImage.addEventListener('canplaythrough', function() {
+            panoImage.addEventListener('loadeddata', function() {
                 panoImage.play();
                 onImageLoad();
             });
@@ -302,7 +302,6 @@ function init() {
                     ' video formats. Please try using a different browser or' +
                     ' device.');
             }
-            panoImage.load();
         } else {
             // Still image
             p = absoluteURL(config.panorama) ? config.panorama : p + config.panorama;
