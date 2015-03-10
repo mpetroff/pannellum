@@ -75,6 +75,11 @@ CSS.
 If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
 
 
+### `keyboardZoom`
+
+If set to `false`, zooming with keyboard will be disabled. Defaults to `true`.
+
+
 ### `showFullscreenCtrl`
 
 If set to `false`, the fullscreen control will not be displayed. Defaults to
