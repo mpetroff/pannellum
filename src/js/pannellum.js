@@ -743,12 +743,12 @@ function keyRepeat() {
     diff = Math.min(diff, 1.0);
     
     // If minus key is down
-    if (keysDown[0] && config.keyboardZoom == true) {
+    if (keysDown[0] && config.keyboardZoom === true) {
         setHfov(config.hfov + (zoomSpeed * 0.8 + 0.5) * diff);
     }
     
     // If plus key is down
-    if (keysDown[1] && config.keyboardZoom == true) {
+    if (keysDown[1] && config.keyboardZoom === true) {
         setHfov(config.hfov + (zoomSpeed * 0.8 - 0.2) * diff);
     }
     
