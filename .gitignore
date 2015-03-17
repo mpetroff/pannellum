@@ -1,3 +1,5 @@
 # Ignore builds
 build/**
 .DS_Store
+utils/multires/output
+utils/multires/target.jpg
