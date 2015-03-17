@@ -193,10 +193,14 @@ function init() {
         infoDisplay.load.lbar.style.display = 'none';
     } else if (config.type == 'multires') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
-        if (config.basePath) {
+        if (config.basePath && config.multiRes.basePath) {      // avoid 'undefined' in path, check (optional) multiRes.basePath, too
             c.basePath = config.basePath + config.multiRes.basePath;
-        } else if (tourConfig.basePath) {
+        } else if (config.basePath) {
+            c.basePath = config.basePath;
+        } else if (tourConfig.basePath && config.multiRes.basePath) { // avoid 'undefined' in path, check (optional) multiRes.basePath, too
             c.basePath = tourConfig.basePath + config.multiRes.basePath;
+        } else if (tourConfig.basePath) {
+            c.basePath = tourConfig.basePath;
         }
         panoImage = c;
     } else {
