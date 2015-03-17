@@ -245,7 +245,7 @@ function init() {
     
     // From http://stackoverflow.com/a/19709846
     var absoluteURL = function(url) {
-        return RegExp('^(?:[a-z]+:)?//', 'i').test(url);
+        return new RegExp('^(?:[a-z]+:)?//', 'i').test(url);
     };
     
     // Configure image loading
@@ -348,8 +348,7 @@ function init() {
                         numerator = e.loaded;
                         denominator = e.total;
                     }
-                    var msg = numerator + ' / ' + denominator + ' ' + unit;
-                    infoDisplay.load.msg.innerHTML = msg;
+                    infoDisplay.load.msg.innerHTML = numerator + ' / ' + denominator + ' ' + unit;
                 } else {
                     // Display loading spinner
                     infoDisplay.load.lbox.style.display = 'block';
@@ -379,12 +378,12 @@ function parseGPanoXMP(image) {
             
             // Extract the requested tag from the XMP data
             var getTag = function(tag) {
-                tag = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
-                tag = tag.substring(0, tag.indexOf('"'));
-                if (tag.length === 0) {
+                var result = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
+                result = result.substring(0, result.indexOf('"'));
+                if (result.length === 0) {
                     return null;
                 }
-                return Number(tag);
+                return Number(result);
             };
             
             // Relevant XMP data
@@ -471,7 +470,7 @@ function onDocumentMouseDown(event) {
         var s = Math.sin(config.pitch * Math.PI / 180);
         var c = Math.cos(config.pitch * Math.PI / 180);
         var a = focal * c - y * s;
-        var root = Math.sqrt(x*x + a*a)
+        var root = Math.sqrt(x*x + a*a);
         var pitch = Math.atan((y * c + focal * s) / root) * 180 / Math.PI;
         var yaw = Math.atan2(x / root, a / root) * 180 / Math.PI + config.yaw;
         console.log('Pitch: ' + pitch + ', Yaw: ' + yaw);
@@ -1132,16 +1131,17 @@ function parseURLParameters() {
                 anError('The file ' + a.outerHTML + ' could not be accessed.');
             }
             
-            var c = JSON.parse(request.responseText);
+            var responseMap = JSON.parse(request.responseText);
             
             // Set JSON file location
-            c.basePath = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
+            responseMap.basePath = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
             
             // Merge options
-            for (var k in c) {
-                if (!configFromURL[k]) {
-                    configFromURL[k] = c[k];
+            for (var key in responseMap) {
+                if (configFromURL.hasOwnProperty(key)) {
+                    continue;
                 }
+                configFromURL[key] = responseMap[key];
             }
             
             mergeConfig(firstScene);
@@ -1332,7 +1332,7 @@ function processOptions() {
 }
 
 function toggleFullscreen() {
-    if (loaded && !error) {
+    if (loaded && !  error) {
         if (!fullscreenActive) {
             try {
                 if (container.requestFullscreen) {
@@ -1414,7 +1414,7 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     oldRenderer = renderer;
     
     // Set up fade if specified
-    var fadeImg;
+    var fadeImg, workingPitch, workingYaw;
     if (config.sceneFadeDuration) {
         fadeImg = new Image();
         fadeImg.className = 'fade_img';
@@ -1429,12 +1429,12 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     
     // Set new pointing
     if (targetPitch === 'same') {
-        targetPitch = config.pitch;
+        workingPitch = config.pitch;
     }
     if (targetYaw === 'same') {
-        targetYaw = config.yaw;
+        workingYaw = config.yaw;
     } else if (targetYaw === 'sameAzimuth') {
-        targetYaw = config.yaw + config.northOffset - tourConfig.scenes[sceneId].northOffset;
+        workingYaw = config.yaw + config.northOffset - tourConfig.scenes[sceneId].northOffset;
     }
     
     // Destroy hot spots from previous scene
@@ -1445,11 +1445,11 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     
     // Reload scene
     processOptions();
-    if (targetPitch) {
-        config.pitch = targetPitch;
+    if (workingPitch) {
+        config.pitch = workingPitch;
     }
-    if (targetYaw) {
-        config.yaw = targetYaw;
+    if (workingYaw) {
+        config.yaw = workingYaw;
     }
     load();
 }
