@@ -1,7 +1,5 @@
 # Ignore builds
 build/**
+
+# Ignore OS X stuff
 .DS_Store
-utils/multires/output
-utils/multires/target.jpg
-.idea
-utils/build/npm-debug.log

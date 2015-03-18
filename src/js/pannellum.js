@@ -1332,7 +1332,7 @@ function processOptions() {
 }
 
 function toggleFullscreen() {
-    if (loaded && !  error) {
+    if (loaded && !error) {
         if (!fullscreenActive) {
             try {
                 if (container.requestFullscreen) {
