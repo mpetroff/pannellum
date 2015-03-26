@@ -407,7 +407,9 @@ function parseGPanoXMP(image) {
                 if (xmp.heading !== null) {
                     // TODO: make sure this works correctly for partial panoramas
                     config.northOffset = xmp.heading;
-                    config.compass = true;
+                    if (config.compass !== false) {
+                        config.compass = true;
+                    }
                 }
                 
                 // TODO: add support for initial view settings
@@ -1194,6 +1196,7 @@ function parseURLParameters() {
 function mergeConfig(sceneId) {
     config = {};
     var k;
+    var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset'];
     
     // Merge default config
     for (k in defaultConfig) {
@@ -1206,6 +1209,9 @@ function mergeConfig(sceneId) {
     for (k in tourConfig.default) {
         if (tourConfig.default.hasOwnProperty(k)) {
             config[k] = tourConfig.default[k];
+            if (photoSphereExcludes.indexOf(k) >= 0) {
+                config.ignoreGPanoXMP = true;
+            }
         }
     }
     
@@ -1215,6 +1221,9 @@ function mergeConfig(sceneId) {
         for (k in scene) {
             if (scene.hasOwnProperty(k)) {
                 config[k] = scene[k];
+                if (photoSphereExcludes.indexOf(k) >= 0) {
+                    config.ignoreGPanoXMP = true;
+                }
             }
         }
         config.activeScene = sceneId;
@@ -1224,6 +1233,9 @@ function mergeConfig(sceneId) {
     for (k in configFromURL) {
         if (configFromURL.hasOwnProperty(k)) {
             config[k] = configFromURL[k];
+            if (photoSphereExcludes.indexOf(k) >= 0) {
+                config.ignoreGPanoXMP = true;
+            }
         }
     }
 }
