@@ -1,2 +1,5 @@
 # Ignore builds
 build/**
+
+# Ignore OS X stuff
+.DS_Store

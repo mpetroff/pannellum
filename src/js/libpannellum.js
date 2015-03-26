@@ -66,7 +66,7 @@ function Renderer(container, image, imageType, video) {
         // While browser specific tests are usually frowned upon, the
         // fallback viewer only really works with WebKit/Blink and IE 10/11
         // (it doesn't work properly in Firefox).
-        if (!gl && ((this.imageType == 'multires' && this.image.fallbackPath) ||
+        if (!gl && ((this.imageType == 'multires' && this.image.hasOwnProperty('fallbackPath')) ||
             this.imageType == 'cubemap') &&
             ('WebkitAppearance' in document.documentElement.style ||
             navigator.userAgent.match(/Trident.*rv[ :]*11\./) ||
@@ -203,7 +203,7 @@ function Renderer(container, image, imageType, video) {
         var glBindType = gl.TEXTURE_2D;
 
         // Create viewport for entire canvas
-        gl.viewport(0, 0, this.canvas.width, this.canvas.height);   
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
         // Create vertex shader
         var vs = gl.createShader(gl.VERTEX_SHADER);
@@ -213,7 +213,7 @@ function Renderer(container, image, imageType, video) {
         }
         gl.shaderSource(vs, vertexSrc);
         gl.compileShader(vs);
-        
+
         // Create fragment shader
         var fs = gl.createShader(gl.FRAGMENT_SHADER);
         var fragmentSrc = fragEquirectangular;
@@ -225,41 +225,41 @@ function Renderer(container, image, imageType, video) {
         }
         gl.shaderSource(fs, fragmentSrc);
         gl.compileShader(fs);
-        
+
         // Link WebGL program
         program = gl.createProgram();
         gl.attachShader(program, vs);
         gl.attachShader(program, fs);
         gl.linkProgram(program);
-        
+
         // Log errors
-        if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) 
+        if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS))
             console.log(gl.getShaderInfoLog(vs));
         if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS))
             console.log(gl.getShaderInfoLog(fs));
         if (!gl.getProgramParameter(program, gl.LINK_STATUS))
             console.log(gl.getProgramInfoLog(program));
-        
+
         // Use WebGL program
         gl.useProgram(program);
-        
+
         program.drawInProgress = false;
-        
+
         // Look up texture coordinates location
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
-        
+
         if (this.imageType != 'multires') {
             // Provide texture coordinates for rectangle
             program.texCoordBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, program.texCoordBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,1,1,1,-1,-1,1,1,-1,-1,-1]), gl.STATIC_DRAW);
             gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
-            
+
             // Pass aspect ratio
             program.aspectRatio = gl.getUniformLocation(program, 'u_aspectRatio');
             gl.uniform1f(program.aspectRatio, this.canvas.width / this.canvas.height);
-            
+
             // Locate psi, theta, focal length, horizontal extent, vertical extent, and vertical offset
             program.psi = gl.getUniformLocation(program, 'u_psi');
             program.theta = gl.getUniformLocation(program, 'u_theta');
@@ -267,16 +267,16 @@ function Renderer(container, image, imageType, video) {
             program.h = gl.getUniformLocation(program, 'u_h');
             program.v = gl.getUniformLocation(program, 'u_v');
             program.vo = gl.getUniformLocation(program, 'u_vo');
-            
+
             // Pass horizontal extent, vertical extent, and vertical offset
             gl.uniform1f(program.h, haov / (Math.PI * 2.0));
             gl.uniform1f(program.v, vaov / Math.PI);
             gl.uniform1f(program.vo, voffset / Math.PI * 2);
-            
+
             // Create texture
             program.texture = gl.createTexture();
             gl.bindTexture(glBindType, program.texture);
-            
+
             // Upload images to texture depending on type
             if (this.imageType == 'cubemap') {
                 // Load all six sides of the cube map
@@ -290,51 +290,51 @@ function Renderer(container, image, imageType, video) {
                 // Upload image to the texture
                 gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image);
             }
-            
+
             // Set parameters for rendering any size
             gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(glBindType, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            
+
         } else {
             // Look up vertex coordinates location
             program.vertPosLocation = gl.getAttribLocation(program, 'a_vertCoord');
             gl.enableVertexAttribArray(program.vertPosLocation);
-            
+
             // Create buffers
             program.cubeVertBuf = gl.createBuffer();
             program.cubeVertTexCoordBuf = gl.createBuffer();
             program.cubeVertIndBuf = gl.createBuffer();
-            
+
             // Bind texture coordinate buffer and pass coordinates to WebGL
             gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
-            
+
             // Bind square index buffer and pass indicies to WebGL
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
-            
+
             // Find uniforms
             program.perspUniform = gl.getUniformLocation(program, 'u_perspMatrix');
             program.cubeUniform = gl.getUniformLocation(program, 'u_cubeMatrix');
             //program.colorUniform = gl.getUniformLocation(program, 'u_color');
-            
+
             program.level = -1;
-            
+
             program.currentNodes = [];
             program.nodeCache = [];
             program.nodeCacheTimestamp = 0;
         }
-        
+
         // Check if there was an error
         if (gl.getError() !== 0) {
             console.log('Error: Something went wrong with WebGL!');
             throw {type: 'webgl error'};
         }
-        
+
         callback();
-    };
+     };
 
     this.destroy = function() {
         if (this.container !== undefined) {
@@ -356,7 +356,7 @@ function Renderer(container, image, imageType, video) {
                 gl.uniform1f(program.aspectRatio, this.canvas.width / this.canvas.height);
             }
         }
-    }
+    };
 
     this.render = function(pitch, yaw, hfov, returnImage) {
         var focal, i, s;
@@ -661,17 +661,6 @@ function Renderer(container, image, imageType, video) {
             }
         }
     };
-
-    this.setImage = function(image) {
-        this.image = image;
-        this.init();
-    };
-    
-    this.setCanvas = function(canvas) {
-        this.canvas = canvas;
-        this.init();
-    };
-    
     this.createCube = function() {
         return [-1,  1, -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, // Front face
                  1,  1,  1, -1,  1,  1, -1, -1,  1,  1, -1,  1, // Back face
@@ -828,10 +817,9 @@ function Renderer(container, image, imageType, video) {
         if ( testY == -4 || testY == 4 )
             return false;
         var testZ = check1[2] + check2[2] + check3[2] + check4[2];
-        if ( testZ == 4 )
-            return false;
+        return testZ != 4;
         
-        return true;
+
     };
 }
 
