@@ -400,7 +400,7 @@ function parseGPanoXMP(image) {
                 // Set up viewer using GPano XMP data
                 config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
                 config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
-                config.vOffset = [(xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5] * -90;
+                config.vOffset = ((xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5) * -180;
                 if (xmp.heading !== null) {
                     // TODO: make sure this works correctly for partial panoramas
                     config.northOffset = xmp.heading;

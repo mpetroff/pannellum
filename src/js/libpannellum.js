@@ -271,7 +271,7 @@ function Renderer(container, image, imageType, video) {
             // Pass horizontal extent, vertical extent, and vertical offset
             gl.uniform1f(program.h, haov / (Math.PI * 2.0));
             gl.uniform1f(program.v, vaov / Math.PI);
-            gl.uniform1f(program.vo, voffset / Math.PI);
+            gl.uniform1f(program.vo, voffset / Math.PI * 2);
             
             // Create texture
             program.texture = gl.createTexture();
