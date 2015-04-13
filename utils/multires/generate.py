@@ -45,6 +45,8 @@ parser.add_argument('-o', '--output', dest='output', default='./output',
                     help='output directory')
 parser.add_argument('-s', '--tilesize', dest='tileSize', default=512, type=int,
                     help='tile size in pixels')
+parser.add_argument('-c', '--cubesize', dest='cubeSize', default=0, type=int,
+                    help='cube size in pixels, or 0 to retain all details')
 parser.add_argument('--png', action='store_true',
                     help='output PNG tiles instead of JPEG tiles')
 parser.add_argument('-n', '--nona', default=nona, required=nona is None,
@@ -59,7 +61,10 @@ if float(origWidth) / origHeight != 2:
     print('Error: the image width is not twice the image height.')
     print('Input image must be a full, not partial, equirectangular panorama!')
     sys.exit(1)
-cubeSize = 8 * int(origWidth / 3.14159265 / 8)
+if args.cubeSize != 0:
+    cubeSize = args.cubeSize
+else:
+    cubeSize = 8 * int(origWidth / 3.14159265 / 8)
 levels = int(math.ceil(math.log(float(cubeSize) / args.tileSize, 2))) + 1
 origHeight = str(origHeight)
 origWidth = str(origWidth)
