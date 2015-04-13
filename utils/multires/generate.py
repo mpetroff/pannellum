@@ -47,6 +47,8 @@ parser.add_argument('-s', '--tilesize', dest='tileSize', default=512, type=int,
                     help='tile size in pixels')
 parser.add_argument('-c', '--cubesize', dest='cubeSize', default=0, type=int,
                     help='cube size in pixels, or 0 to retain all details')
+parser.add_argument('-q', '--quality', dest='quality', default=75, type=int,
+                    help='output JPEG quality 0-100')
 parser.add_argument('--png', action='store_true',
                     help='output PNG tiles instead of JPEG tiles')
 parser.add_argument('-n', '--nona', default=nona, required=nona is None,
@@ -118,7 +120,7 @@ for f in range(0, 6):
                 lower = min(i * args.tileSize + args.tileSize, size)
                 tile = face.crop([left, upper, right, lower])
                 tile.load()
-                tile.save(os.path.join(args.output, str(level), faceLetters[f] + str(i) + '_' + str(j) + extension))
+                tile.save(os.path.join(args.output, str(level), faceLetters[f] + str(i) + '_' + str(j) + extension), quality = args.quality)
         size = int(size / 2)
 
 # Generate fallback tiles
@@ -128,7 +130,7 @@ for f in range(0, 6):
         os.makedirs(os.path.join(args.output, 'fallback'))
     face = Image.open(os.path.join(args.output, faces[f]))
     face = face.resize([1024, 1024], Image.ANTIALIAS)
-    face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension))
+    face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension), quality = args.quality)
 
 # Clean up temporary files
 os.remove(os.path.join(args.output, 'cubic.pto'))
