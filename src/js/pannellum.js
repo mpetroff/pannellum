@@ -215,6 +215,7 @@ function init() {
     
     function onImageLoad() {
         renderer = new libpannellum.renderer(renderContainer, panoImage, config.type, config.video);
+        panoImage = undefined;
         
         // Only add event listeners once
         if (!listenersAdded) {
@@ -948,6 +949,7 @@ function renderInitCallback() {
             // Remove image
             setTimeout(function() {
                 renderContainer.removeChild(oldRenderer.fadeImg);
+                oldRenderer = undefined;
             }, config.sceneFadeDuration);
         }
     }
@@ -1046,15 +1048,17 @@ function createHotSpots() {
 
 function destroyHotSpots() {
     if (config.hotSpots) {
-        config.hotSpots.forEach(function(hs) {
-            var current = hs.div;
+        for (var i = 0; i < config.hotSpots.length; i++) {
+            var current = config.hotSpots[i].div;
             while(current.parentNode != renderContainer) {
                 current = current.parentNode;
             }
             renderContainer.removeChild(current);
-        });
+            config.hotSpots[i].div = null;
+        }
     }
     hotspotsCreated = false;
+    config.hotSpots = undefined;
 }
 
 function renderHotSpots() {
