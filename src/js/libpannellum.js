@@ -148,7 +148,7 @@ function Renderer(container, image, imageType, video) {
                 if (loaded == 6) {
                     fallbackImgSize = this.width;
                     container.appendChild(world);
-                    renderer.image = null;
+                    delete renderer.image;
                     callback();
                 }
             };
@@ -288,13 +288,13 @@ function Renderer(container, image, imageType, video) {
                 gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image[5]);
                 gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image[0]);
                 gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image[2]);
-                this.image = undefined;
+                delete this.image;
             } else {
                 // Upload image to the texture
                 gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.image);
                 if (this.video !== true) {
                     // Allow memory to be freed
-                    this.image = undefined;
+                    delete this.image;
                 }
             }
 
@@ -754,6 +754,7 @@ function Renderer(container, image, imageType, video) {
         node.image.onload = function() {
             self.processLoadedTexture(node.image, node.texture);
             node.textureLoaded = true;
+            delete node.image;
         };
         node.image.src = node.path + '.' + this.image.extension;
         }

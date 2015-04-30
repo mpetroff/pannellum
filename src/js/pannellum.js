@@ -1054,11 +1054,11 @@ function destroyHotSpots() {
                 current = current.parentNode;
             }
             renderContainer.removeChild(current);
-            config.hotSpots[i].div = null;
+            delete config.hotSpots[i].div;
         }
     }
     hotspotsCreated = false;
-    config.hotSpots = undefined;
+    delete config.hotSpots;
 }
 
 function renderHotSpots() {
