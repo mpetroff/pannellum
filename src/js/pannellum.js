@@ -79,7 +79,7 @@ container.className += ' container';
 // Display about information on right click
 var aboutMsg = document.createElement('span');
 aboutMsg.className = 'about_msg';
-aboutMsg.innerHTML = '<a href="http://pannellum.org/" target="_blank">Pannellum</a>';
+aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
 container.appendChild(aboutMsg);
 document.addEventListener('contextmenu', onRightClick);
 
