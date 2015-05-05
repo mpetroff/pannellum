@@ -948,7 +948,9 @@ function renderInitCallback() {
             oldRenderer.fadeImg.style.opacity = 0;
             // Remove image
             setTimeout(function() {
-                renderContainer.removeChild(oldRenderer.fadeImg);
+                if(oldRenderer && oldRenderer.fadeImg){
+                    renderContainer.removeChild(oldRenderer.fadeImg);
+                }
                 oldRenderer = undefined;
             }, config.sceneFadeDuration);
         }
