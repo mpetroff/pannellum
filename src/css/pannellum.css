@@ -282,7 +282,7 @@ body {
     position: absolute;
     height: 26px;
     width: 26px;
-    visibility: hidden;
+    display: none;
     cursor: default;
     border-radius: 13px;
     vertical-align: middle;
@@ -300,7 +300,7 @@ body {
 }
 
 div.tooltip span {
-    visibility: hidden;
+    display: none;
     position: absolute;
     border-radius: 3px;
     background-color: rgba(0,0,0,0.7);
@@ -313,7 +313,7 @@ div.tooltip span {
     cursor: default;
 }
 div.tooltip:hover span{
-    visibility: visible;
+    display: block;
 }
 div.tooltip:hover:after {
     content: '';
