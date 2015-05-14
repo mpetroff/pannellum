@@ -132,7 +132,6 @@ infoDisplay.errorMsg = document.createElement('div');
 infoDisplay.errorMsg.className = 'error_msg infobox';
 container.appendChild(infoDisplay.errorMsg);
 
-
 // Create controls
 var controls = {};
 
@@ -167,8 +166,14 @@ var compass = document.createElement('div');
 compass.className = 'compass controls control';
 container.appendChild(compass);
 
-// Process options
-parseURLParameters();
+// Display error if opened from local file
+if (window.location.protocol == 'file:') {
+    anError('Due to browser security restrictions, Pannellum can\'t be run ' +
+        'from the local filesystem; some sort of web server must be used.');
+} else {
+    // Process options
+    parseURLParameters();
+}
 
 // Initialize viewer
 function init() {
