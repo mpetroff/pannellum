@@ -349,7 +349,7 @@ div.tooltip:hover:after {
     transform-origin: 0 0 0;
 }
 
-.dragfix, #preview {
+.dragfix, .preview_img {
     position: absolute;
     height: 100%;
     width: 100%;
