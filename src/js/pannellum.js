@@ -384,11 +384,11 @@ function parseGPanoXMP(image) {
             
             // Extract the requested tag from the XMP data
             var getTag = function(tag) {
-                var result = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
-                result = result.substring(0, result.indexOf('"'));
-                if (result.length === 0) {
+                if (xmpData.indexOf(tag + '="') < 0) {
                     return null;
                 }
+                var result = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
+                result = result.substring(0, result.indexOf('"'));
                 return Number(result);
             };
             
