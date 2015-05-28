@@ -78,7 +78,7 @@ function Renderer(container, image, imageType, video) {
             
             // Initialize renderer
             this.world = document.createElement('div');
-            this.world.className = 'world';
+            this.world.className = 'pnlm-world';
             
             // Add images
             var path = this.image.basePath + this.image.fallbackPath;
@@ -90,7 +90,7 @@ function Renderer(container, image, imageType, video) {
             var onLoad = function() {
                 // Draw image on canvas
                 var faceCanvas = document.createElement('canvas');
-                faceCanvas.className = 'face ' + sides[this.side] + 'face';
+                faceCanvas.className = 'pnlm-face';
                 world.appendChild(faceCanvas);
                 var faceContext = faceCanvas.getContext('2d');
                 faceCanvas.style.width = this.width + 4 + 'px';

@@ -20,32 +20,32 @@ body {
     user-select: none;
 }
 
-.grab {
+.pnlm-grab {
     cursor: url('img/grab.svg') 12 8, default;
 }
 
-.grabbing {
+.pnlm-grabbing {
     cursor: url('img/grabbing.svg') 12 8, default;
 }
 
-.sprite {
+.pnlm-sprite {
     background-image: url('img/sprites.svg');
 }
 
-.container:-moz-full-screen {
+.pnlm-container:-moz-full-screen {
     height: 100% !important;
     width: 100% !important;
 }
-.container:-webkit-full-screen {
+.pnlm-container:-webkit-full-screen {
     height: 100% !important;
     width: 100% !important;
 }
-.container:fullscreen {
+.pnlm-container:fullscreen {
     height: 100% !important;
     width: 100% !important;
 }
 
-.render_container {
+.pnlm-render-container {
     cursor: inherit;
     
     /* Fix display bug in Safari 7 */
@@ -54,7 +54,7 @@ body {
     width: 100%;
 }
 
-.controls {
+.pnlm-controls {
     position: absolute;
     background-color: #fff;
     border: 1px solid #999;
@@ -66,18 +66,18 @@ body {
     transform: translateZ(1000000000px);
 }
 
-.control:hover {
+.pnlm-control:hover {
     background-color: #f8f8f8;
 }
 
-.zoom_controls {
+.pnlm-zoom-controls {
     top: 4px;
     left: 4px;
     width: 26px;
     height: 52px;
 }
 
-.zoom_in {
+.pnlm-zoom-in {
     width: 100%;
     height: 50%;
     position: absolute;
@@ -85,7 +85,7 @@ body {
     border-radius: 3px 3px 0 0;
 }
 
-.zoom_out {
+.pnlm-zoom-out {
     width: 100%;
     height: 50%;
     position: absolute;
@@ -96,22 +96,22 @@ body {
     border-radius: 0 0 3px 3px;
 }
 
-.fullscreentoggle_button {
+.pnlm-fullscreen-toggle-button {
     top: 66px;
     left: 4px;
     width: 26px;
     height: 26px;
 }
 
-.fullscreentoggle_button_inactive {
+.pnlm-fullscreen-toggle-button-inactive {
     background-position: 0 -52px;
 }
 
-.fullscreentoggle_button_active {
+.pnlm-fullscreen-toggle-button-active {
     background-position: 0 -78px;
 }
 
-.panorama_info {
+.pnlm-panorama-info {
     position: absolute;
     bottom: 4px;
     background-color: rgba(0,0,0,0.7);
@@ -125,7 +125,7 @@ body {
     transform: translateZ(1000000000px);
 }
 
-.title_box {
+.pnlm-title-box {
     position: relative;
     font-size: 20px;
     display: table;
@@ -133,14 +133,14 @@ body {
     margin-bottom: 3px;
 }
 
-.author_box {
+.pnlm-author-box {
     position: relative;
     font-size: 12px;
     display: table;
     padding-left: 5px;
 }
 
-.load_box {
+.pnlm-load-box {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -155,7 +155,7 @@ body {
     color: #fff;
 }
 
-.lbox {
+.pnlm-lbox {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -165,11 +165,11 @@ body {
     display: none;
 }
 
-.loading {
+.pnlm-loading {
     animation-duration: 1.5s;
     -webkit-animation-duration: 1.5s;
-    animation-name: mv;
-    -webkit-animation-name: mv;
+    animation-name: pnlm-mv;
+    -webkit-animation-name: pnlm-mv;
     animation-iteration-count: infinite;
     -webkit-animation-iteration-count: infinite;
     animation-timing-function: linear;
@@ -180,7 +180,7 @@ body {
     position: relative;
 }
 
-@keyframes mv {
+@keyframes pnlm-mv {
     from {left:0;top:0;}
     25% {left:10px;top:0;}
     50% {left:10px;top:10px;}
@@ -188,7 +188,7 @@ body {
     to {left:0;top:0;}
 }
 
-@-webkit-keyframes mv {
+@-webkit-keyframes pnlm-mv {
     from {left:0;top:0;}
     25% {left:10px;top:0;}
     50% {left:10px;top:10px;}
@@ -196,7 +196,7 @@ body {
     to {left:0;top:0;}
 }
 
-.load_button {
+.pnlm-load-button {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -212,16 +212,16 @@ body {
     cursor: pointer;
 }
 
-.load_button:hover {
+.pnlm-load-button:hover {
     background-color: rgba(0,0,0,.8);
 }
 
-.load_button p {
+.pnlm-load-button p {
     display: table-cell;
     vertical-align: middle;
 }
 
-.infobox {
+.pnlm-info-box {
     font-size: 15px;
     position: absolute;
     top: 50%;
@@ -236,21 +236,21 @@ body {
     color: #fff;
 }
 
-.infobox a {
+.pnlm-info-box a {
     color: #fff;
 }
 
-.infobox p {
+.pnlm-info-box p {
     display: table-cell;
     vertical-align: middle;
     padding: 0 5px 0 5px;
 }
 
-.error_msg {
+.pnlm-error-msg {
     display: none;
 }
 
-.about_msg {
+.pnlm-about-msg {
     font-size: 11px;
     line-height: 11px;
     color: #fff;
@@ -270,15 +270,15 @@ body {
     z-index: 1;
 }
 
-.about_msg a:link, .about_msg a:visited {
+.pnlm-about-msg a:link, .pnlm-about-msg a:visited {
     color: #fff;
 }
 
-.about_msg a:hover, .about_msg a:active {
+.pnlm-about-msg a:hover, .pnlm-about-msg a:active {
     color: #eee;
 }
 
-.hotspot {
+.pnlm-hotspot {
     position: absolute;
     height: 26px;
     width: 26px;
@@ -289,17 +289,17 @@ body {
     top: 0;
     z-index: 1;
 }
-.hotspot:hover {
+.pnlm-hotspot:hover {
     background-color: rgba(255,255,255,0.2);
 }
-.hotspot.info {
+.pnlm-hotspot.pnlm-info {
     background-position: 0 -104px;
 }
-.hotspot.scene {
+.pnlm-hotspot.pnlm-scene {
     background-position: 0 -130px;
 }
 
-div.tooltip span {
+div.pnlm-tooltip span {
     display: none;
     position: absolute;
     border-radius: 3px;
@@ -312,10 +312,10 @@ div.tooltip span {
     margin-left: -220px;
     cursor: default;
 }
-div.tooltip:hover span{
+div.pnlm-tooltip:hover span{
     display: block;
 }
-div.tooltip:hover:after {
+div.pnlm-tooltip:hover:after {
     content: '';
     position: absolute;
     width: 0;
@@ -327,7 +327,7 @@ div.tooltip:hover:after {
     left: 3px;
 }
 
-.compass {
+.pnlm-compass {
     width: 50px;
     height: 50px;
     right: 4px;
@@ -338,47 +338,47 @@ div.tooltip:hover:after {
     display: none;
 }
 
-.world {
+.pnlm-world {
     position: absolute;
     left: 50%;
     top: 50%;
 }
-.face {
+.pnlm-face {
     position: absolute;
     -webkit-transform-origin: 0 0 0;
     transform-origin: 0 0 0;
 }
 
-.dragfix, .preview_img {
+.pnlm-dragfix, .pnlm-preview-img {
     position: absolute;
     height: 100%;
     width: 100%;
 }
 
-.preview_img {
+.pnlm-preview-img {
     top: 0;
     left: 0;
     background-size: 100% 100%;
 }
 
-.lbar {
+.pnlm-lbar {
     width: 150px;
     margin: 0 auto;
     border: #fff 1px solid;
     height: 6px;
 }
 
-.lbar_fill {
+.pnlm-lbar-fill {
     background: #fff;
     height: 100%;
     width: 0;
 }
 
-.lmsg {
+.pnlm-lmsg {
     font-size: 12px;
 }
 
-.fade_img {
+.pnlm-fade-img {
     position: absolute;
     top: 0;
     left: 0;

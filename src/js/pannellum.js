@@ -74,11 +74,11 @@ var defaultConfig = {
     keyboardZoom: true
 };
 
-container.className += ' container';
+container.className += ' pnlm-container';
 
 // Display about information on right click
 var aboutMsg = document.createElement('span');
-aboutMsg.className = 'about_msg';
+aboutMsg.className = 'pnlm-about-msg';
 aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
 container.appendChild(aboutMsg);
 document.addEventListener('contextmenu', onRightClick);
@@ -86,10 +86,10 @@ document.addEventListener('contextmenu', onRightClick);
 
 // Create container for renderer
 var renderContainer = document.createElement('div');
-renderContainer.className = 'render_container';
+renderContainer.className = 'pnlm-render-container';
 container.appendChild(renderContainer);
 var dragFix = document.createElement('div');
-dragFix.className = 'dragfix';
+dragFix.className = 'pnlm-dragfix';
 container.appendChild(dragFix);
 
 
@@ -98,38 +98,38 @@ var infoDisplay = {};
 
 // Panorama info
 infoDisplay.container = document.createElement('div');
-infoDisplay.container.className = 'panorama_info';
+infoDisplay.container.className = 'pnlm-panorama-info';
 infoDisplay.title = document.createElement('div');
-infoDisplay.title.className = 'title_box';
+infoDisplay.title.className = 'pnlm-title-box';
 infoDisplay.container.appendChild(infoDisplay.title);
 infoDisplay.author = document.createElement('div');
-infoDisplay.author.className = 'author_box';
+infoDisplay.author.className = 'pnlm-author-box';
 infoDisplay.container.appendChild(infoDisplay.author);
 container.appendChild(infoDisplay.container);
 
 // Load box
 infoDisplay.load = {};
 infoDisplay.load.box = document.createElement('div');
-infoDisplay.load.box.className = 'load_box';
+infoDisplay.load.box.className = 'pnlm-load-box';
 infoDisplay.load.box.innerHTML = '<p>Loading...</p>';
 infoDisplay.load.lbox = document.createElement('div');
-infoDisplay.load.lbox.className = 'lbox';
-infoDisplay.load.lbox.innerHTML = '<div class="loading"></div>';
+infoDisplay.load.lbox.className = 'pnlm-lbox';
+infoDisplay.load.lbox.innerHTML = '<div class="pnlm-loading"></div>';
 infoDisplay.load.box.appendChild(infoDisplay.load.lbox);
 infoDisplay.load.lbar = document.createElement('div');
-infoDisplay.load.lbar.className = 'lbar';
+infoDisplay.load.lbar.className = 'pnlm-lbar';
 infoDisplay.load.lbarFill = document.createElement('div');
-infoDisplay.load.lbarFill.className = 'lbar_fill';
+infoDisplay.load.lbarFill.className = 'pnlm-lbar-fill';
 infoDisplay.load.lbar.appendChild(infoDisplay.load.lbarFill);
 infoDisplay.load.box.appendChild(infoDisplay.load.lbar);
 infoDisplay.load.msg = document.createElement('p');
-infoDisplay.load.msg.className = 'lmsg';
+infoDisplay.load.msg.className = 'pnlm-lmsg';
 infoDisplay.load.box.appendChild(infoDisplay.load.msg);
 container.appendChild(infoDisplay.load.box);
 
 // Error message
 infoDisplay.errorMsg = document.createElement('div');
-infoDisplay.errorMsg.className = 'error_msg infobox';
+infoDisplay.errorMsg.className = 'pnlm-error-msg pnlm-info-box';
 container.appendChild(infoDisplay.errorMsg);
 
 // Create controls
@@ -137,20 +137,20 @@ var controls = {};
 
 // Load button
 controls.load = document.createElement('div');
-controls.load.className = 'load_button';
+controls.load.className = 'pnlm-load-button';
 controls.load.innerHTML = '<p>Click to<br>Load<br>Panorama<p>';
 controls.load.addEventListener('click', load);
 container.appendChild(controls.load);
 
 // Zoom controls
 controls.zoom = document.createElement('div');
-controls.zoom.className = 'zoom_controls controls';
+controls.zoom.className = 'pnlm-zoom-controls pnlm-controls';
 controls.zoomIn = document.createElement('div');
-controls.zoomIn.className = 'zoom_in sprite control';
+controls.zoomIn.className = 'pnlm-zoom-in pnlm-sprite pnlm-control';
 controls.zoomIn.addEventListener('click', zoomIn);
 controls.zoom.appendChild(controls.zoomIn);
 controls.zoomOut = document.createElement('div');
-controls.zoomOut.className = 'zoom_out sprite control';
+controls.zoomOut.className = 'pnlm-zoom-out pnlm-sprite pnlm-control';
 controls.zoomOut.addEventListener('click', zoomOut);
 controls.zoom.appendChild(controls.zoomOut);
 container.appendChild(controls.zoom);
@@ -158,12 +158,12 @@ container.appendChild(controls.zoom);
 // Fullscreen toggle
 controls.fullscreen = document.createElement('div');
 controls.fullscreen.addEventListener('click', toggleFullscreen);
-controls.fullscreen.className = 'fullscreentoggle_button sprite fullscreentoggle_button_inactive controls control';
+controls.fullscreen.className = 'pnlm-fullscreen-toggle-button pnlm-sprite pnlm-fullscreen-toggle-button-inactive pnlm-controls pnlm-control';
 container.appendChild(controls.fullscreen);
 
 // Compass
 var compass = document.createElement('div');
-compass.className = 'compass controls control';
+compass.className = 'pnlm-compass pnlm-controls pnlm-control';
 container.appendChild(compass);
 
 // Display error if opened from local file
@@ -367,8 +367,8 @@ function init() {
         }
     }
     
-    container.classList.add('grab');
-    container.classList.remove('grabbing');
+    container.classList.add('pnlm-grab');
+    container.classList.remove('pnlm-grabbing');
 }
 
 // Parse Google Photo Sphere XMP Metadata
@@ -496,8 +496,8 @@ function onDocumentMouseDown(event) {
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
     
-    container.classList.add('grabbing');
-    container.classList.remove('grab');
+    container.classList.add('pnlm-grabbing');
+    container.classList.remove('pnlm-grab');
     
     animateInit();
 }
@@ -528,8 +528,8 @@ function onDocumentMouseUp() {
         // releases the mouse button
         pitchSpeed = yawSpeed = 0;
     }
-    container.classList.add('grab');
-    container.classList.remove('grabbing');
+    container.classList.add('pnlm-grab');
+    container.classList.remove('pnlm-grabbing');
 }
 
 function onDocumentTouchStart(event) {
@@ -993,7 +993,7 @@ function createHotSpots() {
         });
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
-            div.setAttribute('class', 'hotspot tooltip sprite ' + hs.type);
+            div.className = 'pnlm-hotspot pnlm-tooltip pnlm-sprite pnlm-' + hs.type;
             
             var span = document.createElement('span');
             span.innerHTML = hs.text;
@@ -1265,7 +1265,7 @@ function processOptions() {
         preview = new Image();
         preview.crossOrigin = 'anonymous';
         preview.src = p;
-        preview.className = 'preview_img';
+        preview.className = 'pnlm-preview-img';
         renderContainer.appendChild(preview);
     }
     
@@ -1385,10 +1385,10 @@ function toggleFullscreen() {
 
 function onFullScreenChange() {
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
-        controls.fullscreen.classList.add('fullscreentoggle_button_active');
+        controls.fullscreen.classList.add('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = true;
     } else {
-        controls.fullscreen.classList.remove('fullscreentoggle_button_active');
+        controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = false;
     }
 }
@@ -1439,7 +1439,7 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     var fadeImg, workingPitch, workingYaw;
     if (config.sceneFadeDuration) {
         fadeImg = new Image();
-        fadeImg.className = 'fade_img';
+        fadeImg.className = 'pnlm-fade-img';
         fadeImg.style.transition = 'opacity ' + (config.sceneFadeDuration / 1000) + 's';
         var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, true);
         if (data !== undefined) {
