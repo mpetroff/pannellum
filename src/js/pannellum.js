@@ -1078,9 +1078,9 @@ function renderHotSpots() {
         var z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
         if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
           ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
-            hs.div.style.display = 'none';
+            hs.div.style.visibility = 'hidden';
         } else {
-            hs.div.style.display = 'block';
+            hs.div.style.visibility = 'visible';
             // Subpixel rendering doesn't work in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
             var transform = 'translate(' + (-renderer.canvas.width /

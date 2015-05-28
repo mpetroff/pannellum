@@ -282,7 +282,7 @@ body {
     position: absolute;
     height: 26px;
     width: 26px;
-    display: none;
+    visibility: hidden;
     cursor: default;
     border-radius: 13px;
     vertical-align: middle;
@@ -300,7 +300,7 @@ body {
 }
 
 div.pnlm-tooltip span {
-    display: none;
+    visibility: hidden;
     position: absolute;
     border-radius: 3px;
     background-color: rgba(0,0,0,0.7);
@@ -313,7 +313,7 @@ div.pnlm-tooltip span {
     cursor: default;
 }
 div.pnlm-tooltip:hover span{
-    display: block;
+    visibility: visible;
 }
 div.pnlm-tooltip:hover:after {
     content: '';
