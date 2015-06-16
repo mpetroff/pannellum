@@ -1452,11 +1452,15 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     // Set new pointing
     if (targetPitch === 'same') {
         workingPitch = config.pitch;
+    } else {
+        workingPitch = targetPitch;
     }
     if (targetYaw === 'same') {
         workingYaw = config.yaw;
     } else if (targetYaw === 'sameAzimuth') {
         workingYaw = config.yaw + config.northOffset - tourConfig.scenes[sceneId].northOffset;
+    } else {
+        workingYaw = targetYaw;
     }
     
     // Destroy hot spots from previous scene
