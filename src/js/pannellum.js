@@ -472,8 +472,9 @@ function onDocumentMouseDown(event) {
     
     // Log pitch / yaw of mouse click when debugging / placing hot spots
     if (config.hotSpotDebug) {
-        var x = event.clientX / renderer.canvas.width * 2 - 1;
-        var y = (1 - event.clientY / renderer.canvas.height * 2) * renderer.canvas.height / renderer.canvas.width;
+        var canvas = renderer.getCanvas();
+        var x = event.clientX / canvas.width * 2 - 1;
+        var y = (1 - event.clientY / canvas.height * 2) * canvas.height / canvas.width;
         var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
         var s = Math.sin(config.pitch * Math.PI / 180);
         var c = Math.cos(config.pitch * Math.PI / 180);
@@ -505,14 +506,15 @@ function onDocumentMouseDown(event) {
 function onDocumentMouseMove(event) {
     if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
+        var canvas = renderer.getCanvas();
         //TODO: This still isn't quite right
-        var yaw = ((Math.atan(onPointerDownPointerX / renderer.canvas.width * 2 - 1) - Math.atan(event.clientX / renderer.canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
+        var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
         yawSpeed = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
         
-        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * renderer.canvas.height / renderer.canvas.width) * 180 / Math.PI;
+        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
         
-        var pitch = ((Math.atan(event.clientY / renderer.canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / renderer.canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
+        var pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
         pitchSpeed = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
     }
@@ -925,8 +927,9 @@ function render() {
 
 function renderInit() {
     try {
-        renderer.canvas.width = window.innerWidth;
-        renderer.canvas.height = window.innerHeight;
+        var canvas = renderer.getCanvas();
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback);
         
     } catch(event) {
@@ -1083,12 +1086,13 @@ function renderHotSpots() {
             hs.div.style.visibility = 'visible';
             // Subpixel rendering doesn't work in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
-            var transform = 'translate(' + (-renderer.canvas.width /
+            var canvas = renderer.getCanvas();
+            var transform = 'translate(' + (-canvas.width /
                 hfovTan * Math.sin((-hs.yaw + config.yaw) * Math.PI / 180) *
-                hsPitchCos / z / 2 + renderer.canvas.width / 2 - 13) + 'px, ' +
-                (-renderer.canvas.width / hfovTan * (hsPitchSin *
+                hsPitchCos / z / 2 + canvas.width / 2 - 13) + 'px, ' +
+                (-canvas.width / hfovTan * (hsPitchSin *
                 configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
-                renderer.canvas.height / 2 - 13) + 'px) translateZ(1000000000px)';
+                canvas.height / 2 - 13) + 'px) translateZ(1000000000px)';
             hs.div.style.webkitTransform = transform;
             hs.div.style.MozTransform = transform;
             hs.div.style.transform = transform;
@@ -1409,10 +1413,10 @@ function setHfov(i) {
     // Keep field of view within bounds
     if (i < config.minHfov && config.type != 'multires') {
         config.hfov = config.minHfov;
-    } else if (config.type == 'multires' && renderer && i < renderer.canvas.width /
+    } else if (config.type == 'multires' && renderer && i < renderer.getCanvas().width /
         (config.multiRes.cubeResolution / 90 * 0.9)) {
         
-        config.hfov = renderer.canvas.width / (config.multiRes.cubeResolution / 90 * 0.9);
+        config.hfov = renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9);
     } else if (i > config.maxHfov) {
         config.hfov = config.maxHfov;
     } else {
