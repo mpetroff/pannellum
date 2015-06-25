@@ -503,7 +503,7 @@ function Renderer(container, image, imageType, video) {
      */
     this.getCanvas = function() {
         return canvas;
-    }
+    };
     
     /**
      * Sorting method for multires nodes.
@@ -523,7 +523,7 @@ function Renderer(container, image, imageType, video) {
         
         // Higher timestamp first
         return b.timestamp - a.timestamp;
-    };
+    }
     
     /**
      * Sorting method for multires node rendering.
@@ -540,7 +540,7 @@ function Renderer(container, image, imageType, video) {
         
         // Lower distance from center first
         return a.diff - b.diff;
-    };
+    }
     
     /**
      * Draws multires nodes.
@@ -570,7 +570,7 @@ function Renderer(container, image, imageType, video) {
             }
             program.drawInProgress = false;
         }
-    };
+    }
 
     /**
      * Creates new multires node.
@@ -734,7 +734,7 @@ function Renderer(container, image, imageType, video) {
                 }
             }
         }
-    };
+    }
     
     /**
      * Creates cube vertex array.
@@ -749,7 +749,7 @@ function Renderer(container, image, imageType, video) {
                 -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, -1,  1, // Left face
                  1,  1, -1,  1,  1,  1,  1, -1,  1,  1, -1, -1  // Right face
         ];
-    };
+    }
     
     /**
      * Creates 3x3 identity matrix.
@@ -762,7 +762,7 @@ function Renderer(container, image, imageType, video) {
             0, 1, 0,
             0, 0, 1
         ];
-    };
+    }
     
     /**
      * Rotates a 3x3 matrix.
@@ -789,7 +789,7 @@ function Renderer(container, image, imageType, video) {
                 c*m[6] - s*m[8], m[7], c*m[8] + s*m[6]
             ];
         }
-    };
+    }
     
     /**
      * Turns a 3x3 matrix into a 4x4 matrix.
@@ -804,7 +804,7 @@ function Renderer(container, image, imageType, video) {
             m[6], m[7], m[8],    0,
                0,    0,    0,    1
         ];
-    };
+    }
     
     /**
      * Transposes a 4x4 matrix.
@@ -819,7 +819,7 @@ function Renderer(container, image, imageType, video) {
             m[ 2], m[ 6], m[10], m[14],
             m[ 3], m[ 7], m[11], m[15]
         ];
-    };
+    }
     
     /**
      * Creates a perspective matrix.
@@ -839,7 +839,7 @@ function Renderer(container, image, imageType, video) {
                    0,   0,  (zfar+znear)/(znear-zfar), (2*zfar*znear)/(znear-zfar),
                    0,   0, -1,  0
         ];
-    };
+    }
     
     /**
      * Processes a loaded texture image into a WebGL texture.
@@ -855,7 +855,7 @@ function Renderer(container, image, imageType, video) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
-    };
+    }
     
     /**
      * Loads image and creates texture for a multires node / tile.
@@ -874,7 +874,7 @@ function Renderer(container, image, imageType, video) {
             };
             node.image.src = node.path + '.' + image.extension;
         }
-    };
+    }
     
     /**
      * Finds and applies optimal multires zoom level.
@@ -892,7 +892,7 @@ function Renderer(container, image, imageType, video) {
         
         // Apply change
         program.level = newLevel;
-    };
+    }
     
     /**
      * Rotates perspective matrix.
@@ -908,16 +908,16 @@ function Renderer(container, image, imageType, video) {
             p[10]*r[8], p[10]*r[9], p[10]*r[10], p[11],
                  -r[8],      -r[9],      -r[10],     0
         ];
-    };
+    }
     
     /**
-     * Applies rotated perspective matrix to a 3-vector.
+     * Applies rotated perspective matrix to a 3-vector
+     * (last element is inverted).
      * @private
      * @param {number[]} m - Rotated perspective matrix.
      * @param {number[]} v - Input 3-vector.
      * @returns {number[]} Resulting 4-vector.
      */
-    // rotated perspective matrix, vec3 (last element is inverted)
     function applyRotPerspToVec(m, v) {
         return [
                     m[ 0]*v[0] + m[ 1]*v[1] + m[ 2]*v[2],
@@ -925,7 +925,7 @@ function Renderer(container, image, imageType, video) {
             m[11] + m[ 8]*v[0] + m[ 9]*v[1] + m[10]*v[2],
                  1/(m[12]*v[0] + m[13]*v[1] + m[14]*v[2])
         ];
-    };
+    }
     
     /**
      * Checks if a vertex is visible.
@@ -953,7 +953,7 @@ function Renderer(container, image, imageType, video) {
         if ( winZ < -1 || winZ > 1 )
             ret[2] = 1;
         return ret;
-    };
+    }
     
     /**
      * Checks if a square (tile) is visible.
@@ -977,7 +977,7 @@ function Renderer(container, image, imageType, video) {
         return testZ != 4;
         
 
-    };
+    }
 }
 
 // Vertex shader for equirectangular and cube
