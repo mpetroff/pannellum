@@ -482,7 +482,8 @@ function onDocumentMouseDown(event) {
         var root = Math.sqrt(x*x + a*a);
         var pitch = Math.atan((y * c + focal * s) / root) * 180 / Math.PI;
         var yaw = Math.atan2(x / root, a / root) * 180 / Math.PI + config.yaw;
-        console.log('Pitch: ' + pitch + ', Yaw: ' + yaw);
+        console.log('Pitch: ' + pitch + ', Yaw: ' + yaw + ', Center Pitch: ' +
+            config.pitch + ', Center Yaw: ' + config.yaw + ', HFOV: ' + config.hfov);
     }
     
     // Turn off auto-rotation if enabled
