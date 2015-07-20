@@ -21,12 +21,14 @@
  * THE SOFTWARE.
  */
 
+window.pannellum = (function(window, document, undefined) {
+
 'use strict';
+
+function Viewer(container, initialConfig, tourConfig) {
 
 // Declare variables
 var config,
-    tourConfig = {},
-    configFromURL,
     renderer,
     oldRenderer,
     preview,
@@ -166,14 +168,14 @@ var compass = document.createElement('div');
 compass.className = 'pnlm-compass pnlm-controls pnlm-control';
 container.appendChild(compass);
 
-// Display error if opened from local file
-if (window.location.protocol == 'file:') {
-    anError('Due to browser security restrictions, Pannellum can\'t be run ' +
-        'from the local filesystem; some sort of web server must be used.');
+// Load and process configuration
+if (tourConfig.default && tourConfig.default.firstScene) {
+    // Activate first scene if specified
+    mergeConfig(tourConfig.default.firstScene);
 } else {
-    // Process options
-    parseURLParameters();
+    mergeConfig(null);
 }
+processOptions();
 
 // Initialize viewer
 function init() {
@@ -1101,113 +1103,6 @@ function renderHotSpots() {
     });
 }
 
-function parseURLParameters() {
-    var URL = decodeURI(window.location.href).split('?');
-    URL.shift();
-    if (URL.length < 1) {
-        // Display error if no configuration parameters are specified
-        anError('No configuration options were specified.');
-        return;
-    }
-    URL = URL[0].split('&');
-    var json = '{';
-    for (var i = 0; i < URL.length; i++) {
-        var option = URL[i].split('=')[0];
-        var value = URL[i].split('=')[1];
-        json += '"' + option + '":';
-        switch(option) {
-            case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
-            case 'vOffset':
-                json += value;
-                break;
-            case 'autoLoad': case 'ignoreGPanoXMP':
-                json += JSON.parse(value);
-                break;
-            default:
-                json += '"' + decodeURIComponent(value) + '"';
-        }
-        if (i < URL.length - 1) {
-            json += ',';
-        }
-    }
-    json += '}';
-    configFromURL = JSON.parse(json);
-    
-    var request;
-    
-    // Check for JSON configuration file
-    if (configFromURL.config) {
-        // Get JSON configuration file
-        request = new XMLHttpRequest();
-        request.onload = function() {
-            if (request.status != 200) {
-                // Display error if JSON can't be loaded
-                var a = document.createElement('a');
-                a.href = configFromURL.config;
-                a.innerHTML = a.href;
-                anError('The file ' + a.outerHTML + ' could not be accessed.');
-            }
-            
-            var responseMap = JSON.parse(request.responseText);
-            
-            // Set JSON file location
-            responseMap.basePath = configFromURL.config.substring(0,configFromURL.config.lastIndexOf('/')+1);
-            
-            // Merge options
-            for (var key in responseMap) {
-                if (configFromURL.hasOwnProperty(key)) {
-                    continue;
-                }
-                configFromURL[key] = responseMap[key];
-            }
-            
-            mergeConfig(firstScene);
-            processOptions();
-        };
-        request.open('GET', configFromURL.config);
-        request.send();
-        return;
-    }
-    
-    // Check for virtual tour JSON configuration file
-    var firstScene = null;
-    if (configFromURL.tour) {
-        // Get JSON configuration file
-        request = new XMLHttpRequest();
-        request.onload = function() {
-            if (request.status != 200) {
-                // Display error if JSON can't be loaded
-                var a = document.createElement('a');
-                a.href = configFromURL.tour;
-                a.innerHTML = a.href;
-                anError('The file ' + a.outerHTML + ' could not be accessed.');
-            }
-            
-            tourConfig = JSON.parse(request.responseText);
-            
-            // Set JSON file location
-            tourConfig.basePath = configFromURL.tour.substring(0,configFromURL.tour.lastIndexOf('/')+1);
-            
-            // Activate first scene if specified
-            if (tourConfig.default.firstScene) {
-                firstScene = tourConfig.default.firstScene;
-            }
-            if (configFromURL.firstScene) {
-                firstScene = configFromURL.firstScene;
-            }
-            
-            mergeConfig(firstScene);
-            processOptions();
-        };
-        request.open('GET', configFromURL.tour);
-        request.send();
-        return;
-    }
-    
-    mergeConfig(firstScene);
-    processOptions();
-}
-
 function mergeConfig(sceneId) {
     config = {};
     var k;
@@ -1244,10 +1139,10 @@ function mergeConfig(sceneId) {
         config.activeScene = sceneId;
     }
     
-    // Merge URL and config file
-    for (k in configFromURL) {
-        if (configFromURL.hasOwnProperty(k)) {
-            config[k] = configFromURL[k];
+    // Merge initial config
+    for (k in initialConfig) {
+        if (initialConfig.hasOwnProperty(k)) {
+            config[k] = initialConfig[k];
             if (photoSphereExcludes.indexOf(k) >= 0) {
                 config.ignoreGPanoXMP = true;
             }
@@ -1484,3 +1379,16 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     }
     load();
 }
+
+}
+
+return {
+    viewer: function(container, config, tourConfig) {
+        if (tourConfig === undefined) {
+            tourConfig = {};
+        }
+        return new Viewer(container, config, tourConfig);
+    }
+};
+
+})(window, document);
