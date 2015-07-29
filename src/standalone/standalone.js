@@ -1,22 +1,3 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-  <title>pannellum</title>
-  <meta charset="utf-8">
-  <link type="text/css" rel="Stylesheet" href="css/pannellum.css"/>
-</head>
-<body>
-<div id="container">
-  <noscript>
-    <div class="pnlm-info-box">
-      <p>Javascript is required to view this panorama.<br>(It could be worse; you could need a plugin.)</p>
-    </div>
-  </noscript>
-</div>
-<script type="text/javascript" src="js/libpannellum.js"></script>
-<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>
-<script type="text/javascript" src="js/pannellum.js"></script>
-<script>
 function anError(error) {
     var errorMsg = document.createElement('div');
     errorMsg.className = 'pnlm-info-box';
@@ -107,6 +88,3 @@ if (window.location.protocol == 'file:') {
     // Initialize viewer
     parseURLParameters();
 }
-</script>
-</body>
-</html>

@@ -9,7 +9,8 @@ import urllib.parse
 JS = [
 'js/libpannellum.js',
 'js/RequestAnimationFrame.js',
-'js/pannellum.js'
+'js/pannellum.js',
+'standalone/standalone.js'
 ]
 
 CSS = [
@@ -17,7 +18,7 @@ CSS = [
 ]
 
 HTML = [
-'pannellum.htm'
+'standalone/pannellum.htm'
 ]
 
 def merge(files):
@@ -112,10 +113,11 @@ def build(files, css, html, filename, release=False):
     print('=' * 40)
     
     html = merge(html)
-    html = html.replace('<link type="text/css" rel="Stylesheet" href="css/pannellum.css"/>','<style type="text/css">' + css + '</style>')
-    html = html.replace('<script type="text/javascript" src="js/libpannellum.js"></script>','')
-    html = html.replace('<script type="text/javascript" src="js/RequestAnimationFrame.js"></script>','')
-    html = html.replace('<script type="text/javascript" src="js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
+    html = html.replace('<link type="text/css" rel="Stylesheet" href="../css/pannellum.css"/>','<style type="text/css">' + css + '</style>')
+    html = html.replace('<script type="text/javascript" src="../js/libpannellum.js"></script>','')
+    html = html.replace('<script type="text/javascript" src="../js/RequestAnimationFrame.js"></script>','')
+    html = html.replace('<script type="text/javascript" src="../js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
+    html = html.replace('<script type="text/javascript" src="standalone.js"></script>','')
     html = htmlCompress(html)
     
     output(addHeader(html), folder + htmlfilename)
