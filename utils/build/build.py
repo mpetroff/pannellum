@@ -72,9 +72,17 @@ def htmlCompress(text):
     os.unlink(out_tuple[1])
     return compressed
 
-def addHeader(text):
+def addHeaderHTML(text):
     text = text.replace('<!DOCTYPE HTML>','');
     header = '<!DOCTYPE HTML>\n<!-- Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum -->\n'
+    return header + text
+
+def addHeaderCSS(text):
+    header = '/* Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum */\n'
+    return header + text
+
+def addHeaderJS(text):
+    header = '// Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum\n'
     return header + text
 
 def build(files, css, html, filename, release=False):
@@ -120,7 +128,9 @@ def build(files, css, html, filename, release=False):
     html = html.replace('<script type="text/javascript" src="standalone.js"></script>','')
     html = htmlCompress(html)
     
-    output(addHeader(html), folder + htmlfilename)
+    output(addHeaderHTML(html), folder + htmlfilename)
+    output(addHeaderCSS(css), folder + cssfilename)
+    output(addHeaderJS(js), folder + filename)
 
 def main():
     if (len(sys.argv) > 1 and sys.argv[1] == 'release'):
