@@ -59,6 +59,9 @@ function parseURLParameters() {
     var request;
 
     // Check for JSON configuration file
+    if (configFromURL.tour) {
+        configFromURL.config = configFromURL.tour;
+    }
     if (configFromURL.config) {
         // Get JSON configuration file
         request = new XMLHttpRequest();
@@ -88,40 +91,6 @@ function parseURLParameters() {
             pannellum.viewer(document.getElementById('container'), configFromURL);
         };
         request.open('GET', configFromURL.config);
-        request.send();
-        return;
-    }
-
-    var firstScene = null;
-    // Check for virtual tour JSON configuration file
-    if (configFromURL.tour) {
-        // Get JSON configuration file
-        request = new XMLHttpRequest();
-        request.onload = function() {
-            if (request.status != 200) {
-                // Display error if JSON can't be loaded
-                var a = document.createElement('a');
-                a.href = configFromURL.tour;
-                a.innerHTML = a.href;
-                anError('The file ' + a.outerHTML + ' could not be accessed.');
-            }
-
-            tourConfig = JSON.parse(request.responseText);
-
-            // Set JSON file location
-            tourConfig.basePath = configFromURL.tour.substring(0, configFromURL.tour.lastIndexOf('/')+1);
-
-            if (configFromURL.firstScene) {
-                if (tourConfig.default === undefined) {
-                    tourConfig.default = {};
-                }
-                tourConfig.default.firstScene = configFromURL.firstScene;
-            }
-
-            // Create viewer
-            pannellum.viewer(document.getElementById('container'), configFromURL, tourConfig);
-        };
-        request.open('GET', configFromURL.tour);
         request.send();
         return;
     }

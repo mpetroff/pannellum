@@ -3,17 +3,12 @@
 URL parameters are used to configure Pannellum. If an `equirectangular` image
 is being used without some of Pannellum's more advanced features, Pannellum can
 be configured with just URL parameters; else, a JSON configuration file needs
-to be used, using either the `config` parameter or `tour` parameter.
+to be used with the `config`.
 
 
 ## `config`
 
 Specifies the URL of a JSON configuration file.
-
-
-## `tour`
-
-Specifies the URL of a JSON tour configuration file.
 
 
 ## Other parameters

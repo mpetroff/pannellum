@@ -25,7 +25,7 @@ window.pannellum = (function(window, document, undefined) {
 
 'use strict';
 
-function Viewer(container, initialConfig, tourConfig) {
+function Viewer(container, initialConfig) {
 
 // Declare variables
 var config,
@@ -169,9 +169,9 @@ compass.className = 'pnlm-compass pnlm-controls pnlm-control';
 container.appendChild(compass);
 
 // Load and process configuration
-if (tourConfig.default && tourConfig.default.firstScene) {
+if (initialConfig.default && initialConfig.default.firstScene) {
     // Activate first scene if specified
-    mergeConfig(tourConfig.default.firstScene);
+    mergeConfig(initialConfig.default.firstScene);
 } else {
     mergeConfig(null);
 }
@@ -204,10 +204,6 @@ function init() {
             c.basePath = config.basePath + config.multiRes.basePath;
         } else if (config.basePath) {
             c.basePath = config.basePath;
-        } else if (tourConfig.basePath && config.multiRes.basePath) { // avoid 'undefined' in path, check (optional) multiRes.basePath, too
-            c.basePath = tourConfig.basePath + config.multiRes.basePath;
-        } else if (tourConfig.basePath) {
-            c.basePath = tourConfig.basePath;
         }
         panoImage = c;
     } else {
@@ -281,8 +277,6 @@ function init() {
             p = config.cubeMap[i];
             if (config.basePath && !absoluteURL(p)) {
                 p = config.basePath + p;
-            } else if (tourConfig.basePath && !absoluteURL(p)) {
-                p = tourConfig.basePath + p;
             }
             panoImage[i].src = p;
         }
@@ -292,8 +286,6 @@ function init() {
         p = '';
         if (config.basePath) {
             p = config.basePath;
-        } else if (tourConfig.basePath) {
-            p = tourConfig.basePath;
         }
         
         if (config.video === true) {
@@ -1116,9 +1108,9 @@ function mergeConfig(sceneId) {
     }
     
     // Merge default scene config
-    for (k in tourConfig.default) {
-        if (tourConfig.default.hasOwnProperty(k)) {
-            config[k] = tourConfig.default[k];
+    for (k in initialConfig.default) {
+        if (initialConfig.default.hasOwnProperty(k)) {
+            config[k] = initialConfig.default[k];
             if (photoSphereExcludes.indexOf(k) >= 0) {
                 config.ignoreGPanoXMP = true;
             }
@@ -1126,8 +1118,8 @@ function mergeConfig(sceneId) {
     }
     
     // Merge current scene config
-    if ((sceneId !== null) && (sceneId !== '') && (tourConfig.scenes) && (tourConfig.scenes[sceneId])) {
-        var scene = tourConfig.scenes[sceneId];
+    if ((sceneId !== null) && (sceneId !== '') && (initialConfig.scenes) && (initialConfig.scenes[sceneId])) {
+        var scene = initialConfig.scenes[sceneId];
         for (k in scene) {
             if (scene.hasOwnProperty(k)) {
                 config[k] = scene[k];
@@ -1158,8 +1150,6 @@ function processOptions() {
         var p = config.preview;
         if (config.basePath) {
             p = config.basePath + p;
-        } else if (tourConfig.basePath) {
-            p = tourConfig.basePath + p;
         }
         
         preview = new Image();
@@ -1358,7 +1348,7 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     if (targetYaw === 'same') {
         workingYaw = config.yaw;
     } else if (targetYaw === 'sameAzimuth') {
-        workingYaw = config.yaw + config.northOffset - tourConfig.scenes[sceneId].northOffset;
+        workingYaw = config.yaw + config.northOffset - initialConfig.scenes[sceneId].northOffset;
     } else {
         workingYaw = targetYaw;
     }
@@ -1383,11 +1373,8 @@ function loadScene(sceneId, targetPitch, targetYaw) {
 }
 
 return {
-    viewer: function(container, config, tourConfig) {
-        if (tourConfig === undefined) {
-            tourConfig = {};
-        }
-        return new Viewer(container, config, tourConfig);
+    viewer: function(container, config) {
+        return new Viewer(container, config);
     }
 };
 
