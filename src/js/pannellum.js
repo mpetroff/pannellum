@@ -25,6 +25,12 @@ window.pannellum = (function(window, document, undefined) {
 
 'use strict';
 
+/**
+ * Creates a new panorama viewer.
+ * @constructor
+ * @param {HTMLElement} container - The container element for the viewer.
+ * @param {Object} initialConfig - Inital configuration for viewer.
+ */
 function Viewer(container, initialConfig) {
 
 // Declare variables
@@ -83,7 +89,7 @@ var aboutMsg = document.createElement('span');
 aboutMsg.className = 'pnlm-about-msg';
 aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
 container.appendChild(aboutMsg);
-document.addEventListener('contextmenu', onRightClick);
+document.addEventListener('contextmenu', aboutMessage);
 
 
 // Create container for renderer
@@ -177,7 +183,10 @@ if (initialConfig.default && initialConfig.default.firstScene) {
 }
 processOptions();
 
-// Initialize viewer
+/**
+ * Initializes viewer.
+ * @private
+ */
 function init() {
     // Display an error for IE 9 as it doesn't work but also doesn't otherwise
     // show an error (older versions don't work at all)
@@ -365,8 +374,12 @@ function init() {
     container.classList.remove('pnlm-grabbing');
 }
 
-// Parse Google Photo Sphere XMP Metadata
-// https://developers.google.com/photo-sphere/metadata/
+/**
+ * Parses Google Photo Sphere XMP Metadata.
+ * https://developers.google.com/photo-sphere/metadata/
+ * @private
+ * @param {Image} image - Image to read XMP metadata from.
+ */
 function parseGPanoXMP(image) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
@@ -422,6 +435,12 @@ function parseGPanoXMP(image) {
     reader.readAsText(image);
 }
 
+/**
+ * Displays an error message.
+ * @private
+ * @param {string} error - Error message to display. If not specified, a
+ *  generic WebGL error is displayed.
+ */
 function anError(error) {
     if (error !== undefined) {
         infoDisplay.errorMsg.innerHTML = '<p>' + error + '</p>';
@@ -435,24 +454,38 @@ function anError(error) {
     renderContainer.style.display = 'none';
 }
 
+/**
+ * Hides error message display.
+ * @private
+ */
 function clearError() {
     infoDisplay.load.box.style.display = 'none';
     infoDisplay.errorMsg.style.display = 'none';
     error = false;
 }
 
-function onRightClick(event) {
+/**
+ * Displays about message.
+ * @private
+ */
+function aboutMessage(event) {
     aboutMsg.style.left = event.clientX + 'px';
     aboutMsg.style.top = event.clientY + 'px';
-    clearTimeout(onRightClick.t1);
-    clearTimeout(onRightClick.t2);
+    clearTimeout(aboutMessage.t1);
+    clearTimeout(aboutMessage.t2);
     aboutMsg.style.display = 'block';
     aboutMsg.style.opacity = 1;
-    onRightClick.t1 = setTimeout(function() {aboutMsg.style.opacity = 0;}, 2000);
-    onRightClick.t2 = setTimeout(function() {aboutMsg.style.display = 'none';}, 2500);
+    aboutMessage.t1 = setTimeout(function() {aboutMsg.style.opacity = 0;}, 2000);
+    aboutMessage.t2 = setTimeout(function() {aboutMsg.style.display = 'none';}, 2500);
     event.preventDefault();
 }
 
+/**
+ * Event handler for mouse clicks. Initializes panning. Prints center and click
+ * location coordinates when hot spot debugging is enabled.
+ * @private
+ * @param {MouseEvent} event - Document mouse down event.
+ */
 function onDocumentMouseDown(event) {
     // Override default action
     event.preventDefault();
@@ -498,6 +531,11 @@ function onDocumentMouseDown(event) {
     animateInit();
 }
 
+/**
+ * Event handler for mouse moves. Pans center of view.
+ * @private
+ * @param {MouseEvent} event - Document mouse move event.
+ */
 function onDocumentMouseMove(event) {
     if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
@@ -515,6 +553,10 @@ function onDocumentMouseMove(event) {
     }
 }
 
+/**
+ * Event handler for mouse up events. Stops panning.
+ * @private
+ */
 function onDocumentMouseUp() {
     if (!isUserInteracting) {
         return;
@@ -529,6 +571,12 @@ function onDocumentMouseUp() {
     container.classList.remove('pnlm-grabbing');
 }
 
+/**
+ * Event handler for touches. Initializes panning if one touch or zooming if
+ * two touches.
+ * @private
+ * @param {TouchEvent} event - Document touch start event.
+ */
 function onDocumentTouchStart(event) {
     // Only do something if the panorama is loaded
     if (!loaded) {
@@ -555,6 +603,12 @@ function onDocumentTouchStart(event) {
     animateInit();
 }
 
+/**
+ * Event handler for touch movements. Pans center of view if one touch or
+ * adjusts zoom if two touches.
+ * @private
+ * @param {TouchEvent} event - Document touch move event.
+ */
 function onDocumentTouchMove(event) {
     // Override default action
     event.preventDefault();
@@ -585,6 +639,10 @@ function onDocumentTouchMove(event) {
     }
 }
 
+/**
+ * Event handler for end of touches. Stops panning and/or zooming.
+ * @private
+ */
 function onDocumentTouchEnd() {
     isUserInteracting = false;
     if (Date.now() - latestInteraction > 150) {
@@ -593,6 +651,11 @@ function onDocumentTouchEnd() {
     onPointerDownPointerDist = -1;
 }
 
+/**
+ * Event handler for mouse wheel. Changes zoom.
+ * @private
+ * @param {WheelEvent} event - Document mouse wheel event.
+ */
 function onDocumentMouseWheel(event) {
     event.preventDefault();
     
@@ -619,6 +682,11 @@ function onDocumentMouseWheel(event) {
     animateInit();
 }
 
+/**
+ * Event handler for key presses. Updates list of currently pressed keys.
+ * @private
+ * @param {KeyboardEvent} event - Document key press event.
+ */
 function onDocumentKeyPress(event) {
     // Override default action
     event.preventDefault();
@@ -644,12 +712,21 @@ function onDocumentKeyPress(event) {
     }
 }
 
+/**
+ * Clears list of currently pressed keys.
+ * @private
+ */
 function clearKeys() {
     for (var i = 0; i < 10; i++) {
         keysDown[i] = false;
     }
 }
 
+/**
+ * Event handler for key releases. Updates list of currently pressed keys.
+ * @private
+ * @param {KeyboardEvent} event - Document key up event.
+ */
 function onDocumentKeyUp(event) {
     // Override default action
     event.preventDefault();
@@ -664,6 +741,12 @@ function onDocumentKeyUp(event) {
     changeKey(keynumber, false);
 }
 
+/**
+ * Updates list of currently pressed keys.
+ * @private
+ * @param {number} keynumber - Key number.
+ * @param {boolean} value - Whether or not key is pressed.
+ */
 function changeKey(keynumber, value) {
     var keyChanged = false;
     switch(keynumber) {
@@ -728,6 +811,11 @@ function changeKey(keynumber, value) {
     }
 }
 
+/**
+ * Pans and/or zooms panorama based on currently pressed keys. Also handles
+ * panorama "inertia" and auto rotation.
+ * @private
+ */
 function keyRepeat() {
     // Only do something if the panorama is loaded
     if (!loaded) {
@@ -846,6 +934,10 @@ function keyRepeat() {
     }
 }
 
+/**
+ * Event handler for document resizes. Updates viewer size and rerenders view.
+ * @private
+ */
 function onDocumentResize() {
     // Resize panorama renderer
     renderer.resize();
@@ -855,6 +947,10 @@ function onDocumentResize() {
     onFullScreenChange();
 }
 
+/**
+ * Initializes animation.
+ * @private
+ */
 function animateInit() {
     if (animating) {
         return;
@@ -863,6 +959,10 @@ function animateInit() {
     animate();
 }
 
+/**
+ * Animates view, using requestAnimationFrame to trigger rendering.
+ * @private
+ */
 function animate() {
     render();
     if (isUserInteracting) {
@@ -883,6 +983,10 @@ function animate() {
     }
 }
 
+/**
+ * Renders panorama view.
+ * @private
+ */
 function render() {
     var tmpyaw;
 
@@ -920,6 +1024,10 @@ function render() {
     }
 }
 
+/**
+ * Initializes renderer.
+ * @private
+ */
 function renderInit() {
     try {
         var canvas = renderer.getCanvas();
@@ -942,6 +1050,12 @@ function renderInit() {
     }
 }
 
+/**
+ * Triggered when render initialization finishes. Handles fading between
+ * scenes as well as showing the compass and hotspots and hiding the loading
+ * display.
+ * @private
+ */
 function renderInitCallback() {
     if (oldRenderer !== undefined) {
         oldRenderer.destroy();
@@ -979,6 +1093,10 @@ function renderInitCallback() {
     animateInit();
 }
 
+/**
+ * Creates hot spot elements for the current scene.
+ * @private
+ */
 function createHotSpots() {
     if (hotspotsCreated) return;
     
@@ -1050,6 +1168,10 @@ function createHotSpots() {
     renderHotSpots();
 }
 
+/**
+ * Destroys currently create hot spot elements.
+ * @private
+ */
 function destroyHotSpots() {
     if (config.hotSpots) {
         for (var i = 0; i < config.hotSpots.length; i++) {
@@ -1065,6 +1187,10 @@ function destroyHotSpots() {
     delete config.hotSpots;
 }
 
+/**
+ * Renders hot spots, updating their positions and visibility.
+ * @private
+ */
 function renderHotSpots() {
     config.hotSpots.forEach(function(hs) {
         var hsPitchSin = Math.sin(hs.pitch * Math.PI / 180);
@@ -1095,6 +1221,11 @@ function renderHotSpots() {
     });
 }
 
+/**
+ * Merges a scene configuration into the current configuration.
+ * @private
+ * @param {string} sceneId - Identifier of scene configuration to merge in.
+ */
 function mergeConfig(sceneId) {
     config = {};
     var k;
@@ -1142,6 +1273,10 @@ function mergeConfig(sceneId) {
     }
 }
 
+/**
+ * Processes configuration options.
+ * @private
+ */
 function processOptions() {
     // Process preview first so it always loads before the browser hits its
     // maximum number of connections to a server as can happen with cubic
@@ -1243,6 +1378,10 @@ function processOptions() {
     }
 }
 
+/**
+ * Toggles fullscreen mode.
+ * @private
+ */
 function toggleFullscreen() {
     if (loaded && !error) {
         if (!fullscreenActive) {
@@ -1273,6 +1412,10 @@ function toggleFullscreen() {
     }
 }
 
+/**
+ * Event handler for fullscreen changes.
+ * @private
+ */
 function onFullScreenChange() {
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
         controls.fullscreen.classList.add('pnlm-fullscreen-toggle-button-active');
@@ -1283,33 +1426,50 @@ function onFullScreenChange() {
     }
 }
 
+/**
+ * Increases panorama zoom. For use with zoom button.
+ * @private
+ */
 function zoomIn() {
     if (loaded) {
         setHfov(config.hfov -= 5);
     }
 }
 
+/**
+ * Decreases panorama zoom. For use with zoom button.
+ * @private
+ */
 function zoomOut() {
     if (loaded) {
         setHfov(config.hfov += 5);
     }
 }
 
-function setHfov(i) {
+/**
+ * Sets viewer's horizontal field of view.
+ * @private
+ * @param {number} hfov - Identifier of scene configuration to merge in.
+ */
+function setHfov(hfov) {
     // Keep field of view within bounds
-    if (i < config.minHfov && config.type != 'multires') {
+    if (hfov < config.minHfov && config.type != 'multires') {
         config.hfov = config.minHfov;
-    } else if (config.type == 'multires' && renderer && i < renderer.getCanvas().width /
+    } else if (config.type == 'multires' && renderer && hfov < renderer.getCanvas().width /
         (config.multiRes.cubeResolution / 90 * 0.9)) {
         
         config.hfov = renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9);
-    } else if (i > config.maxHfov) {
+    } else if (hfov > config.maxHfov) {
         config.hfov = config.maxHfov;
     } else {
-        config.hfov = i;
+        config.hfov = hfov;
     }
 }
 
+/**
+ * Loads panorama.
+ * @private
+ */
 function load() {
     // Since WebGL error handling is very general, first we clear any error box
     // since it is a new scene and the error from previous maybe because of lacking
@@ -1321,6 +1481,15 @@ function load() {
     init();
 }
 
+/**
+ * Loads scene.
+ * @private
+ * @param {string} sceneId - Identifier of scene configuration to merge in.
+ * @param {number} targetPitch - Pitch viewer should be centered on once scene
+ *  loads.
+ * @param {number} targetYaw - Yaw viewer should be centered on once scene
+ *  loads.
+ */
 function loadScene(sceneId, targetPitch, targetYaw) {
     loaded = false;
     oldRenderer = renderer;
