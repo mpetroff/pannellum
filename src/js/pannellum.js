@@ -28,7 +28,8 @@ window.pannellum = (function(window, document, undefined) {
 /**
  * Creates a new panorama viewer.
  * @constructor
- * @param {HTMLElement} container - The container element for the viewer.
+ * @param {HTMLElement|string} container - The container (div) element for the
+ *      viewer, or its ID.
  * @param {Object} initialConfig - Inital configuration for viewer.
  */
 function Viewer(container, initialConfig) {
@@ -82,6 +83,8 @@ var defaultConfig = {
     keyboardZoom: true
 };
 
+// Initialize container
+container = typeof container === 'string' ? document.getElementById(container) : container;
 container.className += ' pnlm-container';
 
 // Display about information on right click

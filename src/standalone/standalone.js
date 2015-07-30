@@ -69,7 +69,7 @@ function parseURLParameters() {
             }
 
             // Create viewer
-            pannellum.viewer(document.getElementById('container'), configFromURL);
+            pannellum.viewer('container', configFromURL);
         };
         request.open('GET', configFromURL.config);
         request.send();
@@ -77,7 +77,7 @@ function parseURLParameters() {
     }
 
     // Create viewer
-    pannellum.viewer(document.getElementById('container'), configFromURL);
+    pannellum.viewer('container', configFromURL);
 }
 
 // Display error if opened from local file
