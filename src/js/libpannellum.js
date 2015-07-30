@@ -29,10 +29,10 @@ window.libpannellum = (function(window, document, undefined) {
  * Creates a new panorama renderer.
  * @constructor
  * @param {HTMLElement} container - The container element for the renderer.
- * @param image - Input image; format varies based on `imageType`. For
- *      `equirectangular`, this is an image; for `cubemap`, this is an array of
- *      images for the cube faces in the order [+z, +x, -z, -x, +y, -y]; for
- *      `multires`, this is a configuration object.
+ * @param {Image|Array|Object} image - Input image; format varies based on
+ *      `imageType`. For `equirectangular`, this is an image; for `cubemap`,
+ *      this is an array of images for the cube faces in the order [+z, +x, -z,
+ *      -x, +y, -y]; for `multires`, this is a configuration object.
  * @param {string} imageType - The type of the image: `equirectangular`,
  *      `cubemap`, or `multires`.
  * @param {boolean} video - Whether or not the image is a video.

@@ -442,7 +442,7 @@ function parseGPanoXMP(image) {
  * Displays an error message.
  * @private
  * @param {string} error - Error message to display. If not specified, a
- *  generic WebGL error is displayed.
+ *      generic WebGL error is displayed.
  */
 function anError(error) {
     if (error !== undefined) {
@@ -1488,10 +1488,8 @@ function load() {
  * Loads scene.
  * @private
  * @param {string} sceneId - Identifier of scene configuration to merge in.
- * @param {number} targetPitch - Pitch viewer should be centered on once scene
- *  loads.
- * @param {number} targetYaw - Yaw viewer should be centered on once scene
- *  loads.
+ * @param {number} targetPitch - Pitch viewer should be centered on once scene loads.
+ * @param {number} targetYaw - Yaw viewer should be centered on once scene loads.
  */
 function loadScene(sceneId, targetPitch, targetYaw) {
     loaded = false;
