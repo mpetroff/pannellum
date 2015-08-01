@@ -1452,7 +1452,7 @@ function zoomOut() {
 /**
  * Sets viewer's horizontal field of view.
  * @private
- * @param {number} hfov - Identifier of scene configuration to merge in.
+ * @param {number} hfov - Desired horizontal field of view in degrees.
  */
 function setHfov(hfov) {
     // Keep field of view within bounds
@@ -1538,6 +1538,158 @@ function loadScene(sceneId, targetPitch, targetYaw) {
         config.yaw = workingYaw;
     }
     load();
+}
+
+/**
+ * Returns the pitch of the center of the view.
+ * @memberof Viewer
+ * @instance
+ * @returns {number} Pitch in degrees
+ */
+this.getPitch = function() {
+    return config.pitch;
+}
+
+/**
+ * Sets the pitch of the center of the view.
+ * @memberof Viewer
+ * @instance
+ * @param {number} pitch - Pitch in degrees
+ * @returns {Viewer} `this`
+ */
+this.setPitch = function(pitch) {
+    config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, pitch));
+    return this;
+}
+
+/**
+ * Returns the minimum and maximum allowed pitches (in degrees).
+ * @memberof Viewer
+ * @instance
+ * @returns {number[]} [minimum pitch, maximum pitch]
+ */
+this.getPitchBounds = function() {
+    return [config.minPitch, config.maxPitch];
+}
+
+/**
+ * Set the minimum and maximum allowed pitches (in degrees).
+ * @memberof Viewer
+ * @instance
+ * @param {number[]} bounds - [minimum pitch, maximum pitch]
+ * @returns {Viewer} `this`
+ */
+this.setPitchBounds = function(bounds) {
+    config.minPitch = Math.max(-90, Math.min(bounds[0], 90));
+    config.maxPitch = Math.max(-90, Math.min(bounds[1], 90));
+    return this;
+}
+
+/**
+ * Returns the yaw of the center of the view.
+ * @memberof Viewer
+ * @instance
+ * @returns {number} Yaw in degrees
+ */
+this.getYaw = function() {
+    return config.yaw;
+}
+
+/**
+ * Sets the yaw of the center of the view.
+ * @memberof Viewer
+ * @instance
+ * @param {number} yaw - Yaw in degrees
+ * @returns {Viewer} `this`
+ */
+this.setYaw = function(yaw) {
+    while (yaw > 180) {
+        yaw -= 360;
+    }
+    while (yaw < -180) {
+        yaw += 360;
+    }
+    config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, yaw));
+    return this;
+}
+
+/**
+ * Returns the minimum and maximum allowed pitches (in degrees).
+ * @memberof Viewer
+ * @instance
+ * @returns {number[]} [yaw pitch, maximum yaw]
+ */
+this.getYawBounds = function() {
+    return [config.minYaw, config.maxYaw];
+}
+
+/**
+ * Set the minimum and maximum allowed yaws (in degrees).
+ * @memberof Viewer
+ * @instance
+ * @param {number[]} bounds - [minimum yaw, maximum yaw]
+ * @returns {Viewer} `this`
+ */
+this.setYawBounds = function(bounds) {
+    config.minYaw = Math.max(-360, Math.min(bounds[0], 360));
+    config.maxYaw = Math.max(-360, Math.min(bounds[1], 360));
+    return this;
+}
+
+/**
+ * Returns the horizontal field of view.
+ * @memberof Viewer
+ * @instance
+ * @returns {number} Horizontal field of view in degrees
+ */
+this.getHfov = function() {
+    return config.hfov;
+}
+
+/**
+ * Sets the horizontal field of view.
+ * @memberof Viewer
+ * @instance
+ * @param {number} hfov - Horizontal field of view in degrees
+ * @returns {Viewer} `this`
+ */
+this.setHfov = function(hfov) {
+    setHfov(hfov);
+    return this;
+}
+
+/**
+ * Returns the minimum and maximum allowed horizontal fields of view
+ * (in degrees).
+ * @memberof Viewer
+ * @instance
+ * @returns {number[]} [minimum hfov, maximum hfov]
+ */
+this.getHfovBounds = function() {
+    return [config.minHfov, config.maxHfov];
+}
+
+/**
+ * Set the minimum and maximum allowed horizontal fields of view (in degrees).
+ * @memberof Viewer
+ * @instance
+ * @param {number[]} bounds - [minimum hfov, maximum hfov]
+ * @returns {Viewer} `this`
+ */
+this.setHfovBounds = function(bounds) {
+    config.minHfov = Math.max(0, bounds[0]);
+    config.maxHfov = Math.max(0, bounds[1]);
+    return this;
+}
+
+/**
+ * Returns the panorama renderer.
+ * @memberof Viewer
+ * @instance
+ * @returns {Renderer}
+ */
+this.getRenderer = function() {
+    return renderer;
 }
 
 }
