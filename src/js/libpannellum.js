@@ -53,6 +53,8 @@ function Renderer(container, image, imageType, video) {
 
     /**
      * Initialize renderer.
+     * @memberof Renderer
+     * @instance
      * @param {number} haov - Initial horizontal angle of view.
      * @param {number} vaov - Initial vertical angle of view.
      * @param {number} voffset - Initial vertical offset angle.
@@ -348,6 +350,8 @@ function Renderer(container, image, imageType, video) {
 
     /**
      * Destroy renderer.
+     * @memberof Renderer
+     * @instance
      */
     this.destroy = function() {
         if (container !== undefined) {
@@ -362,6 +366,8 @@ function Renderer(container, image, imageType, video) {
 
     /**
      * Resize renderer (call after resizing container).
+     * @memberof Renderer
+     * @instance
      */
     this.resize = function() {
         canvas.width = container.offsetWidth;
@@ -376,6 +382,8 @@ function Renderer(container, image, imageType, video) {
 
     /**
      * Render new view of panorama.
+     * @memberof Renderer
+     * @instance
      * @param {number} pitch - Pitch to render at.
      * @param {number} yaw - Yaw to render at.
      * @param {number} hfov - Horizontal field of view to render with.
@@ -484,7 +492,9 @@ function Renderer(container, image, imageType, video) {
     
     /**
      * Check if images are loading.
-     * @returns {number} Whether or not images are loading.
+     * @memberof Renderer
+     * @instance
+     * @returns {boolean} Whether or not images are loading.
      */
     this.isLoading = function() {
         if (gl && imageType == 'multires') {
@@ -499,6 +509,8 @@ function Renderer(container, image, imageType, video) {
     
     /**
      * Retrieve renderer's canvas.
+     * @memberof Renderer
+     * @instance
      * @returns {HTMLElement} Renderer's canvas.
      */
     this.getCanvas = function() {
