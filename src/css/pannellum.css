@@ -1,8 +1,4 @@
-html {
-    height: 100%;
-}
-
-body {
+.pnlm-container {
     margin: 0;
     padding: 0;
     overflow: hidden;

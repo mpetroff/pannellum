@@ -1034,8 +1034,8 @@ function render() {
 function renderInit() {
     try {
         var canvas = renderer.getCanvas();
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
         renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback);
         
     } catch(event) {
