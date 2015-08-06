@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    position: fixed;
+    position: relative;
     cursor: default;
     width: 100%;
     height: 100%;
