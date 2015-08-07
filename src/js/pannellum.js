@@ -39,7 +39,6 @@ var config,
     renderer,
     oldRenderer,
     preview,
-    container = document.getElementById('container'),
     isUserInteracting = false,
     latestInteraction = Date.now(),
     onPointerDownPointerX = 0,
@@ -235,24 +234,24 @@ function init() {
         // Only add event listeners once
         if (!listenersAdded) {
             listenersAdded = true;
-            document.addEventListener('mousedown', onDocumentMouseDown, false);
-            document.addEventListener('mousemove', onDocumentMouseMove, false);
-            document.addEventListener('mouseup', onDocumentMouseUp, false);
-            document.addEventListener('mousewheel', onDocumentMouseWheel, false);
-            document.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
-            document.addEventListener('onresize', onDocumentResize, false);
-            document.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-            document.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-            document.addEventListener('msfullscreenchange', onFullScreenChange, false);
-            document.addEventListener('fullscreenchange', onFullScreenChange, false);
+            container.addEventListener('mousedown', onDocumentMouseDown, false);
+            container.addEventListener('mousemove', onDocumentMouseMove, false);
+            container.addEventListener('mouseup', onDocumentMouseUp, false);
+            container.addEventListener('mousewheel', onDocumentMouseWheel, false);
+            container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            container.addEventListener('onresize', onDocumentResize, false);
+            container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+            container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+            container.addEventListener('msfullscreenchange', onFullScreenChange, false);
+            container.addEventListener('fullscreenchange', onFullScreenChange, false);
             window.addEventListener('resize', onDocumentResize, false);
-            document.addEventListener('keydown', onDocumentKeyPress, false);
-            document.addEventListener('keyup', onDocumentKeyUp, false);
+            container.addEventListener('keydown', onDocumentKeyPress, false);
+            container.addEventListener('keyup', onDocumentKeyUp, false);
             window.addEventListener('blur', clearKeys, false);
-            document.addEventListener('mouseout', onDocumentMouseUp, false);
-            document.addEventListener('touchstart', onDocumentTouchStart, false);
-            document.addEventListener('touchmove', onDocumentTouchMove, false);
-            document.addEventListener('touchend', onDocumentTouchEnd, false);
+            container.addEventListener('mouseout', onDocumentMouseUp, false);
+            container.addEventListener('touchstart', onDocumentTouchStart, false);
+            container.addEventListener('touchmove', onDocumentTouchMove, false);
+            container.addEventListener('touchend', onDocumentTouchEnd, false);
         }
         
         renderInit();
@@ -1034,8 +1033,8 @@ function render() {
 function renderInit() {
     try {
         var canvas = renderer.getCanvas();
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
         renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback);
         
     } catch(event) {

@@ -14,7 +14,8 @@ JS = [
 ]
 
 CSS = [
-'css/pannellum.css'
+'css/pannellum.css',
+'standalone/standalone.css'
 ]
 
 HTML = [
