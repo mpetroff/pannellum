@@ -10,12 +10,10 @@ JS = [
 'js/libpannellum.js',
 'js/RequestAnimationFrame.js',
 'js/pannellum.js',
-'standalone/standalone.js'
 ]
 
 CSS = [
 'css/pannellum.css',
-'standalone/standalone.css'
 ]
 
 HTML = [
@@ -103,6 +101,9 @@ def build(files, css, html, filename, release=False):
         js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + read('../VERSION'))
     else:
         js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip())
+    with open('../../src/standalone/standalone.js', 'r') as f:
+        standalone_js = f.read()
+    standalone_js = JScompress(js + standalone_js)
     js = JScompress(js)
     
     print('=' * 40)
@@ -112,6 +113,12 @@ def build(files, css, html, filename, release=False):
     css = merge(css)
     css = css.replace("'img/grab.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grab.svg'),'') + "'")
     css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grabbing.svg'),'') + "'")
+    with open('../../src/standalone/standalone.css', 'r') as f:
+        standalone_css = f.read()
+    standalone_css = cssCompress(css + standalone_css)
+    standalone_css = standalone_css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
+    standalone_css = standalone_css.replace("'img/background.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
+    standalone_css = standalone_css.replace("'img/compass.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/compass.svg'),'') + "'")
     css = cssCompress(css)
     css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
     css = css.replace("'img/background.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
@@ -122,11 +129,12 @@ def build(files, css, html, filename, release=False):
     print('=' * 40)
     
     html = merge(html)
-    html = html.replace('<link type="text/css" rel="Stylesheet" href="../css/pannellum.css"/>','<style type="text/css">' + css + '</style>')
+    html = html.replace('<link type="text/css" rel="Stylesheet" href="../css/pannellum.css"/>','<style type="text/css">' + standalone_css + '</style>')
     html = html.replace('<script type="text/javascript" src="../js/libpannellum.js"></script>','')
     html = html.replace('<script type="text/javascript" src="../js/RequestAnimationFrame.js"></script>','')
-    html = html.replace('<script type="text/javascript" src="../js/pannellum.js"></script>','<script type="text/javascript">' + js + '</script>')
+    html = html.replace('<script type="text/javascript" src="../js/pannellum.js"></script>','<script type="text/javascript">' + standalone_js + '</script>')
     html = html.replace('<script type="text/javascript" src="standalone.js"></script>','')
+    html = html.replace('<link type="text/css" rel="Stylesheet" href="standalone.css"/>', '')
     html = htmlCompress(html)
     
     output(addHeaderHTML(html), folder + htmlfilename)
