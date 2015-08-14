@@ -95,7 +95,12 @@ function Renderer(container, image, imageType, video) {
             world.className = 'pnlm-world';
             
             // Add images
-            var path = image.basePath + image.fallbackPath;
+            var path;
+            if (image.basePath) {
+                path = image.basePath + image.fallbackPath;
+            } else {
+                path = image.fallbackPath;
+            }
             var sides = ['f', 'r', 'b', 'l', 'u', 'd'];
             var loaded = 0;
             var onLoad = function() {
