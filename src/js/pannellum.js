@@ -85,6 +85,7 @@ var defaultConfig = {
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
 container.className += ' pnlm-container';
+container.setAttribute('tabindex', 0);
 
 // Display about information on right click
 var aboutMsg = document.createElement('span');
@@ -492,7 +493,7 @@ function onDocumentMouseDown(event) {
     // Override default action
     event.preventDefault();
     // But not all of it
-    window.focus();
+    container.focus();
     
     // Only do something if the panorama is loaded
     if (!loaded) {
