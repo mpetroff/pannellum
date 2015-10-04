@@ -394,12 +394,16 @@ function parseGPanoXMP(image) {
             
             // Extract the requested tag from the XMP data
             var getTag = function(tag) {
-                if (xmpData.indexOf(tag + '="') < 0) {
-                    return null;
+                if (xmpData.indexOf(tag + '="') >= 0) {
+                    var result = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
+                    result = result.substring(0, result.indexOf('"'));
+                    return Number(result);
+                } else if (xmpData.indexOf(tag + '>') >= 0) {
+                    var result = xmpData.substring(xmpData.indexOf(tag + '>') + tag.length + 1);
+                    result = result.substring(0, result.indexOf('<'));
+                    return Number(result);
                 }
-                var result = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
-                result = result.substring(0, result.indexOf('"'));
-                return Number(result);
+                return null;
             };
             
             // Relevant XMP data
@@ -409,7 +413,9 @@ function parseGPanoXMP(image) {
                 fullHeight: getTag('GPano:FullPanoHeightPixels'),
                 croppedHeight: getTag('GPano:CroppedAreaImageHeightPixels'),
                 topPixels: getTag('GPano:CroppedAreaTopPixels'),
-                heading: getTag('GPano:PoseHeadingDegrees')
+                heading: getTag('GPano:PoseHeadingDegrees'),
+                horizonPitch: getTag('GPano:PosePitchDegrees'),
+                horizonRoll: getTag('GPano:PoseRollDegrees')
             };
             
             if (xmp.fullWidth !== null && xmp.croppedWidth !== null &&
@@ -426,6 +432,10 @@ function parseGPanoXMP(image) {
                     if (config.compass !== false) {
                         config.compass = true;
                     }
+                }
+                if (xmp.horizonPitch !== null && xmp.horizonRoll !== null) {
+                    panoImage.horizonPitch = xmp.horizonPitch / 180 * Math.PI;
+                    panoImage.horizonRoll = xmp.horizonRoll / 180 * Math.PI;
                 }
                 
                 // TODO: add support for initial view settings

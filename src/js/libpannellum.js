@@ -50,6 +50,7 @@ function Renderer(container, image, imageType, video) {
     var fallbackImgSize;
     var world;
     var vtmps;
+    var pose;
 
     /**
      * Initialize renderer.
@@ -215,7 +216,12 @@ function Renderer(container, image, imageType, video) {
                 throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
             }
         }
-        
+
+        // Store horizon pitch and roll if applicable
+        if (image.horizonPitch && image.horizonRoll) {
+            pose = [image.horizonPitch, image.horizonRoll];
+        }
+
         // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
 
@@ -284,6 +290,7 @@ function Renderer(container, image, imageType, video) {
             program.h = gl.getUniformLocation(program, 'u_h');
             program.v = gl.getUniformLocation(program, 'u_v');
             program.vo = gl.getUniformLocation(program, 'u_vo');
+            program.rot = gl.getUniformLocation(program, 'u_rot');
 
             // Pass horizontal extent, vertical extent, and vertical offset
             gl.uniform1f(program.h, haov / (Math.PI * 2.0));
@@ -428,7 +435,41 @@ function Renderer(container, image, imageType, video) {
             // Calculate focal length from vertical field of view
             var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (canvas.width / canvas.height));
             focal = 1 / Math.tan(vfov * 0.5);
-            
+
+            // Apply pitch and roll transformation if applicable
+            if (imageType == 'equirectangular' && pose !== undefined) {
+                var horizonPitch = pose[0],
+                    horizonRoll = pose[1];
+
+                // Calculate new pitch and yaw
+                var orig_pitch = pitch,
+                    orig_yaw = yaw,
+                    x = Math.cos(horizonRoll) * Math.sin(pitch) * Math.sin(horizonPitch) +
+                        Math.cos(pitch) * (Math.cos(horizonPitch) * Math.cos(yaw) +
+                        Math.sin(horizonRoll) * Math.sin(horizonPitch) * Math.sin(yaw)),
+                    y = -Math.sin(pitch) * Math.sin(horizonRoll) +
+                        Math.cos(pitch) * Math.cos(horizonRoll) * Math.sin(yaw),
+                    z = Math.cos(horizonRoll) * Math.cos(horizonPitch) * Math.sin(pitch) +
+                        Math.cos(pitch) * (-Math.cos(yaw) * Math.sin(horizonPitch) +
+                        Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.sin(yaw));
+                pitch = Math.asin(z);
+                yaw = Math.atan2(y, x);
+
+                // Calculate roll
+                var v = [Math.cos(orig_pitch) * (Math.sin(horizonRoll) * Math.sin(horizonPitch) * Math.cos(orig_yaw) -
+                        Math.cos(horizonPitch) * Math.sin(orig_yaw)),
+                        Math.cos(orig_pitch) * Math.cos(horizonRoll) * Math.cos(orig_yaw),
+                        Math.cos(orig_pitch) * (Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.cos(orig_yaw) +
+                        Math.sin(orig_yaw) * Math.sin(horizonPitch))],
+                    w = [-Math.cos(pitch) * Math.sin(yaw), Math.cos(pitch) * Math.cos(yaw), 0];
+                var roll = Math.acos((v[0]*w[0] + v[1]*w[1] + v[2]*w[2]) /
+                    (Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) *
+                    Math.sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2])));
+                if (v[2] < 0)
+                    roll = 2 * Math.PI - roll;
+                gl.uniform1f(program.rot, roll);
+            }
+
             // Pass psi, theta, and focal length
             gl.uniform1f(program.psi, yaw);
             gl.uniform1f(program.theta, pitch);
@@ -1086,6 +1127,7 @@ var fragEquirectangular = [
 'uniform float u_h;',
 'uniform float u_v;',
 'uniform float u_vo;',
+'uniform float u_rot;',
 
 'const float PI = 3.14159265358979323846264;',
 
@@ -1099,12 +1141,16 @@ var fragEquirectangular = [
     // Map canvas/camera to sphere
     'float x = v_texCoord.x * u_aspectRatio;',
     'float y = v_texCoord.y;',
+    'float sinrot = sin(u_rot);',
+    'float cosrot = cos(u_rot);',
+    'float rot_x = x * cosrot - y * sinrot;',
+    'float rot_y = x * sinrot + y * cosrot;',
     'float sintheta = sin(u_theta);',
     'float costheta = cos(u_theta);',
-    'float a = u_f * costheta - y * sintheta;',
-    'float root = sqrt(x * x + a * a);',
-    'float lambda = atan(x / root, a / root) + u_psi;',
-    'float phi = atan((y * costheta + u_f * sintheta) / root);',
+    'float a = u_f * costheta - rot_y * sintheta;',
+    'float root = sqrt(rot_x * rot_x + a * a);',
+    'float lambda = atan(rot_x / root, a / root) + u_psi;',
+    'float phi = atan((rot_y * costheta + u_f * sintheta) / root);',
 
     // Wrap image
     'if(lambda > PI)',
