@@ -394,13 +394,15 @@ function parseGPanoXMP(image) {
             
             // Extract the requested tag from the XMP data
             var getTag = function(tag) {
+                var result;
                 if (xmpData.indexOf(tag + '="') >= 0) {
-                    var result = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
+                    result = xmpData.substring(xmpData.indexOf(tag + '="') + tag.length + 2);
                     result = result.substring(0, result.indexOf('"'));
-                    return Number(result);
                 } else if (xmpData.indexOf(tag + '>') >= 0) {
-                    var result = xmpData.substring(xmpData.indexOf(tag + '>') + tag.length + 1);
+                    result = xmpData.substring(xmpData.indexOf(tag + '>') + tag.length + 1);
                     result = result.substring(0, result.indexOf('<'));
+                }
+                if (result !== undefined) {
                     return Number(result);
                 }
                 return null;
@@ -1558,7 +1560,7 @@ function loadScene(sceneId, targetPitch, targetYaw) {
  */
 this.getPitch = function() {
     return config.pitch;
-}
+};
 
 /**
  * Sets the pitch of the center of the view.
@@ -1570,7 +1572,7 @@ this.getPitch = function() {
 this.setPitch = function(pitch) {
     config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, pitch));
     return this;
-}
+};
 
 /**
  * Returns the minimum and maximum allowed pitches (in degrees).
@@ -1580,7 +1582,7 @@ this.setPitch = function(pitch) {
  */
 this.getPitchBounds = function() {
     return [config.minPitch, config.maxPitch];
-}
+};
 
 /**
  * Set the minimum and maximum allowed pitches (in degrees).
@@ -1593,7 +1595,7 @@ this.setPitchBounds = function(bounds) {
     config.minPitch = Math.max(-90, Math.min(bounds[0], 90));
     config.maxPitch = Math.max(-90, Math.min(bounds[1], 90));
     return this;
-}
+};
 
 /**
  * Returns the yaw of the center of the view.
@@ -1603,7 +1605,7 @@ this.setPitchBounds = function(bounds) {
  */
 this.getYaw = function() {
     return config.yaw;
-}
+};
 
 /**
  * Sets the yaw of the center of the view.
@@ -1621,7 +1623,7 @@ this.setYaw = function(yaw) {
     }
     config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, yaw));
     return this;
-}
+};
 
 /**
  * Returns the minimum and maximum allowed pitches (in degrees).
@@ -1631,7 +1633,7 @@ this.setYaw = function(yaw) {
  */
 this.getYawBounds = function() {
     return [config.minYaw, config.maxYaw];
-}
+};
 
 /**
  * Set the minimum and maximum allowed yaws (in degrees).
@@ -1644,7 +1646,7 @@ this.setYawBounds = function(bounds) {
     config.minYaw = Math.max(-360, Math.min(bounds[0], 360));
     config.maxYaw = Math.max(-360, Math.min(bounds[1], 360));
     return this;
-}
+};
 
 /**
  * Returns the horizontal field of view.
@@ -1654,7 +1656,7 @@ this.setYawBounds = function(bounds) {
  */
 this.getHfov = function() {
     return config.hfov;
-}
+};
 
 /**
  * Sets the horizontal field of view.
@@ -1666,7 +1668,7 @@ this.getHfov = function() {
 this.setHfov = function(hfov) {
     setHfov(hfov);
     return this;
-}
+};
 
 /**
  * Returns the minimum and maximum allowed horizontal fields of view
@@ -1677,7 +1679,7 @@ this.setHfov = function(hfov) {
  */
 this.getHfovBounds = function() {
     return [config.minHfov, config.maxHfov];
-}
+};
 
 /**
  * Set the minimum and maximum allowed horizontal fields of view (in degrees).
@@ -1690,7 +1692,7 @@ this.setHfovBounds = function(bounds) {
     config.minHfov = Math.max(0, bounds[0]);
     config.maxHfov = Math.max(0, bounds[1]);
     return this;
-}
+};
 
 /**
  * Returns the panorama renderer.
@@ -1700,7 +1702,7 @@ this.setHfovBounds = function(bounds) {
  */
 this.getRenderer = function() {
     return renderer;
-}
+};
 
 }
 

@@ -461,10 +461,10 @@ function Renderer(container, image, imageType, video) {
                         Math.cos(orig_pitch) * Math.cos(horizonRoll) * Math.cos(orig_yaw),
                         Math.cos(orig_pitch) * (Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.cos(orig_yaw) +
                         Math.sin(orig_yaw) * Math.sin(horizonPitch))],
-                    w = [-Math.cos(pitch) * Math.sin(yaw), Math.cos(pitch) * Math.cos(yaw), 0];
-                var roll = Math.acos((v[0]*w[0] + v[1]*w[1] + v[2]*w[2]) /
+                    w = [-Math.cos(pitch) * Math.sin(yaw), Math.cos(pitch) * Math.cos(yaw)];
+                var roll = Math.acos((v[0]*w[0] + v[1]*w[1]) /
                     (Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) *
-                    Math.sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2])));
+                    Math.sqrt(w[0]*w[0]+w[1]*w[1])));
                 if (v[2] < 0)
                     roll = 2 * Math.PI - roll;
                 gl.uniform1f(program.rot, roll);
