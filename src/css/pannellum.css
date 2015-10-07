@@ -57,6 +57,7 @@
     border-color: rgba(0,0,0,0.4);
     border-radius: 3px;
     cursor: pointer;
+    z-index: 2;
     /* Fix Safari fullscreen bug */
     -webkit-transform: translateZ(9999px);
     transform: translateZ(9999px);
@@ -116,9 +117,10 @@
     color: #fff;
     text-align: left;
     display: none;
+    z-index: 2;
     /* Fix Safari fullscreen bug */
-    -webkit-transform: translateZ(1000000000px);
-    transform: translateZ(1000000000px);
+    -webkit-transform: translateZ(9999px);
+    transform: translateZ(9999px);
 }
 
 .pnlm-title-box {
