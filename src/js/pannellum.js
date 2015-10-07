@@ -1228,7 +1228,7 @@ function renderHotSpots() {
                 hsPitchCos / z / 2 + canvas.width / 2 - 13) + 'px, ' +
                 (-canvas.width / hfovTan * (hsPitchSin *
                 configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
-                canvas.height / 2 - 13) + 'px) translateZ(1000000000px)';
+                canvas.height / 2 - 13) + 'px) translateZ(9999px)';
             hs.div.style.webkitTransform = transform;
             hs.div.style.MozTransform = transform;
             hs.div.style.transform = transform;

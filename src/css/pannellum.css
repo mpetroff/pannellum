@@ -58,8 +58,8 @@
     border-radius: 3px;
     cursor: pointer;
     /* Fix Safari fullscreen bug */
-    -webkit-transform: translateZ(1000000000px);
-    transform: translateZ(1000000000px);
+    -webkit-transform: translateZ(9999px);
+    transform: translateZ(9999px);
 }
 
 .pnlm-control:hover {
