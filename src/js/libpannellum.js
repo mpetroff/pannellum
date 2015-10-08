@@ -39,6 +39,7 @@ window.libpannellum = (function(window, document, undefined) {
  */
 function Renderer(container, image, imageType, video) {
     var canvas = document.createElement('canvas');
+    canvas.style.width = canvas.style.height = '100%';
     container.appendChild(canvas);
 
     // Default argument for image type
@@ -382,8 +383,9 @@ function Renderer(container, image, imageType, video) {
      * @instance
      */
     this.resize = function() {
-        canvas.width = container.offsetWidth;
-        canvas.height = container.offsetHeight;
+        var pixelRatio = window.devicePixelRatio || 1;
+        canvas.width = canvas.clientWidth * pixelRatio;
+        canvas.height = canvas.clientHeight * pixelRatio;
         if (gl) {
             gl.viewport(0, 0, canvas.width, canvas.height);
             if (imageType != 'multires') {
@@ -391,6 +393,8 @@ function Renderer(container, image, imageType, video) {
             }
         }
     };
+    // Initialize canvas size
+    this.resize();
 
     /**
      * Render new view of panorama.
