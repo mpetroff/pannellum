@@ -198,6 +198,7 @@ function init() {
     div.innerHTML = "<!--[if lte IE 9]><i></i><![endif]-->";
     if (div.getElementsByTagName("i").length == 1) {
         anError();
+        return;
     }
     
     var i, p;
@@ -219,6 +220,10 @@ function init() {
         }
         panoImage = c;
     } else {
+        if (config.panorama === undefined) {
+            anError('No panorama image was specified.');
+            return;
+        }
         if (config.video === true) {
             panoImage = document.createElement('video');
             infoDisplay.load.lbox.style.display = 'block';
