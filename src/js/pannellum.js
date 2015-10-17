@@ -290,7 +290,7 @@ function init() {
             if (config.basePath && !absoluteURL(p)) {
                 p = config.basePath + p;
             }
-            panoImage[i].src = p;
+            panoImage[i].src = encodeURI(p);
         }
     } else if (config.type == 'multires') {
         onImageLoad();
@@ -308,7 +308,7 @@ function init() {
             for (i = 0; i < config.panoramas.length; i++) {
                 if (panoImage.canPlayType(config.panoramas[i].type).length > 0) {
                     panoImage.crossOrigin = 'anonymous';
-                    panoImage.src = absoluteURL(config.panoramas[i].file) ? config.panoramas[i].file : p + config.panoramas[i].file;
+                    panoImage.src = encodeURI(absoluteURL(config.panoramas[i].file) ? config.panoramas[i].file : p + config.panoramas[i].file);
                     break;
                 }
             }
@@ -333,7 +333,7 @@ function init() {
                 if (xhr.status != 200) {
                     // Display error if image can't be loaded
                     var a = document.createElement('a');
-                    a.href = p;
+                    a.href = encodeURI(p);
                     a.innerHTML = a.href;
                     anError('The file ' + a.outerHTML + ' could not be accessed.');
                 }
@@ -1120,15 +1120,15 @@ function createHotSpots() {
         });
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
-            div.className = 'pnlm-hotspot pnlm-tooltip pnlm-sprite pnlm-' + hs.type;
+            div.className = 'pnlm-hotspot pnlm-tooltip pnlm-sprite pnlm-' + escapeHTML(hs.type);
             
             var span = document.createElement('span');
-            span.innerHTML = hs.text;
+            span.innerHTML = escapeHTML(hs.text);
             
             var a;
             if (hs.URL) {
                 a = document.createElement('a');
-                a.setAttribute('href', hs.URL);
+                a.setAttribute('href', encodeURI(hs.URL));
                 a.setAttribute('target', '_blank');
                 renderContainer.appendChild(a);
                 div.style.cursor = 'pointer';
@@ -1136,19 +1136,19 @@ function createHotSpots() {
                 a.appendChild(div);
             } else if (hs.video) {
                 var video = document.createElement('video');
-                video.setAttribute('src',hs.video);
-                video.setAttribute('controls',true);
-                video.setAttribute('style','width:' + hs.width + 'px');
+                video.setAttribute('src', encodeURI(hs.video));
+                video.setAttribute('controls', true);
+                video.setAttribute('style', 'width:' + hs.width + 'px');
                 renderContainer.appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
                 a = document.createElement('a');
-                a.setAttribute('href', hs.image);
+                a.setAttribute('href', encodeURI(hs.image));
                 a.setAttribute('target', '_blank');
                 span.appendChild(a);
                 var image = document.createElement('img');
-                image.setAttribute('src',hs.image);
-                image.setAttribute('style','width:' + hs.width + 'px');
+                image.setAttribute('src', encodeURI(hs.image));
+                image.setAttribute('style', 'width:' + hs.width + 'px');
                 renderContainer.appendChild(div);
                 a.appendChild(image);
                 
@@ -1300,7 +1300,7 @@ function processOptions() {
         
         preview = new Image();
         preview.crossOrigin = 'anonymous';
-        preview.src = p;
+        preview.src = encodeURI(p);
         preview.className = 'pnlm-preview-img';
         renderContainer.appendChild(preview);
     }
@@ -1310,17 +1310,17 @@ function processOptions() {
       if (config.hasOwnProperty(key)) {
         switch(key) {
             case 'title':
-                infoDisplay.title.innerHTML = config[key];
+                infoDisplay.title.innerHTML = escapeHTML(config[key]);
                 infoDisplay.container.style.display = 'inline';
                 break;
             
             case 'author':
-                infoDisplay.author.innerHTML = 'by ' + config[key];
+                infoDisplay.author.innerHTML = 'by ' + escapeHTML(config[key]);
                 infoDisplay.container.style.display = 'inline';
                 break;
             
             case 'fallback':
-                infoDisplay.errorMsg.innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + config[key] + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
+                infoDisplay.errorMsg.innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + encodeURI(config[key]) + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
                 break;
             
             case 'hfov':
@@ -1356,11 +1356,6 @@ function processOptions() {
             case 'autoRotateStopDelay':
                 // Stop the auto-rotate after a certain delay (milliseconds):
                 config.autoRotateStopDelay = config[key];
-                break;
-            
-            case 'header':
-                // Add contents to header
-                document.getElementsByTagName('head')[0].innerHTML += config[key];
                 break;
             
             case 'showZoomCtrl':
@@ -1546,6 +1541,21 @@ function loadScene(sceneId, targetPitch, targetYaw) {
         config.yaw = workingYaw;
     }
     load();
+}
+
+/**
+ * Escapes HTML string (to mitigate possible DOM XSS attacks).
+ * @private
+ * @param {string} s - String to escape
+ * @returns {string} Escaped string
+ */
+function escapeHTML(s) {
+    return String(s).replace(/&/g, '&amp;')
+        .replace('"', '&quot;')
+        .replace("'", '&#39;')
+        .replace('<', '&lt;')
+        .replace('>', '&gt;')
+        .replace('/', '&#x2f;');
 }
 
 /**

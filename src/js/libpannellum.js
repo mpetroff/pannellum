@@ -175,9 +175,9 @@ function Renderer(container, image, imageType, video) {
                 faceImg.side = s;
                 faceImg.onload = onLoad;
                 if (imageType == 'multires') {
-                    faceImg.src = path.replace('%s',sides[s]) + '.' + image.extension;
+                    faceImg.src = encodeURI(path.replace('%s', sides[s]) + '.' + image.extension);
                 } else {
-                    faceImg.src = image[s].src;
+                    faceImg.src = encodeURI(image[s].src);
                 }
             }
             
@@ -934,7 +934,7 @@ function Renderer(container, image, imageType, video) {
                 node.textureLoaded = true;
                 delete node.image;
             };
-            node.image.src = node.path + '.' + image.extension;
+            node.image.src = encodeURI(node.path + '.' + image.extension);
         }
     }
     
