@@ -220,15 +220,15 @@ function init() {
         }
         panoImage = c;
     } else {
-        if (config.panorama === undefined) {
-            anError('No panorama image was specified.');
-            return;
-        }
         if (config.video === true) {
             panoImage = document.createElement('video');
             infoDisplay.load.lbox.style.display = 'block';
             infoDisplay.load.lbar.style.display = 'none';
         } else {
+            if (config.panorama === undefined) {
+                anError('No panorama image was specified.');
+                return;
+            }
             panoImage = new Image();
         }
     }
