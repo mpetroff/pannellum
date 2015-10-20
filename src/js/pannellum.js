@@ -235,7 +235,9 @@ function init() {
     
     function onImageLoad() {
         renderer = new libpannellum.renderer(renderContainer, panoImage, config.type, config.video);
-        panoImage = undefined;
+        if (config.video !== true) {
+            panoImage = undefined;
+        }
         
         // Only add event listeners once
         if (!listenersAdded) {
@@ -992,7 +994,7 @@ function animate() {
         keysDown[8] || keysDown[9] || config.autoRotate ||
         Math.abs(yawSpeed) > 0.01 || Math.abs(pitchSpeed) > 0.01 ||
         Math.abs(zoomSpeed) > 0.01) {
-        
+
         keyRepeat();
         requestAnimationFrame(animate);
     } else if (renderer && (renderer.isLoading() || (config.video === true &&
