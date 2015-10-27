@@ -132,6 +132,11 @@ Set the offset, in degrees, of the center of the panorama from North. As this
 affects the compass, it only has an effect if `compass` is set to `true`.
 
 
+### `preview`
+
+Specifies a URL for a preview image to display before the panorama is loaded.
+
+
 ### `hotSpots`
 
 This specifies an array of hot spots that can be links to other scenes,
