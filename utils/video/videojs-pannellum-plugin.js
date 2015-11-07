@@ -4,6 +4,9 @@
  * MIT License
  */
 
+(function(document, videojs, pannellum) {
+'use strict';
+
 videojs.plugin('pannellum', function() {
     // Create Pannellum instance
     var player = this;
@@ -42,3 +45,5 @@ videojs.plugin('pannellum', function() {
             pnlm.setUpdate(false);
     });
 });
+
+})(document, videojs, pannellum);
