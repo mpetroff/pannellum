@@ -88,14 +88,6 @@ container = typeof container === 'string' ? document.getElementById(container) :
 container.className += ' pnlm-container';
 container.setAttribute('tabindex', 0);
 
-// Display about information on right click
-var aboutMsg = document.createElement('span');
-aboutMsg.className = 'pnlm-about-msg';
-aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
-container.appendChild(aboutMsg);
-document.addEventListener('contextmenu', aboutMessage);
-
-
 // Create container for renderer
 var renderContainer = document.createElement('div');
 renderContainer.className = 'pnlm-render-container';
@@ -104,6 +96,12 @@ var dragFix = document.createElement('div');
 dragFix.className = 'pnlm-dragfix';
 container.appendChild(dragFix);
 
+// Display about information on right click
+var aboutMsg = document.createElement('span');
+aboutMsg.className = 'pnlm-about-msg';
+aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
+container.appendChild(aboutMsg);
+dragFix.addEventListener('contextmenu', aboutMessage);
 
 // Create info display
 var infoDisplay = {};
@@ -346,11 +344,10 @@ function onImageLoad() {
     if (!listenersAdded) {
         listenersAdded = true;
         container.addEventListener('mousedown', onDocumentMouseDown, false);
-        container.addEventListener('mousemove', onDocumentMouseMove, false);
-        container.addEventListener('mouseup', onDocumentMouseUp, false);
+        document.addEventListener('mousemove', onDocumentMouseMove, false);
+        document.addEventListener('mouseup', onDocumentMouseUp, false);
         container.addEventListener('mousewheel', onDocumentMouseWheel, false);
         container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
-        container.addEventListener('onresize', onDocumentResize, false);
         container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
         container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
         container.addEventListener('msfullscreenchange', onFullScreenChange, false);
@@ -358,8 +355,8 @@ function onImageLoad() {
         window.addEventListener('resize', onDocumentResize, false);
         container.addEventListener('keydown', onDocumentKeyPress, false);
         container.addEventListener('keyup', onDocumentKeyUp, false);
-        window.addEventListener('blur', clearKeys, false);
-        container.addEventListener('mouseout', onDocumentMouseUp, false);
+        container.addEventListener('blur', clearKeys, false);
+        document.addEventListener('mouseleave', onDocumentMouseUp, false);
         container.addEventListener('touchstart', onDocumentTouchStart, false);
         container.addEventListener('touchmove', onDocumentTouchMove, false);
         container.addEventListener('touchend', onDocumentTouchEnd, false);
@@ -474,10 +471,12 @@ function clearError() {
 /**
  * Displays about message.
  * @private
+ * @param {MouseEvent} event - Right click location
  */
 function aboutMessage(event) {
-    aboutMsg.style.left = event.clientX + 'px';
-    aboutMsg.style.top = event.clientY + 'px';
+    var pos = mousePosition(event);
+    aboutMsg.style.left = pos.x + 'px';
+    aboutMsg.style.top = pos.y + 'px';
     clearTimeout(aboutMessage.t1);
     clearTimeout(aboutMessage.t2);
     aboutMsg.style.display = 'block';
@@ -485,6 +484,20 @@ function aboutMessage(event) {
     aboutMessage.t1 = setTimeout(function() {aboutMsg.style.opacity = 0;}, 2000);
     aboutMessage.t2 = setTimeout(function() {aboutMsg.style.display = 'none';}, 2500);
     event.preventDefault();
+}
+
+/**
+ * Calculate mouse position relative to top left of viewer container.
+ * @private
+ * @param {MouseEvent} event - Mouse event to use in calculation
+ * @returns {Object} Calculated X and Y coordinates
+ */
+function mousePosition(event) {
+    var bounds = container.getBoundingClientRect();
+    var pos = {};
+    pos.x = event.clientX - bounds.left;
+    pos.y = event.clientY - bounds.top;
+    return pos;
 }
 
 /**
@@ -504,11 +517,14 @@ function onDocumentMouseDown(event) {
         return;
     }
     
+    // Calculate mouse position relative to top left of viewer container
+    var pos = mousePosition(event);
+
     // Log pitch / yaw of mouse click when debugging / placing hot spots
     if (config.hotSpotDebug) {
         var canvas = renderer.getCanvas();
-        var x = event.clientX / canvas.width * 2 - 1;
-        var y = (1 - event.clientY / canvas.height * 2) * canvas.height / canvas.width;
+        var x = pos.x / canvas.width * 2 - 1;
+        var y = (1 - pos.y / canvas.height * 2) * canvas.height / canvas.width;
         var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
         var s = Math.sin(config.pitch * Math.PI / 180);
         var c = Math.cos(config.pitch * Math.PI / 180);
@@ -526,8 +542,8 @@ function onDocumentMouseDown(event) {
     isUserInteracting = true;
     latestInteraction = Date.now();
     
-    onPointerDownPointerX = event.clientX;
-    onPointerDownPointerY = event.clientY;
+    onPointerDownPointerX = pos.x;
+    onPointerDownPointerY = pos.y;
     
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
@@ -547,14 +563,15 @@ function onDocumentMouseMove(event) {
     if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         var canvas = renderer.getCanvas();
+        var pos = mousePosition(event);
         //TODO: This still isn't quite right
-        var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(event.clientX / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
+        var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(pos.x / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
         yawSpeed = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
         
         var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
         
-        var pitch = ((Math.atan(event.clientY / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
+        var pitch = ((Math.atan(pos.y / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
         pitchSpeed = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
     }
@@ -589,17 +606,20 @@ function onDocumentTouchStart(event) {
     if (!loaded) {
         return;
     }
-    
-    onPointerDownPointerX = event.targetTouches[0].clientX;
-    onPointerDownPointerY = event.targetTouches[0].clientY;
+
+    // Calculate touch position relative to top left of viewer container
+    var pos0 = mousePosition(event.targetTouches[0]);
+
+    onPointerDownPointerX = pos0.x;
+    onPointerDownPointerY = pos0.y;
     
     if (event.targetTouches.length == 2) {
         // Down pointer is the center of the two fingers
-        onPointerDownPointerX += (event.targetTouches[1].clientX - event.targetTouches[0].clientX) * 0.5;
-        onPointerDownPointerY += (event.targetTouches[1].clientY - event.targetTouches[0].clientY) * 0.5; 
-        onPointerDownPointerDist = Math.sqrt(
-                                    (event.targetTouches[0].clientX - event.targetTouches[1].clientX) * (event.targetTouches[0].clientX - event.targetTouches[1].clientX) +
-                                    (event.targetTouches[0].clientY - event.targetTouches[1].clientY) * (event.targetTouches[0].clientY - event.targetTouches[1].clientY)); 
+        var pos1 = mousePosition(event.targetTouches[1]);
+        onPointerDownPointerX += (pos1.x - pos0.x) * 0.5;
+        onPointerDownPointerY += (pos1.y - pos0.y) * 0.5;
+        onPointerDownPointerDist = Math.sqrt((pos0.x - pos1.x) * (pos0.x - pos1.x) +
+                                             (pos0.y - pos1.y) * (pos0.y - pos1.y));
     }
     isUserInteracting = true;
     latestInteraction = Date.now();
@@ -623,15 +643,16 @@ function onDocumentTouchMove(event) {
         latestInteraction = Date.now();
     }
     if (isUserInteracting && loaded) {
-        var clientX = event.targetTouches[0].clientX;
-        var clientY = event.targetTouches[0].clientY;
+        var pos0 = mousePosition(event.targetTouches[0]);
+        var clientX = pos0.x;
+        var clientY = pos0.y;
         
         if (event.targetTouches.length == 2 && onPointerDownPointerDist != -1) {
-            clientX += (event.targetTouches[1].clientX - event.targetTouches[0].clientX) * 0.5;
-            clientY += (event.targetTouches[1].clientY - event.targetTouches[0].clientY) * 0.5;
-            var clientDist = Math.sqrt(
-                                    (event.targetTouches[0].clientX - event.targetTouches[1].clientX) * (event.targetTouches[0].clientX - event.targetTouches[1].clientX) +
-                                    (event.targetTouches[0].clientY - event.targetTouches[1].clientY) * (event.targetTouches[0].clientY - event.targetTouches[1].clientY));
+            var pos1 = mousePosition(event.targetTouches[1]);
+            clientX += (pos1.x - pos0.x) * 0.5;
+            clientY += (pos1.y - pos0.y) * 0.5;
+            var clientDist = Math.sqrt((pos0.x - pos1.x) * (pos0.x - pos1.x) +
+                                       (pos0.y - pos1.y) * (pos0.y - pos1.y));
             setHfov(config.hfov += (onPointerDownPointerDist - clientDist) * 0.1);
             onPointerDownPointerDist = clientDist;
         }
