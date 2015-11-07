@@ -8,7 +8,7 @@
             function processForm (form)
             {
                 var embed_code = document.getElementById('embed_code');
-                embed_code.innerHTML = '<iframe title="pannellum panorama viewer"' +
+                embed_code.innerHTML = '<iframe' +
                     ' width="' + escape(form.embed_width.value) +
                     '" height="' + escape(form.embed_height.value) +
                     '" allowfullscreen' +
@@ -67,7 +67,7 @@
             }
         </script>
     </head>
-    
+
     <body>
         <form name="embed_gen_form" onsubmit="return processForm(embed_gen_form); return false;">
             Pannellum Location:<br>
@@ -95,7 +95,7 @@
             <input name="fallback_url" placeholder="Fallback URL"><p>
             <input type="submit" value="Generate" onclick="document.getElementById('embed_code').innerHTML = ''"><p>
         </form>
-        
+
         <textarea id="embed_code" style="resize: none; height:200px;" onclick="this.select()" cols="100" readonly></textarea>
     </body>
 </html>
