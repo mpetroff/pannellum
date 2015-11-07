@@ -17,6 +17,10 @@
     outline: 0;
 }
 
+.pnlm-container * {
+    box-sizing: content-box;
+}
+
 .pnlm-grab {
     cursor: url('img/grab.svg') 12 8, default;
 }
@@ -152,6 +156,10 @@
     font-size: 20px;
     display: none;
     color: #fff;
+}
+
+.pnlm-load-box p {
+    margin: 20px 0;
 }
 
 .pnlm-lbox {
