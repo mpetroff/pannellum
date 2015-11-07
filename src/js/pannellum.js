@@ -58,6 +58,7 @@ var config,
     pitchSpeed = 0,
     zoomSpeed = 0,
     animating = false,
+    update = false, // Should we update when still to render dynamic content
     hotspotsCreated = false;
 
 var defaultConfig = {
@@ -78,7 +79,7 @@ var defaultConfig = {
     type: 'equirectangular',
     northOffset: 0,
     showFullscreenCtrl: true,
-    video: false,
+    dynamic: false,
     keyboardZoom: true
 };
 
@@ -220,10 +221,8 @@ function init() {
         }
         panoImage = c;
     } else {
-        if (config.video === true) {
-            panoImage = document.createElement('video');
-            infoDisplay.load.lbox.style.display = 'block';
-            infoDisplay.load.lbar.style.display = 'none';
+        if (config.dynamic === true) {
+            panoImage = config.panorama;
         } else {
             if (config.panorama === undefined) {
                 anError('No panorama image was specified.');
@@ -231,39 +230,6 @@ function init() {
             }
             panoImage = new Image();
         }
-    }
-    
-    function onImageLoad() {
-        renderer = new libpannellum.renderer(renderContainer, panoImage, config.type, config.video);
-        if (config.video !== true) {
-            panoImage = undefined;
-        }
-        
-        // Only add event listeners once
-        if (!listenersAdded) {
-            listenersAdded = true;
-            container.addEventListener('mousedown', onDocumentMouseDown, false);
-            container.addEventListener('mousemove', onDocumentMouseMove, false);
-            container.addEventListener('mouseup', onDocumentMouseUp, false);
-            container.addEventListener('mousewheel', onDocumentMouseWheel, false);
-            container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
-            container.addEventListener('onresize', onDocumentResize, false);
-            container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-            container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-            container.addEventListener('msfullscreenchange', onFullScreenChange, false);
-            container.addEventListener('fullscreenchange', onFullScreenChange, false);
-            window.addEventListener('resize', onDocumentResize, false);
-            container.addEventListener('keydown', onDocumentKeyPress, false);
-            container.addEventListener('keyup', onDocumentKeyUp, false);
-            window.addEventListener('blur', clearKeys, false);
-            container.addEventListener('mouseout', onDocumentMouseUp, false);
-            container.addEventListener('touchstart', onDocumentTouchStart, false);
-            container.addEventListener('touchmove', onDocumentTouchMove, false);
-            container.addEventListener('touchend', onDocumentTouchEnd, false);
-        }
-        
-        renderInit();
-        setTimeout(function(){isTimedOut = true;}, 500);
     }
     
     // From http://stackoverflow.com/a/19709846
@@ -307,26 +273,7 @@ function init() {
             p = config.basePath;
         }
         
-        if (config.video === true) {
-            panoImage.addEventListener('loadeddata', function() {
-                panoImage.play();
-                onImageLoad();
-            });
-            for (i = 0; i < config.panoramas.length; i++) {
-                if (panoImage.canPlayType(config.panoramas[i].type).length > 0) {
-                    panoImage.crossOrigin = 'anonymous';
-                    panoImage.src = encodeURI(absoluteURL(config.panoramas[i].file) ? config.panoramas[i].file : p + config.panoramas[i].file);
-                    break;
-                }
-            }
-            if (panoImage.src.length < 1) {
-                // Browser doesn't support any provide video formats
-                console.log('Error: provided video formats are not supported');
-                anError('Your browser doesn\'t support any of the provided' +
-                    ' video formats. Please try using a different browser or' +
-                    ' device.');
-            }
-        } else {
+        if (config.dynamic !== true) {
             // Still image
             p = absoluteURL(config.panorama) ? config.panorama : p + config.panorama;
             
@@ -382,6 +329,44 @@ function init() {
     
     container.classList.add('pnlm-grab');
     container.classList.remove('pnlm-grabbing');
+}
+
+/**
+ * Create renderer and initialize event listeners once image is loaded.
+ * @private
+ */
+function onImageLoad() {
+    renderer = new libpannellum.renderer(renderContainer, panoImage, config.type, config.dynamic);
+    if (config.dynamic !== true) {
+        // Allow image to be garbage collected
+        panoImage = undefined;
+    }
+
+    // Only add event listeners once
+    if (!listenersAdded) {
+        listenersAdded = true;
+        container.addEventListener('mousedown', onDocumentMouseDown, false);
+        container.addEventListener('mousemove', onDocumentMouseMove, false);
+        container.addEventListener('mouseup', onDocumentMouseUp, false);
+        container.addEventListener('mousewheel', onDocumentMouseWheel, false);
+        container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+        container.addEventListener('onresize', onDocumentResize, false);
+        container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('msfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('fullscreenchange', onFullScreenChange, false);
+        window.addEventListener('resize', onDocumentResize, false);
+        container.addEventListener('keydown', onDocumentKeyPress, false);
+        container.addEventListener('keyup', onDocumentKeyUp, false);
+        window.addEventListener('blur', clearKeys, false);
+        container.addEventListener('mouseout', onDocumentMouseUp, false);
+        container.addEventListener('touchstart', onDocumentTouchStart, false);
+        container.addEventListener('touchmove', onDocumentTouchMove, false);
+        container.addEventListener('touchend', onDocumentTouchEnd, false);
+    }
+
+    renderInit();
+    setTimeout(function(){isTimedOut = true;}, 500);
 }
 
 /**
@@ -997,8 +982,7 @@ function animate() {
 
         keyRepeat();
         requestAnimationFrame(animate);
-    } else if (renderer && (renderer.isLoading() || (config.video === true &&
-        !panoImage.paused && !panoImage.ended))) {
+    } else if (renderer && (renderer.isLoading() || (config.dynamic === true && update))) {
         requestAnimationFrame(animate);
     } else {
         animating = false;
@@ -1716,6 +1700,22 @@ this.setHfovBounds = function(bounds) {
 this.getRenderer = function() {
     return renderer;
 };
+
+/**
+ * Sets update flag for dynamic content.
+ * @memberof Viewer
+ * @instance
+ * @param {boolean} bool - Whether or not viewer should update even when still
+ * @returns {Viewer} `this`
+ */
+this.setUpdate = function(bool) {
+    update = bool === true;
+    if (renderer === undefined)
+        onImageLoad();
+    else
+        requestAnimationFrame(animate);
+    return this;
+}
 
 }
 

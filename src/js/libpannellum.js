@@ -35,9 +35,9 @@ window.libpannellum = (function(window, document, undefined) {
  *      -x, +y, -y]; for `multires`, this is a configuration object.
  * @param {string} imageType - The type of the image: `equirectangular`,
  *      `cubemap`, or `multires`.
- * @param {boolean} video - Whether or not the image is a video.
+ * @param {boolean} dynamic - Whether or not the image is dynamic (e.g. video).
  */
-function Renderer(container, image, imageType, video) {
+function Renderer(container, image, imageType, dynamic) {
     var canvas = document.createElement('canvas');
     canvas.style.width = canvas.style.height = '100%';
     container.appendChild(canvas);
@@ -479,8 +479,8 @@ function Renderer(container, image, imageType, video) {
             gl.uniform1f(program.theta, pitch);
             gl.uniform1f(program.f, focal);
             
-            if (video === true) {
-                // Update texture if video
+            if (dynamic === true) {
+                // Update texture if dynamic
                 if (imageType == 'equirectangular') {
                     gl.bindTexture(gl.TEXTURE_2D, program.texture);
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
@@ -1188,8 +1188,8 @@ var fragMulti = [
 ].join('');
 
 return {
-    renderer: function(container, image, imagetype, video) {
-        return new Renderer(container, image, imagetype, video);
+    renderer: function(container, image, imagetype, dynamic) {
+        return new Renderer(container, image, imagetype, dynamic);
     }
 };
 
