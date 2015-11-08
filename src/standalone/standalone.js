@@ -68,6 +68,10 @@ function parseURLParameters() {
                 configFromURL[key] = responseMap[key];
             }
 
+            // Set title
+            if ('title' in configFromURL)
+                document.title = configFromURL.title;
+
             // Create viewer
             pannellum.viewer('container', configFromURL);
         };
@@ -75,6 +79,10 @@ function parseURLParameters() {
         request.send();
         return;
     }
+
+    // Set title
+    if ('title' in configFromURL)
+        document.title = configFromURL.title;
 
     // Create viewer
     pannellum.viewer('container', configFromURL);
