@@ -1309,11 +1309,9 @@ function processOptions() {
         if (config.basePath) {
             p = config.basePath + p;
         }
-        
-        preview = new Image();
-        preview.crossOrigin = 'anonymous';
-        preview.src = encodeURI(p);
+        preview = document.createElement('div');
         preview.className = 'pnlm-preview-img';
+        preview.style.backgroundImage = "url('" + encodeURI(p) + "')";
         renderContainer.appendChild(preview);
     }
     
