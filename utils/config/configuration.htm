@@ -5,65 +5,40 @@
         <meta charset="utf-8">
         <link type="text/css" rel="Stylesheet" href="css/pannellum.css" />
         <script>
-            function processForm (form)
-            {
+            function processForm(form) {
                 var embed_code = document.getElementById('embed_code');
                 embed_code.innerHTML = '<iframe' +
                     ' width="' + escape(form.embed_width.value) +
                     '" height="' + escape(form.embed_height.value) +
-                    '" allowfullscreen' +
-                    ' style="border-style:none;"' +
+                    '" allowfullscreen style="border-style:none;' +
                     '" src="' + escape(form.pannellum_url.value) +
-                    '?' +
-                    'panorama=' + escape(form.pano_url.value);
-                    if(form.pano_title.value != '') {
+                    '?panorama=' + escape(form.pano_url.value);
+                    if(form.pano_title.value != '')
                         embed_code.innerHTML += '&amp;amp;title=' + escape(form.pano_title.value);
-                    }
-                    if(form.pano_author.value != '') {
+                    if(form.pano_author.value != '')
                         embed_code.innerHTML += '&amp;amp;author=' + escape(form.pano_author.value);
-                    }
-                    if(form.autoload.checked) {
+                    if(form.autoload.checked)
                         embed_code.innerHTML += '&amp;amp;autoLoad=true';
-                    }
-                    if(form.autorotate.value != 'none') {
+                    if(form.autorotate.value != 'none')
                         embed_code.innerHTML += '&amp;amp;autoRotate=' + escape(form.autorotate.value);
-                    }
-                    if(form.fallback_url.value != '') {
+                    if(form.fallback_url.value != '')
                         embed_code.innerHTML += '&amp;amp;fallback=' + escape(form.fallback_url.value);
-                    }
-                    if(form.hfov.value != 0) {
+                    if(form.hfov.value != 0)
                         embed_code.innerHTML += '&amp;amp;hfov=' + escape(form.hfov.value);
-                    }
-                    if(form.pitch.value != 0) {
+                    if(form.pitch.value != 0)
                         embed_code.innerHTML += '&amp;amp;pitch=' + escape(form.pitch.value);
-                    }
-                    if(form.yaw.value != 0) {
+                    if(form.yaw.value != 0)
                         embed_code.innerHTML += '&amp;amp;yaw=' + escape(form.yaw.value);
-                    }
-                    if(form.preview_url.value != '') {
+                    if(form.preview_url.value != '')
                         embed_code.innerHTML += '&amp;amp;preview=' + escape(form.preview_url.value);
-                    }
-                    if(form.haov.value != 0) {
+                    if(form.haov.value != 0)
                         embed_code.innerHTML += '&amp;amp;haov=' + escape(form.haov.value);
-                    }
-                    if(form.vaov.value != 0) {
+                    if(form.vaov.value != 0)
                         embed_code.innerHTML += '&amp;amp;vaov=' + escape(form.vaov.value);
-                    }
-                    if(form.voffset.value != 0) {
+                    if(form.voffset.value != 0)
                         embed_code.innerHTML += '&amp;amp;vOffset=' + escape(form.voffset.value);
-                    }
                     embed_code.innerHTML += '"></iframe>';
                 return false;
-            }
-            function randomString()
-            {
-                var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-                var randomstring = '';
-                for (var i=0;i<10;i++) {
-                    var rnum = Math.floor(Math.random() * chars.length);
-                    randomstring += chars.substring(rnum,rnum+1);
-                }
-                return randomstring;
             }
         </script>
     </head>
