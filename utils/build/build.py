@@ -71,17 +71,17 @@ def htmlCompress(text):
     os.unlink(out_tuple[1])
     return compressed
 
-def addHeaderHTML(text):
+def addHeaderHTML(text, version):
     text = text.replace('<!DOCTYPE HTML>','');
-    header = '<!DOCTYPE HTML>\n<!-- Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum -->\n'
+    header = '<!DOCTYPE HTML>\n<!-- Pannellum ' + version + ', https://github.com/mpetroff/pannellum -->\n'
     return header + text
 
-def addHeaderCSS(text):
-    header = '/* Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum */\n'
+def addHeaderCSS(text, version):
+    header = '/* Pannellum ' + version + ', https://github.com/mpetroff/pannellum */\n'
     return header + text
 
-def addHeaderJS(text):
-    header = '// Pannellum ' + read('../VERSION') + ', https://github.com/mpetroff/pannellum\n'
+def addHeaderJS(text, version):
+    header = '// Pannellum ' + version + ', https://github.com/mpetroff/pannellum\n'
     return header + text
 
 def build(files, css, html, filename, release=False):
@@ -98,9 +98,10 @@ def build(files, css, html, filename, release=False):
     
     js = merge(files)
     if release:
-        js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + read('../VERSION'))
+        version = read('../VERSION')
     else:
-        js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip())
+        version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip()
+    js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + version)
     with open('../../src/standalone/standalone.js', 'r') as f:
         standalone_js = f.read()
     standalone_js = JScompress(js + standalone_js)
@@ -137,9 +138,9 @@ def build(files, css, html, filename, release=False):
     html = html.replace('<link type="text/css" rel="Stylesheet" href="standalone.css"/>', '')
     html = htmlCompress(html)
     
-    output(addHeaderHTML(html), folder + htmlfilename)
-    output(addHeaderCSS(css), folder + cssfilename)
-    output(addHeaderJS(js), folder + filename)
+    output(addHeaderHTML(html, version), folder + htmlfilename)
+    output(addHeaderCSS(css, version), folder + cssfilename)
+    output(addHeaderJS(js, version), folder + filename)
 
 def main():
     if (len(sys.argv) > 1 and sys.argv[1] == 'release'):
