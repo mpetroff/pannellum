@@ -86,7 +86,7 @@ var defaultConfig = {
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
 container.className += ' pnlm-container';
-container.setAttribute('tabindex', 0);
+container.tabIndex = 0;
 
 // Create container for renderer
 var renderContainer = document.createElement('div');
@@ -1135,35 +1135,37 @@ function createHotSpots() {
             div.className = 'pnlm-hotspot pnlm-tooltip pnlm-sprite pnlm-' + escapeHTML(hs.type);
             
             var span = document.createElement('span');
-            span.innerHTML = escapeHTML(hs.text);
+            if (hs.text)
+                span.innerHTML = escapeHTML(hs.text);
             
             var a;
             if (hs.URL) {
                 a = document.createElement('a');
-                a.setAttribute('href', encodeURI(hs.URL));
-                a.setAttribute('target', '_blank');
+                a.href =  encodeURI(hs.URL);
+                a.target = '_blank';
                 renderContainer.appendChild(a);
                 div.style.cursor = 'pointer';
                 span.style.cursor = 'pointer';
                 a.appendChild(div);
             } else if (hs.video) {
                 var video = document.createElement('video');
-                video.setAttribute('src', encodeURI(hs.video));
-                video.setAttribute('controls', true);
-                video.setAttribute('style', 'width:' + hs.width + 'px');
+                video.src = encodeURI(hs.video);
+                video.controls = true;
+                video.style.width = hs.width + 'px';
                 renderContainer.appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
                 a = document.createElement('a');
-                a.setAttribute('href', encodeURI(hs.image));
-                a.setAttribute('target', '_blank');
+                a.href = encodeURI(hs.image);
+                a.target = '_blank';
                 span.appendChild(a);
                 var image = document.createElement('img');
-                image.setAttribute('src', encodeURI(hs.image));
-                image.setAttribute('style', 'width:' + hs.width + 'px');
+                image.src = encodeURI(hs.image);
+                image.style.width = hs.width + 'px';
+                image.style.paddingTop = '5px';
                 renderContainer.appendChild(div);
                 a.appendChild(image);
-                
+                span.style.maxWidth = 'initial';
             } else {
                 if (hs.sceneId) {
                     div.onclick = function() {
