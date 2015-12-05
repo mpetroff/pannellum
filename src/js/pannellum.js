@@ -1237,13 +1237,15 @@ function renderHotSpots() {
             hs.div.style.visibility = 'visible';
             // Subpixel rendering doesn't work in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
-            var canvas = renderer.getCanvas();
-            var transform = 'translate(' + (-canvas.width /
+            var canvas = renderer.getCanvas(),
+                canvasWidth = canvas.width / (window.devicePixelRatio || 1),
+                canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+            var transform = 'translate(' + (-canvasWidth /
                 hfovTan * Math.sin((-hs.yaw + config.yaw) * Math.PI / 180) *
-                hsPitchCos / z / 2 + canvas.width / 2 - 13) + 'px, ' +
-                (-canvas.width / hfovTan * (hsPitchSin *
+                hsPitchCos / z / 2 + canvasWidth / 2 - 13) + 'px, ' +
+                (-canvasWidth / hfovTan * (hsPitchSin *
                 configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
-                canvas.height / 2 - 13) + 'px) translateZ(9999px)';
+                canvasHeight / 2 - 13) + 'px) translateZ(9999px)';
             hs.div.style.webkitTransform = transform;
             hs.div.style.MozTransform = transform;
             hs.div.style.transform = transform;
@@ -1521,6 +1523,8 @@ function loadScene(sceneId, targetPitch, targetYaw) {
         fadeImg = new Image();
         fadeImg.className = 'pnlm-fade-img';
         fadeImg.style.transition = 'opacity ' + (config.sceneFadeDuration / 1000) + 's';
+        fadeImg.style.width = '100%';
+        fadeImg.style.height = '100%';
         var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, true);
         if (data !== undefined) {
             fadeImg.src = data;
