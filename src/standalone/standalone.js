@@ -59,6 +59,7 @@ function parseURLParameters() {
                 a.href = configFromURL.config;
                 a.innerHTML = a.href;
                 anError('The file ' + a.outerHTML + ' could not be accessed.');
+                return;
             }
 
             var responseMap = JSON.parse(request.responseText);
