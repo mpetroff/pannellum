@@ -219,7 +219,7 @@ function Renderer(container, image, imageType, dynamic) {
         }
 
         // Store horizon pitch and roll if applicable
-        if (image.horizonPitch && image.horizonRoll) {
+        if (image.horizonPitch !== undefined && image.horizonRoll !== undefined) {
             pose = [image.horizonPitch, image.horizonRoll];
         }
 
