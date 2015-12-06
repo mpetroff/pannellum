@@ -419,14 +419,10 @@ function parseGPanoXMP(image) {
                 config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
                 config.vOffset = ((xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5) * -180;
                 if (xmp.heading !== null) {
-                    if (xmp.heading == 0) {
-                        console.log('Ignoring suspicious 0 degree heading in XMP data. Manually set heading to override.')
-                    } else {
-                        // TODO: make sure this works correctly for partial panoramas
-                        config.northOffset = xmp.heading;
-                        if (config.compass !== false) {
-                            config.compass = true;
-                        }
+                    // TODO: make sure this works correctly for partial panoramas
+                    config.northOffset = xmp.heading;
+                    if (config.compass !== false) {
+                        config.compass = true;
                     }
                 }
                 if (xmp.horizonPitch !== null && xmp.horizonRoll !== null) {
