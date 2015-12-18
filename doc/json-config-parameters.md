@@ -63,13 +63,6 @@ not supported by the user's device. The user will be given the option to click
 a link and visit this URL if Pannellum fails to work.
 
 
-### `header`
-
-If this parameter is set, the contents of its value will be inserted into the
-header of `pannellum.htm`. This is useful if one wants to modify Pannellum's
-CSS.
-
-
 ### `showZoomCtrl`
 
 If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
