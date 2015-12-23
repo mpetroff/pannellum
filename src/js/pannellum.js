@@ -377,7 +377,18 @@ function parseGPanoXMP(image) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
         var img = reader.result;
-        
+
+        // This awful browser specific test exists because iOS 8 does not work
+        // with non-progressive encoded JPEGs.
+        if (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/)) {
+            var flagIndex = img.indexOf('\xff\xc2');
+            if (flagIndex < 0 || flagIndex > 65536) {
+                anError("Due to iOS 8's broken WebGL implementation, only " +
+                    "progressive encoded JPEGs work for your device (this " +
+                    "panorama uses standard encoding).");
+            }
+        }
+
         var start = img.indexOf('<x:xmpmeta');
         if (start > -1 && config.ignoreGPanoXMP !== true) {
             var xmpData = img.substring(start, img.indexOf('</x:xmpmeta>') + 12);
@@ -437,7 +448,7 @@ function parseGPanoXMP(image) {
         // Load panorama
         panoImage.src = window.URL.createObjectURL(image);
     });
-    reader.readAsText(image);
+    reader.readAsBinaryString(image);
 }
 
 /**
