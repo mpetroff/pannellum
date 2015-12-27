@@ -361,6 +361,14 @@ function onImageLoad() {
         container.addEventListener('touchstart', onDocumentTouchStart, false);
         container.addEventListener('touchmove', onDocumentTouchMove, false);
         container.addEventListener('touchend', onDocumentTouchEnd, false);
+        container.addEventListener('pointerdown', onDocumentPointerDown, false);
+        container.addEventListener('pointermove', onDocumentPointerMove, false);
+        container.addEventListener('pointerup', onDocumentPointerUp, false);
+        container.addEventListener('pointerleave', onDocumentPointerUp, false);
+
+        // Deal with MS pointer events
+        if (window.navigator.pointerEnabled)
+            container.style.touchAction = 'none';
     }
 
     renderInit();
@@ -689,6 +697,65 @@ function onDocumentTouchEnd() {
         pitchSpeed = yawSpeed = 0;
     }
     onPointerDownPointerDist = -1;
+}
+
+var pointerIDs = [],
+    pointerCoordinates = [];
+/**
+ * Event handler for touch starts in IE / Edge.
+ * @private
+ * @param {PointerEvent} event - Document pointer down event.
+ */
+function onDocumentPointerDown(event) {
+    if (event.pointerType == 'touch') {
+        pointerIDs.push(event.pointerId);
+        pointerCoordinates.push({clientX: event.clientX, clientY: event.clientY});
+        event.targetTouches = pointerCoordinates;
+        onDocumentTouchStart(event);
+        event.preventDefault();
+    }
+}
+
+/**
+ * Event handler for touch moves in IE / Edge.
+ * @private
+ * @param {PointerEvent} event - Document pointer move event.
+ */
+function onDocumentPointerMove(event) {
+    if (event.pointerType == 'touch') {
+        for (var i = 0; i < pointerIDs.length; i++) {
+            if (event.pointerId == pointerIDs[i]) {
+                pointerCoordinates[i] = {clientX: event.clientX, clientY: event.clientY};
+                event.targetTouches = pointerCoordinates;
+                onDocumentTouchMove(event);
+                //event.preventDefault();
+                return;
+            }
+        }
+    }
+}
+
+/**
+ * Event handler for touch ends in IE / Edge.
+ * @private
+ * @param {PointerEvent} event - Document pointer up event.
+ */
+function onDocumentPointerUp(event) {
+    if (event.pointerType == 'touch') {
+        var defined = false;
+        for (var i = 0; i < pointerIDs.length; i++) {
+            if (event.pointerId == pointerIDs[i])
+                pointerIDs[i] = undefined;
+            if (pointerIDs[i])
+                defined = true;
+        }
+        if (!defined) {
+            pointerIDs = [];
+            pointerCoordinates = [];
+            onDocumentTouchEnd();
+        }
+        event.preventDefault();
+    }
 }
 
 /**
