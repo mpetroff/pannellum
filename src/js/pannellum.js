@@ -178,8 +178,11 @@ compass.className = 'pnlm-compass pnlm-controls pnlm-control';
 container.appendChild(compass);
 
 // Load and process configuration
-if (initialConfig.default && initialConfig.default.firstScene) {
-    // Activate first scene if specified
+if (initialConfig.firstScene) {
+    // Activate first scene if specified in URL
+    mergeConfig(initialConfig.firstScene);
+} else if (initialConfig.default && initialConfig.default.firstScene) {
+    // Activate first scene if specified in file
     mergeConfig(initialConfig.default.firstScene);
 } else {
     mergeConfig(null);
