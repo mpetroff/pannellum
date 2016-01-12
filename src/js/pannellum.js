@@ -236,7 +236,7 @@ function init() {
     
     // From http://stackoverflow.com/a/19709846
     var absoluteURL = function(url) {
-        return new RegExp('^(?:[a-z]+:)?//', 'i').test(url);
+        return new RegExp('^(?:[a-z]+:)?//', 'i').test(url) | url[0] == '/';
     };
     
     // Configure image loading
