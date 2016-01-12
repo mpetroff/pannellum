@@ -545,17 +545,8 @@ function onDocumentMouseDown(event) {
 
     // Log pitch / yaw of mouse click when debugging / placing hot spots
     if (config.hotSpotDebug) {
-        var canvas = renderer.getCanvas();
-        var x = pos.x / canvas.width * 2 - 1;
-        var y = (1 - pos.y / canvas.height * 2) * canvas.height / canvas.width;
-        var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
-        var s = Math.sin(config.pitch * Math.PI / 180);
-        var c = Math.cos(config.pitch * Math.PI / 180);
-        var a = focal * c - y * s;
-        var root = Math.sqrt(x*x + a*a);
-        var pitch = Math.atan((y * c + focal * s) / root) * 180 / Math.PI;
-        var yaw = Math.atan2(x / root, a / root) * 180 / Math.PI + config.yaw;
-        console.log('Pitch: ' + pitch + ', Yaw: ' + yaw + ', Center Pitch: ' +
+        var coords = mouseEventToCoords(event);
+        console.log('Pitch: ' + coords[0] + ', Yaw: ' + coords[1] + ', Center Pitch: ' +
             config.pitch + ', Center Yaw: ' + config.yaw + ', HFOV: ' + config.hfov);
     }
     
@@ -575,6 +566,27 @@ function onDocumentMouseDown(event) {
     container.classList.remove('pnlm-grab');
     
     animateInit();
+}
+
+/**
+ * Calculate panorama pitch and yaw from location of mouse event.
+ * @private
+ * @param {MouseEvent} event - Document mouse down event.
+ * @returns {number[]} [pitch, yaw]
+ */
+function mouseEventToCoords(event) {
+    var pos = mousePosition(event);
+    var canvas = renderer.getCanvas();
+    var x = pos.x / canvas.width * 2 - 1;
+    var y = (1 - pos.y / canvas.height * 2) * canvas.height / canvas.width;
+    var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
+    var s = Math.sin(config.pitch * Math.PI / 180);
+    var c = Math.cos(config.pitch * Math.PI / 180);
+    var a = focal * c - y * s;
+    var root = Math.sqrt(x*x + a*a);
+    var pitch = Math.atan((y * c + focal * s) / root) * 180 / Math.PI;
+    var yaw = Math.atan2(x / root, a / root) * 180 / Math.PI + config.yaw;
+    return [pitch, yaw];
 }
 
 /**
@@ -1822,6 +1834,17 @@ this.setUpdate = function(bool) {
     else
         requestAnimationFrame(animate);
     return this;
+}
+
+/**
+ * Calculate panorama pitch and yaw from location of mouse event.
+ * @memberof Viewer
+ * @instance
+ * @param {MouseEvent} event - Document mouse down event.
+ * @returns {number[]} [pitch, yaw]
+ */
+this.mouseEventToCoords = function(event) {
+    return mouseEventToCoords(event);
 }
 
 }
