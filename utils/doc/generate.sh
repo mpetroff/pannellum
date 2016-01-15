@@ -19,4 +19,4 @@ elif [ "$1" = "private" ]; then
 fi
 
 echo "Generating documentation..."
-documentation ../../src/js/pannellum.js ../../src/js/libpannellum.js -o generated_docs -f html --name Pannellum --version $version -g $private
+documentation ../../src/js/pannellum.js ../../src/js/libpannellum.js -o generated_docs -f html --name Pannellum --project-version $version -g $private
