@@ -387,7 +387,7 @@ function onImageLoad() {
 function parseGPanoXMP(image) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
-        var img = reader.result;
+        var img = new Uint8Array(reader.result);
 
         // This awful browser specific test exists because iOS 8 does not work
         // with non-progressive encoded JPEGs.
@@ -459,7 +459,7 @@ function parseGPanoXMP(image) {
         // Load panorama
         panoImage.src = window.URL.createObjectURL(image);
     });
-    reader.readAsBinaryString(image);
+    reader.readAsArrayBuffer(image);
 }
 
 /**
