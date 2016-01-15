@@ -3,3 +3,6 @@ build/**
 
 # Ignore OS X stuff
 .DS_Store
+
+# Ignore generated docs
+utils/doc/generated_docs
