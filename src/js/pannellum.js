@@ -388,6 +388,11 @@ function parseGPanoXMP(image) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
         var img = new Uint8Array(reader.result);
+        if (Uint8Array.prototype.indexOf === undefined) {
+            // Use Array.prototype.indexOf method for browsers that don't
+            // support ECMAScript 6's TypedArray.prototype.indexOf
+            Uint8Array.prototype.indexOf = Array.prototype.indexOf;
+        }
 
         // This awful browser specific test exists because iOS 8 does not work
         // with non-progressive encoded JPEGs.
