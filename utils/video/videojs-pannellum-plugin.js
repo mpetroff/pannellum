@@ -1,6 +1,6 @@
 /*
  * Video.js plugin for Pannellum
- * Copyright (c) 2015 Matthew Petroff
+ * Copyright (c) 2015-2016 Matthew Petroff
  * MIT License
  */
 
@@ -28,7 +28,12 @@ videojs.plugin('pannellum', function() {
 
     // Handle update settings
     player.on('play', function() {
-        pnlm.setUpdate(true);
+        if (vid.readyState > 1)
+            pnlm.setUpdate(true);
+    });
+    player.on('canplay', function() {
+        if (!player.paused())
+            pnlm.setUpdate(true);
     });
     player.on('pause', function() {
         pnlm.setUpdate(false);
