@@ -323,7 +323,12 @@ function init() {
                     infoDisplay.load.lbar.style.display = 'none';
                 }
             };
-            xhr.open('GET', p, true);
+            try {
+                xhr.open('GET', p, true);
+            } catch (e) {
+                // Malformed URL
+                anError('There is something wrong with the panorama URL.');
+            }
             xhr.responseType = 'blob';
             xhr.send();
         }
