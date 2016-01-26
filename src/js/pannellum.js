@@ -696,7 +696,7 @@ function onDocumentTouchMove(event) {
             clientY += (pos1.y - pos0.y) * 0.5;
             var clientDist = Math.sqrt((pos0.x - pos1.x) * (pos0.x - pos1.x) +
                                        (pos0.y - pos1.y) * (pos0.y - pos1.y));
-            setHfov(config.hfov += (onPointerDownPointerDist - clientDist) * 0.1);
+            setHfov(config.hfov + (onPointerDownPointerDist - clientDist) * 0.1);
             onPointerDownPointerDist = clientDist;
         }
         
@@ -797,15 +797,15 @@ function onDocumentMouseWheel(event) {
     latestInteraction = Date.now();
     if (event.wheelDeltaY) {
         // WebKit
-        setHfov(config.hfov -= event.wheelDeltaY * 0.05);
+        setHfov(config.hfov - event.wheelDeltaY * 0.05);
         zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.wheelDelta) {
         // Opera / Explorer 9
-        setHfov(config.hfov -= event.wheelDelta * 0.05);
+        setHfov(config.hfov - event.wheelDelta * 0.05);
         zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.detail) {
         // Firefox
-        setHfov(config.hfov += event.detail * 1.5);
+        setHfov(config.hfov + event.detail * 1.5);
         zoomSpeed = event.detail > 0 ? 1 : -1;
     }
     
@@ -1554,7 +1554,7 @@ function onFullScreenChange() {
  */
 function zoomIn() {
     if (loaded) {
-        setHfov(config.hfov -= 5);
+        setHfov(config.hfov - 5);
     }
 }
 
@@ -1564,7 +1564,7 @@ function zoomIn() {
  */
 function zoomOut() {
     if (loaded) {
-        setHfov(config.hfov += 5);
+        setHfov(config.hfov + 5);
     }
 }
 
