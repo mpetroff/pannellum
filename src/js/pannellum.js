@@ -1575,12 +1575,15 @@ function zoomOut() {
  */
 function setHfov(hfov) {
     // Keep field of view within bounds
-    if (hfov < config.minHfov && config.type != 'multires') {
-        config.hfov = config.minHfov;
-    } else if (config.type == 'multires' && renderer && hfov < renderer.getCanvas().width /
-        (config.multiRes.cubeResolution / 90 * 0.9)) {
-        
-        config.hfov = renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9);
+    var minHfov = config.minHfov;
+    if (config.type == 'multires' && renderer) {
+        minHfov = Math.min(minHfov, renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9));
+    }
+    if (minHfov >= config.maxHfov) {
+        // Don't change view if bounds don't make sense
+        return;
+    } if (hfov < minHfov) {
+        config.hfov = minHfov;
     } else if (hfov > config.maxHfov) {
         config.hfov = config.maxHfov;
     } else {
