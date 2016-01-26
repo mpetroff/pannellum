@@ -1581,6 +1581,7 @@ function setHfov(hfov) {
     }
     if (minHfov >= config.maxHfov) {
         // Don't change view if bounds don't make sense
+        console.log('HFOV bounds do not make sense (minHfov >= maxHfov).')
         return;
     } if (hfov < minHfov) {
         config.hfov = minHfov;
