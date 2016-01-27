@@ -2,7 +2,7 @@
 
 ## About
 
-Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 13kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding.
+Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 15kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding.
 
 ## How to use
 1. Upload `build/pannellum.htm` and a full equirectangular panorama to a web server.
@@ -25,13 +25,14 @@ Examples using both the minified version and the version in the `src` directory 
 
 ## Browser Compatibility
 
-Since Pannellum is built with emerging web standards, it requires a modern browser to function.
+Since Pannellum is built with recent web standards, it requires a modern browser to function.
 
 #### Full support (with appropriate graphics drivers):
 * Firefox 10+
 * Chrome 15+
 * Safari 8+
 * Internet Explorer 11+
+* Edge
 
 #### Almost full support (no full screen):
 * Firefox 4+
