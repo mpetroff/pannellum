@@ -69,8 +69,8 @@ var defaultConfig = {
     minPitch: -85,
     maxPitch: 85,
     yaw: 0,
-    minYaw: -360,
-    maxYaw: 360,
+    minYaw: -180,
+    maxYaw: 180,
     haov: 360,
     vaov: 180,
     vOffset: 0,
@@ -1739,7 +1739,7 @@ this.getYaw = function() {
  * Sets the yaw of the center of the view.
  * @memberof Viewer
  * @instance
- * @param {number} yaw - Yaw in degrees
+ * @param {number} yaw - Yaw in degrees [-180, 180]
  * @returns {Viewer} `this`
  */
 this.setYaw = function(yaw) {
@@ -1764,15 +1764,15 @@ this.getYawBounds = function() {
 };
 
 /**
- * Set the minimum and maximum allowed yaws (in degrees).
+ * Set the minimum and maximum allowed yaws (in degrees [-180, 180]).
  * @memberof Viewer
  * @instance
  * @param {number[]} bounds - [minimum yaw, maximum yaw]
  * @returns {Viewer} `this`
  */
 this.setYawBounds = function(bounds) {
-    config.minYaw = Math.max(-360, Math.min(bounds[0], 360));
-    config.maxYaw = Math.max(-360, Math.min(bounds[1], 360));
+    config.minYaw = Math.max(-180, Math.min(bounds[0], 180));
+    config.maxYaw = Math.max(-180, Math.min(bounds[1], 180));
     return this;
 };
 
