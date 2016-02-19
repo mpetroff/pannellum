@@ -1,0 +1,8 @@
+# Ignore generated docs
+utils/doc/generated_docs
+
+# Ignore build utilities
+utils/build
+
+# Ignore examples
+examples
