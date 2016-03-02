@@ -330,6 +330,7 @@ function init() {
                 anError('There is something wrong with the panorama URL.');
             }
             xhr.responseType = 'blob';
+            xhr.setRequestHeader('Accept', 'image/*,*/*;q=0.9');
             xhr.send();
         }
     }
