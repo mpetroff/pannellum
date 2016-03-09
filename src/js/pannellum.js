@@ -1441,7 +1441,7 @@ function processOptions() {
                 break;
             
             case 'hfov':
-                setHfov(config[key]);
+                setHfov(Number(config[key]));
                 break;
             
             case 'pitch':
@@ -1458,21 +1458,6 @@ function processOptions() {
                     // Initialize
                     init();
                 }
-                break;
-            
-            case 'autoRotate':
-                // Rotation speed in degrees/second (+ccw, -cw)
-                config.autoRotate = config[key];
-                break;
-
-            case 'autoRotateInactivityDelay':
-                // Start the auto-rotate only after user inactivity (milliseconds):
-                config.autoRotateInactivityDelay = config[key];
-                break;
-                
-            case 'autoRotateStopDelay':
-                // Stop the auto-rotate after a certain delay (milliseconds):
-                config.autoRotateStopDelay = config[key];
                 break;
             
             case 'showZoomCtrl':
