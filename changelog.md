@@ -2,6 +2,20 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.2.1
+--------------------------
+
+New Features:
+
+ - NPM support
+
+Improvements:
+
+ - Set `Accept` header to request images
+ - Ensure `hfov` is a number
+ - Better restriction on yaw range
+
+
 Changes in Pannellum 2.2.0
 --------------------------
 
