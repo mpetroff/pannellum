@@ -1272,11 +1272,11 @@ function createHotSpots() {
             } else {
                 if (hs.sceneId) {
                     div.onclick = function() {
-                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw);
+                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
                         return false;
                     };
                     div.ontouchend = function() {
-                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw);
+                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
                         return false;
                     };
                     div.style.cursor = 'pointer';
@@ -1599,13 +1599,14 @@ function load() {
  * @param {string} sceneId - Identifier of scene configuration to merge in.
  * @param {number} targetPitch - Pitch viewer should be centered on once scene loads.
  * @param {number} targetYaw - Yaw viewer should be centered on once scene loads.
+ * @param {number} targetHfov - HFOV viewer should use once scene loads.
  */
-function loadScene(sceneId, targetPitch, targetYaw) {
+function loadScene(sceneId, targetPitch, targetYaw, targetHfov) {
     loaded = false;
     oldRenderer = renderer;
     
     // Set up fade if specified
-    var fadeImg, workingPitch, workingYaw;
+    var fadeImg, workingPitch, workingYaw, workingHfov;
     if (config.sceneFadeDuration) {
         fadeImg = new Image();
         fadeImg.className = 'pnlm-fade-img';
@@ -1633,6 +1634,11 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     } else {
         workingYaw = targetYaw;
     }
+    if (targetHfov === 'same') {
+        workingHfov = config.hfov;
+    } else {
+        workingHfov = targetHfov;
+    }
     
     // Destroy hot spots from previous scene
     destroyHotSpots();
@@ -1647,6 +1653,9 @@ function loadScene(sceneId, targetPitch, targetYaw) {
     }
     if (workingYaw) {
         config.yaw = workingYaw;
+    }
+    if (workingHfov) {
+        config.hfov = workingHfov;
     }
     load();
 }
@@ -1843,6 +1852,21 @@ this.setUpdate = function(bool) {
  */
 this.mouseEventToCoords = function(event) {
     return mouseEventToCoords(event);
+}
+
+/**
+ * Change scene being viewed.
+ * @memberof Viewer
+ * @instance
+ * @param {string} sceneId - Identifier of scene to switch to.
+ * @param {number} [pitch] - Pitch to use with new scene
+ * @param {number} [yaw] - Yaw to use with new scene
+ * @param {number} [hfov] - HFOV to use with new scene
+ * @returns {Viewer} `this`
+ */
+this.loadScene = function(sceneId, pitch, yaw, hfov) {
+    loadScene(sceneId, pitch, yaw, hfov);
+    return this;
 }
 
 }

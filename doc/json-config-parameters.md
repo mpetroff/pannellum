@@ -175,6 +175,10 @@ Specifies the pitch of the target scene.
 
 Specifies the yaw of the target scene.
 
+#### `targetHfov`
+
+Specifies the HFOV of the target scene.
+
 ### `hotSpotDebug`
 
 When `true`, the mouse pointer's pitch and yaw are logged to the console when
