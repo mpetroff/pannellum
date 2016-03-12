@@ -181,9 +181,11 @@ container.appendChild(compass);
 if (initialConfig.firstScene) {
     // Activate first scene if specified in URL
     mergeConfig(initialConfig.firstScene);
+    config.scene = initialConfig.firstScene;
 } else if (initialConfig.default && initialConfig.default.firstScene) {
     // Activate first scene if specified in file
     mergeConfig(initialConfig.default.firstScene);
+    config.scene = initialConfig.default.firstScene;
 } else {
     mergeConfig(null);
 }
@@ -1604,6 +1606,7 @@ function load() {
 function loadScene(sceneId, targetPitch, targetYaw, targetHfov) {
     loaded = false;
     oldRenderer = renderer;
+    config.scene = sceneId;
     
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
@@ -1867,6 +1870,16 @@ this.mouseEventToCoords = function(event) {
 this.loadScene = function(sceneId, pitch, yaw, hfov) {
     loadScene(sceneId, pitch, yaw, hfov);
     return this;
+}
+
+/**
+ * Get ID of current scene.
+ * @memberof Viewer
+ * @instance
+ * @returns {string} ID of current scene
+ */
+this.getScene = function() {
+    return config.scene;
 }
 
 }
