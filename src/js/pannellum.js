@@ -1244,7 +1244,26 @@ function createHotSpots() {
                 span.innerHTML = escapeHTML(hs.text);
             
             var a;
-            if (hs.URL) {
+            if (hs.image) {
+                a = document.createElement('a');
+                if( hs.URL )
+                {
+                  a.href =  encodeURI(hs.URL);
+                }
+                else
+                {
+                  a.href = encodeURI(hs.image);
+                }
+                a.target = '_blank';
+                span.appendChild(a);
+                var image = document.createElement('img');
+                image.src = encodeURI(hs.image);
+                image.style.width = hs.width + 'px';
+                image.style.paddingTop = '5px';
+                renderContainer.appendChild(div);
+                a.appendChild(image);
+                span.style.maxWidth = 'initial';
+            }else if (hs.URL) {
                 a = document.createElement('a');
                 a.href =  encodeURI(hs.URL);
                 a.target = '_blank';
@@ -1259,18 +1278,6 @@ function createHotSpots() {
                 video.style.width = hs.width + 'px';
                 renderContainer.appendChild(div);
                 span.appendChild(video);
-            } else if (hs.image) {
-                a = document.createElement('a');
-                a.href = encodeURI(hs.image);
-                a.target = '_blank';
-                span.appendChild(a);
-                var image = document.createElement('img');
-                image.src = encodeURI(hs.image);
-                image.style.width = hs.width + 'px';
-                image.style.paddingTop = '5px';
-                renderContainer.appendChild(div);
-                a.appendChild(image);
-                span.style.maxWidth = 'initial';
             } else {
                 if (hs.sceneId) {
                     div.onclick = function() {
