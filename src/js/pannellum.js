@@ -235,12 +235,7 @@ function init() {
             panoImage = new Image();
         }
     }
-    
-    // From http://stackoverflow.com/a/19709846
-    var absoluteURL = function(url) {
-        return new RegExp('^(?:[a-z]+:)?//', 'i').test(url) | url[0] == '/';
-    };
-    
+
     // Configure image loading
     if (config.type == 'cubemap') {
         // Quick loading counter for synchronous loading
@@ -340,6 +335,17 @@ function init() {
     container.classList.add('pnlm-grab');
     container.classList.remove('pnlm-grabbing');
 }
+
+/**
+ * Test if URL is absolute or relative.
+ * @private
+ * @param {string} url - URL to test
+ * @returns {boolean} True if absolute, else false
+ */
+function absoluteURL(url) {
+    // From http://stackoverflow.com/a/19709846
+    return new RegExp('^(?:[a-z]+:)?//', 'i').test(url) | url[0] == '/';
+};
 
 /**
  * Create renderer and initialize event listeners once image is loaded.
@@ -1244,33 +1250,39 @@ function createHotSpots() {
                 span.innerHTML = escapeHTML(hs.text);
             
             var a;
-            if (hs.URL) {
-                a = document.createElement('a');
-                a.href =  encodeURI(hs.URL);
-                a.target = '_blank';
-                renderContainer.appendChild(a);
-                div.style.cursor = 'pointer';
-                span.style.cursor = 'pointer';
-                a.appendChild(div);
-            } else if (hs.video) {
-                var video = document.createElement('video');
-                video.src = encodeURI(hs.video);
+            if (hs.video) {
+                var video = document.createElement('video'),
+                    p = hs.video;
+                if (config.basePath && !absoluteURL(p))
+                    p = config.basePath + p;
+                video.src = encodeURI(p);
                 video.controls = true;
                 video.style.width = hs.width + 'px';
                 renderContainer.appendChild(div);
                 span.appendChild(video);
             } else if (hs.image) {
+                var p = hs.image;
+                if (config.basePath && !absoluteURL(p))
+                    p = config.basePath + p;
                 a = document.createElement('a');
-                a.href = encodeURI(hs.image);
+                a.href = encodeURI(hs.URL ? hs.URL : p);
                 a.target = '_blank';
                 span.appendChild(a);
                 var image = document.createElement('img');
-                image.src = encodeURI(hs.image);
+                image.src = encodeURI(p);
                 image.style.width = hs.width + 'px';
                 image.style.paddingTop = '5px';
                 renderContainer.appendChild(div);
                 a.appendChild(image);
                 span.style.maxWidth = 'initial';
+            } else if (hs.URL) {
+                a = document.createElement('a');
+                a.href = encodeURI(hs.URL);
+                a.target = '_blank';
+                renderContainer.appendChild(a);
+                div.style.cursor = 'pointer';
+                span.style.cursor = 'pointer';
+                a.appendChild(div);
             } else {
                 if (hs.sceneId) {
                     div.onclick = function() {
