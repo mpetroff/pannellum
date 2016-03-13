@@ -3,7 +3,7 @@
 # Requires Python 3.2+ (or Python 2.7) and nona (from Hugin)
 
 # generate.py - A multires tile set generator for Pannellum
-# Copyright (c) 2014-2015 Matthew Petroff
+# Copyright (c) 2014-2016 Matthew Petroff
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ if float(origWidth) / origHeight != 2:
 if args.cubeSize != 0:
     cubeSize = args.cubeSize
 else:
-    cubeSize = 8 * int(origWidth / 3.14159265 / 8)
+    cubeSize = 8 * int(origWidth / math.pi / 8)
 levels = int(math.ceil(math.log(float(cubeSize) / args.tileSize, 2))) + 1
 origHeight = str(origHeight)
 origWidth = str(origWidth)
