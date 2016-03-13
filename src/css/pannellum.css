@@ -242,10 +242,13 @@
     display: table;
     text-align: center;
     color: #fff;
+    table-layout: fixed;
 }
 
 .pnlm-info-box a {
     color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .pnlm-info-box p {
