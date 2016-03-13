@@ -1894,6 +1894,17 @@ this.getScene = function() {
     return config.scene;
 }
 
+/**
+ * Toggle fullscreen.
+ * @memberof Viewer
+ * @instance
+ * @returns {Viewer} `this`
+ */
+this.toggleFullscreen = function() {
+    toggleFullscreen();
+    return this;
+}
+
 }
 
 return {
