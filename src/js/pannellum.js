@@ -1833,6 +1833,28 @@ this.setHfovBounds = function(bounds) {
 };
 
 /**
+ * Returns the panorama's north offset.
+ * @memberof Viewer
+ * @instance
+ * @returns {number} North offset in degrees
+ */
+this.getNorthOffset = function() {
+    return config.northOffset;
+};
+
+/**
+ * Sets the panorama's north offset.
+ * @memberof Viewer
+ * @instance
+ * @param {number} heading - North offset in degrees
+ * @returns {Viewer} `this`
+ */
+this.setNorthOffset = function(heading) {
+    config.northOffset = Math.max(360, Math.min(0, heading));
+    return this;
+};
+
+/**
  * Returns the panorama renderer.
  * @memberof Viewer
  * @instance
