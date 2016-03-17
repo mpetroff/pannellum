@@ -181,11 +181,9 @@ container.appendChild(compass);
 if (initialConfig.firstScene) {
     // Activate first scene if specified in URL
     mergeConfig(initialConfig.firstScene);
-    config.scene = initialConfig.firstScene;
 } else if (initialConfig.default && initialConfig.default.firstScene) {
     // Activate first scene if specified in file
     mergeConfig(initialConfig.default.firstScene);
-    config.scene = initialConfig.default.firstScene;
 } else {
     mergeConfig(null);
 }
@@ -1403,7 +1401,7 @@ function mergeConfig(sceneId) {
                 }
             }
         }
-        config.activeScene = sceneId;
+        config.scene = sceneId;
     }
     
     // Merge initial config
@@ -1618,7 +1616,6 @@ function load() {
 function loadScene(sceneId, targetPitch, targetYaw, targetHfov) {
     loaded = false;
     oldRenderer = renderer;
-    config.scene = sceneId;
     
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
