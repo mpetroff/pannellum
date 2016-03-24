@@ -16,6 +16,14 @@ CSS = [
 'css/pannellum.css',
 ]
 
+SVG = [
+'img/grab.svg',
+'img/grabbing.svg',
+'img/sprites.svg',
+'img/background.svg',
+'img/compass.svg',
+]
+
 HTML = [
 'standalone/pannellum.htm'
 ]
@@ -84,7 +92,7 @@ def addHeaderJS(text, version):
     header = '// Pannellum ' + version + ', https://github.com/mpetroff/pannellum\n'
     return header + text
 
-def build(files, css, html, filename, release=False):
+def build(files, css, svg, html, filename, release=False):
     folder = ''
     os.makedirs('../../build', exist_ok=True)
     
@@ -111,42 +119,50 @@ def build(files, css, html, filename, release=False):
     print('Compiling', cssfilename)
     print('=' * 40)
     
-    css = merge(css)
-    css = css.replace("'img/grab.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grab.svg'),'') + "'")
-    css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grabbing.svg'),'') + "'")
+    css_out = merge(css)
+    for svg_file in svg:
+        css_out = css_out.replace("\'"+svg_file+"\'","'data:image/svg+xml," + urllib.parse.quote(read('css/'+svg_file),'') + "'")
     with open('../../src/standalone/standalone.css', 'r') as f:
         standalone_css = f.read()
-    standalone_css = cssCompress(css + standalone_css)
-    standalone_css = standalone_css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
-    standalone_css = standalone_css.replace("'img/background.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
-    standalone_css = standalone_css.replace("'img/compass.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/compass.svg'),'') + "'")
-    css = cssCompress(css)
-    css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
-    css = css.replace("'img/background.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
-    css = css.replace("'img/compass.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/compass.svg'),'') + "'")
+    standalone_css = cssCompress(css_out + standalone_css)
+    css_out = cssCompress(css_out)
     
     print('=' * 40)
     print('Compiling', htmlfilename)
     print('=' * 40)
     
     html = merge(html)
-    html = html.replace('<link type="text/css" rel="Stylesheet" href="../css/pannellum.css"/>','<style type="text/css">' + standalone_css + '</style>')
-    html = html.replace('<script type="text/javascript" src="../js/libpannellum.js"></script>','')
-    html = html.replace('<script type="text/javascript" src="../js/RequestAnimationFrame.js"></script>','')
-    html = html.replace('<script type="text/javascript" src="../js/pannellum.js"></script>','<script type="text/javascript">' + standalone_js + '</script>')
-    html = html.replace('<script type="text/javascript" src="standalone.js"></script>','')
+    # replace css links in html
+    bFirst = True
+    for css_file in css:
+        s_replacement = ''
+        if (bFirst):
+            s_replacement = '<style type="text/css">' + standalone_css + '</style>'
+            bFirst = False
+        html = html.replace('<link type="text/css" rel="Stylesheet" href="../'+css_file+'"/>',s_replacement)
     html = html.replace('<link type="text/css" rel="Stylesheet" href="standalone.css"/>', '')
+		
+    #replace js files in html
+    bFirst = True
+    for js_file in files:
+        s_replacement = ''
+        if (bFirst):
+            s_replacement = '<script type="text/javascript">' + standalone_js + '</script>'
+            bFirst = False
+        html = html.replace('<script type="text/javascript" src="../'+js_file+'"></script>',s_replacement)
+    html = html.replace('<script type="text/javascript" src="standalone.js"></script>','')
+    
     html = htmlCompress(html)
     
     output(addHeaderHTML(html, version), folder + htmlfilename)
-    output(addHeaderCSS(css, version), folder + cssfilename)
+    output(addHeaderCSS(css_out, version), folder + cssfilename)
     output(addHeaderJS(js, version), folder + filename)
 
 def main():
     if (len(sys.argv) > 1 and sys.argv[1] == 'release'):
-        build(JS, CSS, HTML, 'pannellum', True)
+        build(JS, CSS, SVG, HTML, 'pannellum', True)
     else:
-        build(JS, CSS, HTML, 'pannellum')
+        build(JS, CSS, SVG, HTML, 'pannellum')
 
 if __name__ == "__main__":
     main()
