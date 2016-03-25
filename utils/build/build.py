@@ -10,6 +10,7 @@ JS = [
 'js/libpannellum.js',
 'js/RequestAnimationFrame.js',
 'js/pannellum.js',
+'js/deviceOrientation.js',
 ]
 
 CSS = [

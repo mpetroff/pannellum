@@ -48,6 +48,7 @@ var config,
     onPointerDownPitch = 0,
     keysDown = new Array(10),
     fullscreenActive = false,
+    deviceorientationActive = false,
     loaded = false,
     error = false,
     isTimedOut = false,
@@ -77,6 +78,8 @@ var defaultConfig = {
     autoRotate: false,
     autoRotateInactivityDelay: -1,
     type: 'equirectangular',
+    compass: false,
+    enableDeviceOrientationCtrl: false,
     northOffset: 0,
     showFullscreenCtrl: true,
     dynamic: false,
@@ -172,6 +175,13 @@ controls.fullscreen.className = 'pnlm-fullscreen-toggle-button pnlm-sprite pnlm-
 if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled)
     container.appendChild(controls.fullscreen);
 
+// Device Orientation toggle
+controls.deviceorientation = document.createElement('div');
+controls.deviceorientation.className = 'pnlm-deviceorientation-toggle-button pnlm-sprite pnlm-deviceorientation-toggle-button-inactive pnlm-controls pnlm-control';
+// this control will be shown if device orientation api is available
+controls.deviceorientation.style.display = 'none';
+container.appendChild(controls.deviceorientation);
+
 // Compass
 var compass = document.createElement('div');
 compass.className = 'pnlm-compass pnlm-controls pnlm-control';
@@ -188,6 +198,22 @@ if (initialConfig.firstScene) {
     mergeConfig(null);
 }
 processOptions();
+
+// create device orientation listener and check availability
+var deviceorientation = null;
+if( config.enableDeviceOrientationCtrl )
+{
+	deviceorientation = new DeviceOrientationHandler(function(bAvailable) {
+		// if device orientation api was detected enable the controls
+		if(bAvailable) {
+			controls.deviceorientation.style.display = 'inline';
+			
+			controls.deviceorientation.addEventListener('click', toggleDeviceorientation);
+			// additional control on compass due too bigger area on mobile device
+			compass.addEventListener('click', toggleDeviceorientation);
+		}
+	});
+}
 
 /**
  * Initializes viewer.
@@ -568,6 +594,9 @@ function onDocumentMouseDown(event) {
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
     
+    // Turn off device orientation rotation if mouse is used for panning
+    disableDeviceorientation();
+    
     isUserInteracting = true;
     latestInteraction = Date.now();
     
@@ -671,6 +700,10 @@ function onDocumentTouchStart(event) {
         onPointerDownPointerDist = Math.sqrt((pos0.x - pos1.x) * (pos0.x - pos1.x) +
                                              (pos0.y - pos1.y) * (pos0.y - pos1.y));
     }
+    
+    // Turn off device orientation rotation if touch is used for panning
+    disableDeviceorientation();
+    
     isUserInteracting = true;
     latestInteraction = Date.now();
     
@@ -830,6 +863,9 @@ function onDocumentKeyPress(event) {
     
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
+    
+    // Turn off device orientation rotation if keys are used for panning
+    disableDeviceorientation();
     
     // Record key pressed
     var keynumber = event.keycode;
@@ -1104,7 +1140,18 @@ function animate() {
     render();
     if (isUserInteracting) {
         requestAnimationFrame(animate);
-    } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
+	} else if(deviceorientationActive === true) {
+        // keep user interaction disabled (device movement is a kind of interaction)
+        latestInteraction = Date.now();
+        // get pitch and yaw from device orientation
+        // take north offset into account to align with device compass
+        config.yaw = deviceorientation.GetYaw() + config.northOffset;
+        config.pitch = deviceorientation.GetPitch();
+
+        console.log(config.yaw, config.pitch);
+
+        requestAnimationFrame(animate);
+	} else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
         keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] ||
         keysDown[8] || keysDown[9] || config.autoRotate ||
         Math.abs(yawSpeed) > 0.01 || Math.abs(pitchSpeed) > 0.01 ||
@@ -1530,6 +1577,40 @@ function toggleFullscreen() {
             }
         }
     }
+}
+
+/**
+ * Toggles device orientation control mode.
+ * @private
+ */
+function toggleDeviceorientation() {
+	if( config.enableDeviceOrientationCtrl )
+	{
+		if (loaded && !error) {
+			if (!deviceorientationActive) {
+				controls.deviceorientation.classList.add('pnlm-deviceorientation-toggle-button-active');
+				deviceorientationActive = true;
+				animateInit();
+			} else {
+				controls.deviceorientation.classList.remove('pnlm-deviceorientation-toggle-button-active');
+				deviceorientationActive = false;
+			}
+		}
+	}
+}
+
+/**
+ * Disable device orientation rotation.
+ */
+function disableDeviceorientation() {
+	if( config.enableDeviceOrientationCtrl )
+	{
+		if (loaded && !error) {
+			if (deviceorientationActive === true) {
+				toggleDeviceorientation();
+			}
+		}
+	}
 }
 
 /**

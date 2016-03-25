@@ -114,6 +114,21 @@
     background-position: 0 -78px;
 }
 
+.pnlm-deviceorientation-toggle-button {
+    top: 102px;
+    left: 4px;
+    width: 26px;
+    height: 26px;
+}
+
+.pnlm-deviceorientation-toggle-button-inactive {
+    background-position: 0 -182px;
+}
+
+.pnlm-deviceorientation-toggle-button-active {
+    background-position: 0 -156px;
+}
+
 .pnlm-panorama-info {
     position: absolute;
     bottom: 4px;
