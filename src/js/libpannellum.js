@@ -402,13 +402,19 @@ function Renderer(container, image, imageType, dynamic) {
      * Render new view of panorama.
      * @memberof Renderer
      * @instance
-     * @param {number} pitch - Pitch to render at.
-     * @param {number} yaw - Yaw to render at.
-     * @param {number} hfov - Horizontal field of view to render with.
-     * @param {boolean} returnImage - Return rendered image?
+     * @param {number} pitch - Pitch to render at (in radians).
+     * @param {number} yaw - Yaw to render at (in radians).
+     * @param {number} hfov - Horizontal field of view to render with (in radians).
+     * @param {Object} [params] - Extra configuration parameters. 
+     * @param {number} [params.roll] - Camera roll (in radians).
+     * @param {boolean} [params.returnImage] - Return rendered image?
      */
-    this.render = function(pitch, yaw, hfov, returnImage) {
-        var focal, i, s;
+    this.render = function(pitch, yaw, hfov, params) {
+        var focal, i, s, roll = 0;
+        if (params === undefined)
+            params = {};
+        if (params.roll)
+            roll = params.roll;
         
         // If no WebGL
         if (!gl && (imageType == 'multires' || imageType == 'cubemap')) {
@@ -468,17 +474,18 @@ function Renderer(container, image, imageType, dynamic) {
                         Math.cos(orig_pitch) * (Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.cos(orig_yaw) +
                         Math.sin(orig_yaw) * Math.sin(horizonPitch))],
                     w = [-Math.cos(pitch) * Math.sin(yaw), Math.cos(pitch) * Math.cos(yaw)];
-                var roll = Math.acos((v[0]*w[0] + v[1]*w[1]) /
+                var roll_adj = Math.acos((v[0]*w[0] + v[1]*w[1]) /
                     (Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) *
                     Math.sqrt(w[0]*w[0]+w[1]*w[1])));
                 if (v[2] < 0)
-                    roll = 2 * Math.PI - roll;
-                gl.uniform1f(program.rot, roll);
+                    roll_adj = 2 * Math.PI - roll_adj;
+                roll += roll_adj;
             }
 
-            // Pass psi, theta, and focal length
+            // Pass psi, theta, roll, and focal length
             gl.uniform1f(program.psi, yaw);
             gl.uniform1f(program.theta, pitch);
+            gl.uniform1f(program.rot, roll);
             gl.uniform1f(program.f, focal);
             
             if (dynamic === true) {
@@ -501,6 +508,7 @@ function Renderer(container, image, imageType, dynamic) {
             
             // Create rotation matrix
             var matrix = identityMatrix3();
+            matrix = rotateMatrix(matrix, -roll, 'z');
             matrix = rotateMatrix(matrix, -pitch, 'x');
             matrix = rotateMatrix(matrix, yaw, 'y');
             matrix = makeMatrix4(matrix);
@@ -537,7 +545,7 @@ function Renderer(container, image, imageType, dynamic) {
             multiresDraw();
         }
         
-        if (returnImage !== undefined) {
+        if (params.returnImage !== undefined) {
             return canvas.toDataURL('image/png');
         }
     };
@@ -833,24 +841,31 @@ function Renderer(container, image, imageType, dynamic) {
      * @private
      * @param {number[]} m - Matrix to rotate.
      * @param {number[]} angle - Angle to rotate by in radians.
-     * @param {string} axis - Axis to rotate about (`x` or `y`).
+     * @param {string} axis - Axis to rotate about (`x`, `y`, or `z`).
      * @returns {number[]} Rotated matrix.
      */
     function rotateMatrix(m, angle, axis) {
         var s = Math.sin(angle);
         var c = Math.cos(angle);
-        if ( axis == 'x' ) {
+        if (axis == 'x') {
             return [
                 m[0], c*m[1] + s*m[2], c*m[2] - s*m[1],
                 m[3], c*m[4] + s*m[5], c*m[5] - s*m[4],
                 m[6], c*m[7] + s*m[8], c*m[8] - s*m[7]
             ];
         }
-        if ( axis == 'y' ) {
+        if (axis == 'y') {
             return [
                 c*m[0] - s*m[2], m[1], c*m[2] + s*m[0],
                 c*m[3] - s*m[5], m[4], c*m[5] + s*m[3],
                 c*m[6] - s*m[8], m[7], c*m[8] + s*m[6]
+            ];
+        }
+        if (axis == 'z') {
+            return [
+                c*m[0] + s*m[1], c*m[1] - s*m[0], m[2],
+                c*m[3] + s*m[4], c*m[4] - s*m[3], m[5],
+                c*m[6] + s*m[7], c*m[7] - s*m[6], m[8]
             ];
         }
     }

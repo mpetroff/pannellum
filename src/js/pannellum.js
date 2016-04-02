@@ -1625,7 +1625,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov) {
         fadeImg.style.transition = 'opacity ' + (config.sceneFadeDuration / 1000) + 's';
         fadeImg.style.width = '100%';
         fadeImg.style.height = '100%';
-        var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, true);
+        var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {returnImage: true});
         if (data !== undefined) {
             fadeImg.src = data;
         }
