@@ -1088,6 +1088,7 @@ var fragCube = [
 'uniform float u_h;',
 'uniform float u_v;',
 'uniform float u_vo;',
+'uniform float u_rot;',
 
 'const float PI = 3.14159265358979323846264;',
 
@@ -1101,7 +1102,10 @@ var fragCube = [
     // Find the vector of focal point to view plane
     'vec3 planePos = vec3(v_texCoord.xy, 0.0);',
     'planePos.x *= u_aspectRatio;',
-    'vec3 viewVector = planePos - vec3(0.0,0.0,-u_f);',
+    'float sinrot = sin(u_rot);',
+    'float cosrot = cos(u_rot);',
+    'vec3 rotPos = vec3(planePos.x * cosrot - planePos.y * sinrot, planePos.x * sinrot + planePos.y * cosrot, 0.0);',
+    'vec3 viewVector = rotPos - vec3(0.0, 0.0, -u_f);',
 
     // Rotate vector for psi (yaw) and theta (pitch)
     'float sinpsi = sin(-u_psi);',
