@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="26" height="156">
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="208">
 <circle fill-opacity=".78" cy="117" cx="13" r="11" fill="#fff"/>
 <circle fill-opacity=".78" cy="143" cx="13" r="11" fill="#fff"/>
 <path d="m5 83v6h2v-4h4v-2h-6zm10 0v2h4v4h2v-6h-6zm-5 5v6h6v-6h-6zm-5 5v6h6v-2h-4v-4h-2zm14 0v4h-4v2h6v-6h-2z"/>
@@ -7,4 +7,7 @@
 <path d="m17 37.9998v2h-8v-2z"/>
 <path d="m12 9v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2z"/>
 <path d="m13 136-6.125 6.125h4.375v7.875h3.5v-7.875h4.375z"/>
+<path d="m15 175.53s5.53-5.83 4.02-7.14c-1.5-1.32-3 .87-3 .87s3.12-4.96 1.22-5.63c-1.9-.66-2.9 3.78-2.9 3.78s.77-5-.9-5c-1.68 0-1.38 4.68-1.38 4.68s-.5-3.98-1.9-3.57c-1.38.4-.48 4.77-.48 4.77s-1.37-4.23-2.54-3.28c-1.17.96.22 4.55.5 5.74.72 2.1 1.75 2.54 1.88 4.8" stroke="#000" fill="#fff" stroke-width=".9"/>
+<circle cy="195" cx="13" r="7.5" fill="#fff" stroke-width="1" stroke="#000"/>
+<path d="m12.74 189.03l-1.7 5.66h3.92l-1.7-5.67zm-1.7 6.28l1.7 5.67h.52l1.7-5.66zm.62.52h2.68L13 200.06z"/>
 </svg>

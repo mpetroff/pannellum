@@ -118,6 +118,13 @@ viewer can be set to. Defaults to `50` / `120`.
 
 If `true`, a compass is displayed. Defaults to `false`.
 
+### `enableDeviceOrientationCtrl`
+
+*experimental*
+
+If `true`, the panorama can be viewed by panning of your device (only on devices that support the device orientation api).
+This feature can be enabled by clicking the button that appears if it is available or clicking the compass.
+If a correct northOffset is specified this will align the image with the compass if the device provides compass data.
 
 ### `northOffset`
 
