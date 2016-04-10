@@ -57,7 +57,7 @@
 }
 
 .pnlm-controls {
-    position: absolute;
+    margin-top: 4px;
     background-color: #fff;
     border: 1px solid #999;
     border-color: rgba(0,0,0,0.4);
@@ -73,9 +73,13 @@
     background-color: #f8f8f8;
 }
 
-.pnlm-zoom-controls {
-    top: 4px;
+.pnlm-controls-container {
+    position: absolute;
+    top: 0;
     left: 4px;
+}
+
+.pnlm-zoom-controls {
     width: 26px;
     height: 52px;
 }
@@ -99,11 +103,10 @@
     border-radius: 0 0 3px 3px;
 }
 
-.pnlm-fullscreen-toggle-button {
-    top: 66px;
-    left: 4px;
+.pnlm-fullscreen-toggle-button, .pnlm-orientation-button {
     width: 26px;
     height: 26px;
+    background-position: 0 -156px;
 }
 
 .pnlm-fullscreen-toggle-button-inactive {

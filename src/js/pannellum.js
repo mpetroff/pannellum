@@ -71,6 +71,7 @@ var defaultConfig = {
     yaw: 0,
     minYaw: -180,
     maxYaw: 180,
+    roll: 0,
     haov: 360,
     vaov: 180,
     vOffset: 0,
@@ -144,6 +145,9 @@ container.appendChild(infoDisplay.errorMsg);
 
 // Create controls
 var controls = {};
+controls.container = document.createElement('div');
+controls.container.className = 'pnlm-controls-container';
+container.appendChild(controls.container);
 
 // Load button
 controls.load = document.createElement('div');
@@ -163,14 +167,28 @@ controls.zoomOut = document.createElement('div');
 controls.zoomOut.className = 'pnlm-zoom-out pnlm-sprite pnlm-control';
 controls.zoomOut.addEventListener('click', zoomOut);
 controls.zoom.appendChild(controls.zoomOut);
-container.appendChild(controls.zoom);
+controls.container.appendChild(controls.zoom);
 
 // Fullscreen toggle
 controls.fullscreen = document.createElement('div');
 controls.fullscreen.addEventListener('click', toggleFullscreen);
 controls.fullscreen.className = 'pnlm-fullscreen-toggle-button pnlm-sprite pnlm-fullscreen-toggle-button-inactive pnlm-controls pnlm-control';
 if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled)
-    container.appendChild(controls.fullscreen);
+    controls.container.appendChild(controls.fullscreen);
+
+// Device orientation toggle
+controls.orientation = document.createElement('div');
+controls.orientation.addEventListener('click', function(e) {
+    window.addEventListener('deviceorientation', orientationListener);
+});
+controls.orientation.className = 'pnlm-orientation-button pnlm-sprite pnlm-controls pnlm-control';
+if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', function(e) {
+        window.removeEventListener('deviceorientation', this);
+        if (e)
+            controls.container.appendChild(controls.orientation);
+    });
+}
 
 // Compass
 var compass = document.createElement('div');
@@ -567,6 +585,9 @@ function onDocumentMouseDown(event) {
     
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
+
+    window.removeEventListener('deviceorientation', orientationListener);
+    config.roll = 0;
     
     isUserInteracting = true;
     latestInteraction = Date.now();
@@ -657,6 +678,12 @@ function onDocumentTouchStart(event) {
         return;
     }
 
+    // Turn off auto-rotation if enabled
+    config.autoRotate = false;
+
+    window.removeEventListener('deviceorientation', orientationListener);
+    config.roll = 0;
+
     // Calculate touch position relative to top left of viewer container
     var pos0 = mousePosition(event.targetTouches[0]);
 
@@ -743,6 +770,9 @@ function onDocumentPointerDown(event) {
         event.targetTouches = pointerCoordinates;
         onDocumentTouchStart(event);
         event.preventDefault();
+
+        window.removeEventListener('deviceorientation', orientationListener);
+        config.roll = 0;
     }
 }
 
@@ -830,7 +860,10 @@ function onDocumentKeyPress(event) {
     
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
-    
+
+    window.removeEventListener('deviceorientation', orientationListener);
+    config.roll = 0;
+
     // Record key pressed
     var keynumber = event.keycode;
     if (event.which) {
@@ -1148,7 +1181,7 @@ function render() {
         // Ensure the calculated pitch is within min and max allowed
         config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
         
-        renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180);
+        renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {roll: config.roll * Math.PI / 180});
         
         renderHotSpots();
         
@@ -1158,6 +1191,101 @@ function render() {
             compass.style.webkitTransform = 'rotate(' + (-config.yaw - config.northOffset) + 'deg)';
         }
     }
+}
+
+/**
+ * Creates a new quaternion.
+ * @constructor
+ * @param {Number} w - W value
+ * @param {Number} x - X value
+ * @param {Number} y - Y value
+ * @param {Number} z - Z value
+ */
+function Quaternion(w, x, y, z) {
+    this.w = w;
+    this.x = x;
+    this.y = y;
+    this.z = z;
+}
+
+/**
+ * Multiplies quaternions.
+ * @private
+ * @param {Quaternion} q - Quaternion to multiply
+ * @returns {Quaternion} Result of multiplication
+ */
+Quaternion.prototype.multiply = function(q) {
+    return new Quaternion(this.w*q.w - this.x*q.x - this.y*q.y - this.z*q.z,
+                          this.x*q.w + this.w*q.x + this.y*q.z - this.z*q.y,
+                          this.y*q.w + this.w*q.y + this.z*q.x - this.x*q.z,
+                          this.z*q.w + this.w*q.z + this.x*q.y - this.y*q.x);
+}
+
+/**
+ * Converts quaternion to Euler angles.
+ * @private
+ * @returns {Number[]} [phi angle, theta angle, psi angle]
+ */
+Quaternion.prototype.toEulerAngles = function() {
+    var phi = Math.atan2(2 * (this.w * this.x + this.y * this.z),
+                         1 - 2 * (this.x * this.x + this.y * this.y)),
+        theta = Math.asin(2 * (this.w * this.y - this.z * this.x)),
+        psi = Math.atan2(2 * (this.w * this.z + this.x * this.y),
+                         1 - 2 * (this.y * this.y + this.z * this.z));
+    return [phi, theta, psi];
+}
+
+/**
+ * Converts device orientation API Tait-Bryan angles to a quaternion.
+ * @private
+ * @param {Number} alpha - Alpha angle (in degrees)
+ * @param {Number} beta - Beta angle (in degrees)
+ * @param {Number} gamma - Gamma angle (in degrees)
+ * @returns {Quaternion} Orientation quaternion
+ */
+function taitBryanToQuaternion(alpha, beta, gamma) {
+    var r = [beta ? beta * Math.PI / 180 / 2 : 0,
+             gamma ? gamma * Math.PI / 180 / 2 : 0,
+             alpha ? alpha * Math.PI / 180 / 2 : 0];
+    var c = [Math.cos(r[0]), Math.cos(r[1]), Math.cos(r[2])],
+        s = [Math.sin(r[0]), Math.sin(r[1]), Math.sin(r[2])];
+
+    return new Quaternion(c[0]*c[1]*c[2] - s[0]*s[1]*s[2],
+                          s[0]*c[1]*c[2] - c[0]*s[1]*s[2],
+                          c[0]*s[1]*c[2] + s[0]*c[1]*s[2],
+                          c[0]*c[1]*s[2] + s[0]*s[1]*c[2]);
+}
+
+/**
+ * Computes current device orientation quaternion from device orientation API
+ * Tait-Bryan angles.
+ * @private
+ * @param {Number} alpha - Alpha angle (in degrees)
+ * @param {Number} beta - Beta angle (in degrees)
+ * @param {Number} gamma - Gamma angle (in degrees)
+ * @returns {Quaternion} Orientation quaternion
+ */
+function computeQuaternion(alpha, beta, gamma) {
+    // Convert Tait-Bryan angles to quaternion
+    var quaternion = taitBryanToQuaternion(alpha, beta, gamma);
+    // Apply world transform
+    quaternion = quaternion.multiply(new Quaternion(Math.sqrt(0.5), -Math.sqrt(0.5), 0, 0));
+    // Apply screen transform
+    var angle = window.orientation ? -window.orientation * Math.PI / 180 / 2 : 0;
+    return quaternion.multiply(new Quaternion(Math.cos(angle), 0, -Math.sin(angle), 0));
+}
+
+/**
+ * Event handler for device orientation API. Controls pointing.
+ * @private
+ * @param {DeviceOrientationEvent} event - Device orientation event.
+ */
+function orientationListener(e) {
+    var q = computeQuaternion(e.alpha, e.beta, e.gamma).toEulerAngles();
+    config.pitch = q[0] / Math.PI * 180;
+    config.roll = -q[1] / Math.PI * 180;
+    config.yaw = -q[2] / Math.PI * 180 + config.northOffset;
+    animate();
 }
 
 /**
