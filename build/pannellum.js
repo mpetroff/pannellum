@@ -1,17 +1,17 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
  * Copyright (c) 2011-2016 Matthew Petroff
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -180,12 +180,12 @@ window.pannellum = function (window, document, undefined) {
         // Device orientation toggle
         controls.orientation = document.createElement('div');
         controls.orientation.addEventListener('click', function (e) {
-            window.addEventListener('deviceorientation', orientationListener);
+            window.addEventListener('orientationchange', orientationListener);
         });
         controls.orientation.className = 'pnlm-orientation-button pnlm-sprite pnlm-controls pnlm-control';
         if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', function (e) {
-                window.removeEventListener('deviceorientation', this);
+            window.addEventListener('orientationchange', function (e) {
+                window.removeEventListener('orientationchange', this);
                 if (e) controls.container.appendChild(controls.orientation);
             });
         }
@@ -584,7 +584,7 @@ window.pannellum = function (window, document, undefined) {
             // Turn off auto-rotation if enabled
             config.autoRotate = false;
 
-            window.removeEventListener('deviceorientation', orientationListener);
+            window.removeEventListener('orientationchange', orientationListener);
             config.roll = 0;
 
             isUserInteracting = true;
@@ -679,7 +679,7 @@ window.pannellum = function (window, document, undefined) {
             // Turn off auto-rotation if enabled
             config.autoRotate = false;
 
-            window.removeEventListener('deviceorientation', orientationListener);
+            window.removeEventListener('orientationchange', orientationListener);
             config.roll = 0;
 
             // Calculate touch position relative to top left of viewer container
@@ -767,7 +767,7 @@ window.pannellum = function (window, document, undefined) {
                 onDocumentTouchStart(event);
                 event.preventDefault();
 
-                window.removeEventListener('deviceorientation', orientationListener);
+                window.removeEventListener('orientationchange', orientationListener);
                 config.roll = 0;
             }
         }
@@ -855,7 +855,7 @@ window.pannellum = function (window, document, undefined) {
             // Turn off auto-rotation if enabled
             config.autoRotate = false;
 
-            window.removeEventListener('deviceorientation', orientationListener);
+            window.removeEventListener('orientationchange', orientationListener);
             config.roll = 0;
 
             // Record key pressed
