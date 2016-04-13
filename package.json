@@ -13,11 +13,18 @@
     "type": "git",
     "url": "https://github.com/mpetroff/pannellum.git"
   },
+  "scripts": {
+    "build": "babel -d build/ src/js",
+    "prepublish": "npm run build"
+  },
   "license": "MIT",
   "homepage": "https://pannellum.org/",
-  "main": "build/pannellum.js",
+  "main": "build/index.js",
   "keywords": [
     "panorama",
     "viewer"
-  ]
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.7.5"
+  }
 }

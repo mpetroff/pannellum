@@ -1,8 +1,12 @@
 # Ignore builds
-build/**
+# temporal disabled for git instalation
+#build/**
 
 # Ignore OS X stuff
 .DS_Store
 
 # Ignore generated docs
 utils/doc/generated_docs
+
+#Ignode npm build
+/node_modules/
