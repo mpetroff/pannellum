@@ -179,12 +179,12 @@ if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webk
 // Device orientation toggle
 controls.orientation = document.createElement('div');
 controls.orientation.addEventListener('click', function(e) {
-    window.addEventListener('orientationchange', orientationListener);
+    window.addEventListener('deviceorientation', orientationListener);
 });
 controls.orientation.className = 'pnlm-orientation-button pnlm-sprite pnlm-controls pnlm-control';
 if (window.DeviceOrientationEvent) {
-    window.addEventListener('orientationchange', function(e) {
-        window.removeEventListener('orientationchange', this);
+    window.addEventListener('deviceorientation', function(e) {
+        window.removeEventListener('deviceorientation', this);
         if (e)
             controls.container.appendChild(controls.orientation);
     });
@@ -387,6 +387,7 @@ function onImageLoad() {
         container.addEventListener('msfullscreenchange', onFullScreenChange, false);
         container.addEventListener('fullscreenchange', onFullScreenChange, false);
         window.addEventListener('resize', onDocumentResize, false);
+		window.addEventListener('orientationchange', onDocumentResize, false);
         container.addEventListener('keydown', onDocumentKeyPress, false);
         container.addEventListener('keyup', onDocumentKeyUp, false);
         container.addEventListener('blur', clearKeys, false);
@@ -586,7 +587,7 @@ function onDocumentMouseDown(event) {
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
 
-    window.removeEventListener('orientationchange', orientationListener);
+    window.removeEventListener('deviceorientation', orientationListener);
     config.roll = 0;
 
     isUserInteracting = true;
@@ -681,7 +682,7 @@ function onDocumentTouchStart(event) {
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
 
-    window.removeEventListener('orientationchange', orientationListener);
+    window.removeEventListener('deviceorientation', orientationListener);
     config.roll = 0;
 
     // Calculate touch position relative to top left of viewer container
@@ -771,7 +772,7 @@ function onDocumentPointerDown(event) {
         onDocumentTouchStart(event);
         event.preventDefault();
 
-        window.removeEventListener('orientationchange', orientationListener);
+        window.removeEventListener('deviceorientation', orientationListener);
         config.roll = 0;
     }
 }
@@ -861,7 +862,7 @@ function onDocumentKeyPress(event) {
     // Turn off auto-rotation if enabled
     config.autoRotate = false;
 
-    window.removeEventListener('orientationchange', orientationListener);
+    window.removeEventListener('deviceorientation', orientationListener);
     config.roll = 0;
 
     // Record key pressed
