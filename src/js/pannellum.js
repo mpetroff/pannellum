@@ -387,6 +387,7 @@ function onImageLoad() {
         container.addEventListener('msfullscreenchange', onFullScreenChange, false);
         container.addEventListener('fullscreenchange', onFullScreenChange, false);
         window.addEventListener('resize', onDocumentResize, false);
+		window.addEventListener('orientationchange', onDocumentResize, false);
         container.addEventListener('keydown', onDocumentKeyPress, false);
         container.addEventListener('keyup', onDocumentKeyUp, false);
         container.addEventListener('blur', clearKeys, false);
