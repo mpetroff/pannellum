@@ -58,6 +58,7 @@ var config,
     pitchSpeed = 0,
     zoomSpeed = 0,
     animating = false,
+    autoRotateStart,
     update = false, // Should we update when still to render dynamic content
     hotspotsCreated = false;
 
@@ -1045,7 +1046,7 @@ function keyRepeat() {
     
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
-    if (config.autoRotate && inactivityInterval > config.autoRotateInactivityDelay &&
+    if (config.autoRotate &&
         config.autoRotateStopDelay !== false) {
         // Pan
         if (diff > 0.000001) {
@@ -1150,6 +1151,16 @@ function animate() {
         requestAnimationFrame(animate);
     } else {
         animating = false;
+        var autoRotateStartTime = config.autoRotateInactivityDelay -
+            (Date.now() - latestInteraction);
+        if (autoRotateStartTime > 0) {
+            if (autoRotateStart)
+                clearTimeout(autoRotateStart);
+            autoRotateStart = setTimeout(function() {
+                config.autoRotate = true;
+                animate();
+            }, autoRotateStartTime);
+        }
     }
 }
 
