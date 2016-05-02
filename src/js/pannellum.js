@@ -1049,8 +1049,8 @@ function keyRepeat() {
     if (config.autoRotate &&
         config.autoRotateStopDelay !== false) {
         // Pan
-        if (diff > 0.000001) {
-            config.yaw -= config.autoRotate / 60 * diff;
+        if (newTime - prevTime > 0.001) {
+            config.yaw -= config.autoRotate * (newTime - prevTime) / 1000;
         }
         
         // Deal with stopping auto rotation after a set delay
