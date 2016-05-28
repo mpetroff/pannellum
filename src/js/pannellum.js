@@ -1111,10 +1111,10 @@ function keyRepeat() {
  * @private
  */
 function onDocumentResize() {
-    // Resize panorama renderer
-    renderer.resize();
-    animateInit();
-    
+    // Resize panorama renderer (moved to onFullScreenChange)
+    //renderer.resize();
+    //animateInit();
+
     // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
     onFullScreenChange();
 }
@@ -1684,6 +1684,10 @@ function onFullScreenChange() {
         controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = false;
     }
+
+    // Resize renderer (deal with browser quirks and fixes #155)
+    renderer.resize();
+    animateInit();
 }
 
 /**
