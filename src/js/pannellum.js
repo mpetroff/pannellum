@@ -59,6 +59,7 @@ var config,
     zoomSpeed = 0,
     animating = false,
     autoRotateStart,
+    externalEventListeners = {},
     update = false, // Should we update when still to render dynamic content
     hotspotsCreated = false;
 
@@ -1361,6 +1362,8 @@ function renderInitCallback() {
         preview = undefined;
     }
     loaded = true;
+
+    fireEvent('load');
     
     animateInit();
 }
@@ -1813,6 +1816,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov) {
     if (workingHfov) {
         config.hfov = workingHfov;
     }
+    fireEvent('scenechange');
     load();
 }
 
@@ -2066,6 +2070,63 @@ this.getScene = function() {
 this.toggleFullscreen = function() {
     toggleFullscreen();
     return this;
+}
+
+/**
+ * Subscribe listener to specified event.
+ * @memberof Viewer
+ * @instance
+ * @param {string} type - Type of event to subscribe to.
+ * @param {Function} listener - Listener function to subscribe to event.
+ * @returns {Viewer} `this`
+ */
+this.on = function(type, listener) {
+    externalEventListeners[type] = externalEventListeners[type] || [];
+    externalEventListeners[type].push(listener);
+    return this;
+}
+
+/**
+ * Remove an event listener (or listeners).
+ * @memberof Viewer
+ * @param {string} [type] - Type of event to remove listeners from. If not specified, all listeners are removed.
+ * @param {Function} [listener] - Listener function to remove. If not specified, all listeners of specified type are removed.
+ * @returns {Viewer} `this`
+ */
+this.off = function(type, listener) {
+    if (!type) {
+        // Remove all listeners if type isn't specified
+        externalEventListeners = {};
+        return this;
+    }
+    if (listener) {
+        var i = externalEventListeners[type].indexOf(listener);
+        if (i >= 0) {
+            // Remove listener if found
+            externalEventListeners[type].splice(i, 1);
+        }
+        if (externalEventListeners[type].length = 0) {
+            // Remove category if empty
+            delete externalEventListeners[type];
+        }
+    } else {
+        // Remove category of listeners if listener isn't specified
+        delete externalEventListeners[type];
+    }
+    return this;
+}
+
+/**
+ * Fire listeners attached to specified event.
+ * @private
+ * @param {string} [type] - Type of event to fire listeners for.
+ */
+function fireEvent(type) {
+    if (type in externalEventListeners) {
+        for (var i = 0; i < externalEventListeners[type].length; i++) {
+            externalEventListeners[type][i].call();
+        }
+    }
 }
 
 }
