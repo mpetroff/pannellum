@@ -1854,6 +1854,7 @@ this.getPitch = function() {
  */
 this.setPitch = function(pitch) {
     config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, pitch));
+    requestAnimationFrame(animate);
     return this;
 };
 
@@ -1905,6 +1906,7 @@ this.setYaw = function(yaw) {
         yaw += 360;
     }
     config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, yaw));
+    requestAnimationFrame(animate);
     return this;
 };
 
@@ -1950,6 +1952,7 @@ this.getHfov = function() {
  */
 this.setHfov = function(hfov) {
     setHfov(hfov);
+    requestAnimationFrame(animate);
     return this;
 };
 
@@ -1996,6 +1999,7 @@ this.getNorthOffset = function() {
  */
 this.setNorthOffset = function(heading) {
     config.northOffset = Math.max(360, Math.min(0, heading));
+    requestAnimationFrame(animate);
     return this;
 };
 
