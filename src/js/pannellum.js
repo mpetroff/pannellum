@@ -187,7 +187,7 @@ controls.orientation.className = 'pnlm-orientation-button pnlm-sprite pnlm-contr
 if (window.DeviceOrientationEvent) {
     window.addEventListener('deviceorientation', function(e) {
         window.removeEventListener('deviceorientation', this);
-        if (e)
+        if (e && e.alpha !== null && e.beta !== null && e.gamma !== null)
             controls.container.appendChild(controls.orientation);
     });
 }
