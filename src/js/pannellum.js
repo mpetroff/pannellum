@@ -1759,25 +1759,30 @@ function load() {
  * @param {number} targetPitch - Pitch viewer should be centered on once scene loads.
  * @param {number} targetYaw - Yaw viewer should be centered on once scene loads.
  * @param {number} targetHfov - HFOV viewer should use once scene loads.
+ * @param {boolean} [fadeDone] - If `true`, fade setup is skipped.
  */
-function loadScene(sceneId, targetPitch, targetYaw, targetHfov) {
+function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     loaded = false;
     oldRenderer = renderer;
     
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
-    if (config.sceneFadeDuration) {
+    if (config.sceneFadeDuration && !fadeDone) {
         fadeImg = new Image();
         fadeImg.className = 'pnlm-fade-img';
         fadeImg.style.transition = 'opacity ' + (config.sceneFadeDuration / 1000) + 's';
         fadeImg.style.width = '100%';
         fadeImg.style.height = '100%';
+        fadeImg.onload = function() {
+            loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
+        };
         var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {returnImage: true});
         if (data !== undefined) {
             fadeImg.src = data;
         }
         renderContainer.appendChild(fadeImg);
         oldRenderer.fadeImg = fadeImg;
+        return;
     }
     
     // Set new pointing
