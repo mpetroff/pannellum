@@ -14,6 +14,7 @@ Specifies the URL of a JSON configuration file.
 ## Other parameters
 
 A subset of the JSON configuration file options can be used as URL parameters.
-These include `panorama`, `config`, `author`, `title`, `hfov`, `pitch`, `yaw`,
+These include `panorama`, `config`, `author`, `title`, `hfov`, `minHfov`, `maxHfov`,
+`pitch`, `minPitch`, `maxPitch`, `yaw`, `minYaw`, `maxYaw`,
 `haov`, `vaov`, `vOffset`, `autoLoad`, `autoRotate`, `firstScene`,
 `ignoreGPanoXMP`, `preview`, and `fallback`.
