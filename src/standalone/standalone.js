@@ -21,6 +21,7 @@ function parseURLParameters() {
         json += '"' + option + '":';
         switch(option) {
             case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
+            case 'minHfov': case 'maxHfov': case 'minPitch': case 'maxPitch': case 'minYaw': case 'maxYaw':
             case 'vOffset': case 'autoRotate':
                 json += value;
                 break;
