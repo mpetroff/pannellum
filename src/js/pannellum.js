@@ -2056,7 +2056,8 @@ this.mouseEventToCoords = function(event) {
  * @returns {Viewer} `this`
  */
 this.loadScene = function(sceneId, pitch, yaw, hfov) {
-    loadScene(sceneId, pitch, yaw, hfov);
+    if (loaded)
+        loadScene(sceneId, pitch, yaw, hfov);
     return this;
 }
 
