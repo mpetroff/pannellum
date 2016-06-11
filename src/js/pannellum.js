@@ -736,12 +736,21 @@ function onDocumentTouchMove(event) {
             setHfov(config.hfov + (onPointerDownPointerDist - clientDist) * 0.1);
             onPointerDownPointerDist = clientDist;
         }
-        
-        var yaw = (onPointerDownPointerX - clientX) * 0.1 + onPointerDownYaw;
+
+        // The smaller the config.hfov value (the more zoomed-in the user is), the faster
+        // yaw/pitch are perceived to change on one-finger touchmove (panning) events and vice versa.
+        // To improve usability at both small and large zoom levels (config.hfov values)
+        // we introduce a dynamic pan speed coefficient.
+        //
+        // Currently this seems to *roughly* keep initial drag/pan start position close to
+        // the user's finger while panning regardless of zoom level / config.hfov value.
+        var touchmovePanSpeedCoeff = config.hfov / 360;
+
+        var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
         yawSpeed = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
-        
-        var pitch = (clientY - onPointerDownPointerY) * 0.1 + onPointerDownPitch;
+
+        var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
         pitchSpeed = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
     }
