@@ -501,20 +501,19 @@ function parseGPanoXMP(image) {
 /**
  * Displays an error message.
  * @private
- * @param {string} error - Error message to display. If not specified, a
+ * @param {string} errorMsg - Error message to display. If not specified, a
  *      generic WebGL error is displayed.
  */
-function anError(error) {
-    if (error !== undefined) {
-        infoDisplay.errorMsg.innerHTML = '<p>' + error + '</p>';
-    } else {
-        infoDisplay.errorMsg.innerHTML = '<p>Your browser does not have the necessary WebGL support to display this panorama.</p>';
-    }
+function anError(errorMsg) {
+    if (errorMsg === undefined)
+        errorMsg = 'Your browser does not have the necessary WebGL support to display this panorama.';
+    infoDisplay.errorMsg.innerHTML = '<p>' + errorMsg + '</p>';
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'none';
     infoDisplay.errorMsg.style.display = 'table';
     error = true;
     renderContainer.style.display = 'none';
+    fireEvent('error', errorMsg);
 }
 
 /**
@@ -522,9 +521,12 @@ function anError(error) {
  * @private
  */
 function clearError() {
-    infoDisplay.load.box.style.display = 'none';
-    infoDisplay.errorMsg.style.display = 'none';
-    error = false;
+    if (error) {
+        infoDisplay.load.box.style.display = 'none';
+        infoDisplay.errorMsg.style.display = 'none';
+        error = false;
+        fireEvent('errorcleared');
+    }
 }
 
 /**
@@ -2143,7 +2145,7 @@ this.off = function(type, listener) {
 function fireEvent(type) {
     if (type in externalEventListeners) {
         for (var i = 0; i < externalEventListeners[type].length; i++) {
-            externalEventListeners[type][i].call();
+            externalEventListeners[type][i].apply(null, [].slice.call(arguments, 1));
         }
     }
 }
