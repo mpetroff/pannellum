@@ -72,6 +72,10 @@ If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
 
 If set to `false`, zooming with keyboard will be disabled. Defaults to `true`.
 
+### `mouseZoom`
+
+If set to `false`, zooming with mouse wheel will be disabled. Defaults to `true`.
+
 
 ### `showFullscreenCtrl`
 
