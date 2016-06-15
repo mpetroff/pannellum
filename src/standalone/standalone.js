@@ -14,35 +14,29 @@ function parseURLParameters() {
         return;
     }
     URL = URL[0].split('&');
-    var json = '{';
+    var configFromURL = {};
     for (var i = 0; i < URL.length; i++) {
         var option = URL[i].split('=')[0];
         var value = URL[i].split('=')[1];
-        json += '"' + option + '":';
+        if ( value == '' ) continue; // skip options with empty values in URL config
         switch(option) {
-            case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
+            case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov': case 'vOffset':
             case 'minHfov': case 'maxHfov': case 'minPitch': case 'maxPitch': case 'minYaw': case 'maxYaw':
-            case 'vOffset': case 'autoRotate':
-                json += value;
+                configFromURL[option] = value;
                 break;
-            case 'autoLoad': case 'ignoreGPanoXMP':
-                json += JSON.parse(value);
+            case 'autoLoad': case 'autoRotate': case 'ignoreGPanoXMP':
+                configFromURL[option] = JSON.parse(value);
                 break;
             case 'tour':
                 console.log('The `tour` parameter is deprecated and will be removed. Use the `config` parameter instead.')
             case 'author': case 'title': case 'firstScene': case 'fallback':
             case 'preview': case 'panorama': case 'config':
-                json += '"' + decodeURIComponent(value) + '"';
+                configFromURL[option] = decodeURIComponent(value);
                 break;
             default:
                 anError('An invalid configuration parameter was specified: ' + option);
         }
-        if (i < URL.length - 1) {
-            json += ',';
-        }
     }
-    json += '}';
-    var configFromURL = JSON.parse(json);
 
     var request;
 
