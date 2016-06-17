@@ -383,7 +383,7 @@ function onImageLoad() {
         container.addEventListener('mousedown', onDocumentMouseDown, false);
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('mouseup', onDocumentMouseUp, false);
-        if ( config.mouseZoom ) {
+        if (config.mouseZoom) {
             container.addEventListener('mousewheel', onDocumentMouseWheel, false);
             container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
         }
