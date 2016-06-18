@@ -18,13 +18,15 @@ function parseURLParameters() {
     for (var i = 0; i < URL.length; i++) {
         var option = URL[i].split('=')[0];
         var value = URL[i].split('=')[1];
-        if ( value == '' ) continue; // skip options with empty values in URL config
+        if (value == '')
+            continue; // Skip options with empty values in URL config
         switch(option) {
-            case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov': case 'vOffset':
-            case 'minHfov': case 'maxHfov': case 'minPitch': case 'maxPitch': case 'minYaw': case 'maxYaw':
-                configFromURL[option] = value;
+            case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
+            case 'minHfov': case 'maxHfov': case 'minPitch': case 'maxPitch':
+            case 'minYaw': case 'maxYaw': case 'vOffset': case 'autoRotate':
+                configFromURL[option] = Number(value);
                 break;
-            case 'autoLoad': case 'autoRotate': case 'ignoreGPanoXMP':
+            case 'autoLoad': case 'ignoreGPanoXMP':
                 configFromURL[option] = JSON.parse(value);
                 break;
             case 'tour':

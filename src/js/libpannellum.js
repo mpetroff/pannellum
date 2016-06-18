@@ -464,7 +464,7 @@ function Renderer(container, image, imageType, dynamic) {
                     z = Math.cos(horizonRoll) * Math.cos(horizonPitch) * Math.sin(pitch) +
                         Math.cos(pitch) * (-Math.cos(yaw) * Math.sin(horizonPitch) +
                         Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.sin(yaw));
-                pitch = Math.asin(z);
+                pitch = Math.asin(Math.max(Math.min(z, 1), -1));
                 yaw = Math.atan2(y, x);
 
                 // Calculate roll
@@ -474,9 +474,9 @@ function Renderer(container, image, imageType, dynamic) {
                         Math.cos(orig_pitch) * (Math.cos(horizonPitch) * Math.sin(horizonRoll) * Math.cos(orig_yaw) +
                         Math.sin(orig_yaw) * Math.sin(horizonPitch))],
                     w = [-Math.cos(pitch) * Math.sin(yaw), Math.cos(pitch) * Math.cos(yaw)];
-                var roll_adj = Math.acos((v[0]*w[0] + v[1]*w[1]) /
+                var roll_adj = Math.acos(Math.max(Math.min((v[0]*w[0] + v[1]*w[1]) /
                     (Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) *
-                    Math.sqrt(w[0]*w[0]+w[1]*w[1])));
+                    Math.sqrt(w[0]*w[0]+w[1]*w[1])), 1), -1));
                 if (v[2] < 0)
                     roll_adj = 2 * Math.PI - roll_adj;
                 roll += roll_adj;
