@@ -1197,7 +1197,16 @@ function render() {
         tmpyaw = config.yaw;
 
         // Ensure the yaw is within min and max allowed
-        config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, config.yaw));
+        var minYaw = config.minYaw + config.hfov / 2,
+            maxYaw = config.maxYaw - config.hfov / 2;
+        var yawRange = config.maxYaw - config.minYaw;
+        if (yawRange < config.hfov) {
+            // Keep either min or max yaw in view when both can be seen at once
+            var diff = config.hfov - yawRange;
+            minYaw -= diff;
+            maxYaw += diff;
+        }
+        config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         
         // Check if we autoRotate in a limited by min and max yaw
         // If so reverse direction
@@ -1206,7 +1215,19 @@ function render() {
         }
 
         // Ensure the calculated pitch is within min and max allowed
-        config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
+        var canvas = renderer.getCanvas();
+        var vfov = 2 * Math.atan(Math.tan(config.hfov / 180 * Math.PI * 0.5) /
+            (canvas.width / canvas.height)) / Math.PI * 180;
+        var minPitch = config.minPitch + vfov / 2,
+            maxPitch = config.maxPitch - vfov / 2;
+        var pitchRange = config.maxPitch - config.minPitch;
+        if (pitchRange < vfov) {
+            // Keep either min or max pitch in view when both can be seen at once
+            var diff = vfov - pitchRange;
+            minPitch -= diff;
+            maxPitch += diff;
+        }
+        config.pitch = Math.max(minPitch, Math.min(maxPitch, config.pitch));
         
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {roll: config.roll * Math.PI / 180});
         
