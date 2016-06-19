@@ -596,7 +596,9 @@ function onDocumentMouseDown(event) {
 
     window.removeEventListener('deviceorientation', orientationListener);
     config.roll = 0;
-    
+
+    zoomSpeed = 0;
+
     isUserInteracting = true;
     latestInteraction = Date.now();
     
@@ -691,6 +693,8 @@ function onDocumentTouchStart(event) {
 
     window.removeEventListener('deviceorientation', orientationListener);
     config.roll = 0;
+
+    zoomSpeed = 0;
 
     // Calculate touch position relative to top left of viewer container
     var pos0 = mousePosition(event.targetTouches[0]);
@@ -787,9 +791,6 @@ function onDocumentPointerDown(event) {
         event.targetTouches = pointerCoordinates;
         onDocumentTouchStart(event);
         event.preventDefault();
-
-        window.removeEventListener('deviceorientation', orientationListener);
-        config.roll = 0;
     }
 }
 
