@@ -68,8 +68,8 @@ var defaultConfig = {
     minHfov: 50,
     maxHfov: 120,
     pitch: 0,
-    minPitch: -85,
-    maxPitch: 85,
+    minPitch: undefined,
+    maxPitch: undefined,
     yaw: 0,
     minYaw: -180,
     maxYaw: 180,
@@ -1197,14 +1197,18 @@ function render() {
         tmpyaw = config.yaw;
 
         // Ensure the yaw is within min and max allowed
-        var minYaw = config.minYaw + config.hfov / 2,
+        var yawRange = config.maxYaw - config.minYaw,
+            minYaw = -180,
+            maxYaw = 180;
+        if (yawRange < 360) {
+            minYaw = config.minYaw + config.hfov / 2;
             maxYaw = config.maxYaw - config.hfov / 2;
-        var yawRange = config.maxYaw - config.minYaw;
-        if (yawRange < config.hfov) {
-            // Keep either min or max yaw in view when both can be seen at once
-            var diff = config.hfov - yawRange;
-            minYaw -= diff;
-            maxYaw += diff;
+            if (yawRange < config.hfov) {
+                // Keep either min or max yaw in view when both can be seen at once
+                var diff = config.hfov - yawRange;
+                minYaw -= diff;
+                maxYaw += diff;
+            }
         }
         config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         
@@ -1227,6 +1231,10 @@ function render() {
             minPitch -= diff;
             maxPitch += diff;
         }
+        if (isNaN(minPitch))
+            minPitch = -90;
+        if (isNaN(maxPitch))
+            maxPitch = 90;
         config.pitch = Math.max(minPitch, Math.min(maxPitch, config.pitch));
         
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {roll: config.roll * Math.PI / 180});
@@ -1634,11 +1642,6 @@ function processOptions() {
                 setHfov(Number(config[key]));
                 break;
             
-            case 'pitch':
-                // Keep pitch within bounds
-                config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, config.pitch));
-                break;
-            
             case 'autoLoad':
                 if (config[key] === true && oldRenderer === undefined) {
                     // Show loading box
@@ -1893,7 +1896,7 @@ this.getPitch = function() {
  * @returns {Viewer} `this`
  */
 this.setPitch = function(pitch) {
-    config.pitch = Math.max(config.minPitch, Math.min(config.maxPitch, pitch));
+    config.pitch = pitch;
     requestAnimationFrame(animate);
     return this;
 };
@@ -1945,7 +1948,7 @@ this.setYaw = function(yaw) {
     while (yaw < -180) {
         yaw += 360;
     }
-    config.yaw = Math.max(config.minYaw, Math.min(config.maxYaw, yaw));
+    config.yaw = yaw;
     requestAnimationFrame(animate);
     return this;
 };
