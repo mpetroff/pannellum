@@ -59,6 +59,7 @@ var config,
     zoomSpeed = 0,
     animating = false,
     autoRotateStart,
+    autoRotateSpeed = 0,
     externalEventListeners = {},
     update = false, // Should we update when still to render dynamic content
     hotspotsCreated = false;
@@ -592,6 +593,7 @@ function onDocumentMouseDown(event) {
     }
     
     // Turn off auto-rotation if enabled
+    autoRotateSpeed = config.autoRotate;
     config.autoRotate = false;
 
     window.removeEventListener('deviceorientation', orientationListener);
@@ -689,6 +691,7 @@ function onDocumentTouchStart(event) {
     }
 
     // Turn off auto-rotation if enabled
+    autoRotateSpeed = config.autoRotate;
     config.autoRotate = false;
 
     window.removeEventListener('deviceorientation', orientationListener);
@@ -877,6 +880,7 @@ function onDocumentKeyPress(event) {
     event.preventDefault();
     
     // Turn off auto-rotation if enabled
+    autoRotateSpeed = config.autoRotate;
     config.autoRotate = false;
 
     window.removeEventListener('deviceorientation', orientationListener);
@@ -1173,7 +1177,7 @@ function animate() {
             if (autoRotateStart)
                 clearTimeout(autoRotateStart);
             autoRotateStart = setTimeout(function() {
-                config.autoRotate = true;
+                config.autoRotate = autoRotateSpeed;
                 animate();
             }, autoRotateStartTime);
         }
