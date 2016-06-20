@@ -1855,13 +1855,13 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     
     // Reload scene
     processOptions();
-    if (workingPitch) {
+    if (workingPitch !== undefined) {
         config.pitch = workingPitch;
     }
-    if (workingYaw) {
+    if (workingYaw !== undefined) {
         config.yaw = workingYaw;
     }
-    if (workingHfov) {
+    if (workingHfov !== undefined) {
         config.hfov = workingHfov;
     }
     fireEvent('scenechange');
