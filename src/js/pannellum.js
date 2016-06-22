@@ -1432,7 +1432,7 @@ function createHotSpots() {
         });
         config.hotSpots.forEach(function(hs) {
             var div = document.createElement('div');
-            div.className = 'pnlm-hotspot pnlm-tooltip pnlm-sprite pnlm-' + escapeHTML(hs.type);
+            div.className = 'pnlm-hotspot pnlm-sprite pnlm-' + escapeHTML(hs.type);
             
             var span = document.createElement('span');
             if (hs.text)
@@ -1488,10 +1488,13 @@ function createHotSpots() {
                 renderContainer.appendChild(div);
             }
             
-            div.appendChild(span);
-            span.style.width = span.scrollWidth - 20 + 'px';
-            span.style.marginLeft = -(span.scrollWidth - 26) / 2 + 'px';
-            span.style.marginTop = -span.scrollHeight - 12 + 'px';
+            if (hs.text || hs.video || hs.image) {
+                div.className += ' pnlm-tooltip';
+                div.appendChild(span);
+                span.style.width = span.scrollWidth - 20 + 'px';
+                span.style.marginLeft = -(span.scrollWidth - 26) / 2 + 'px';
+                span.style.marginTop = -span.scrollHeight - 12 + 'px';
+            }
             hs.div = div;
         });
     }
