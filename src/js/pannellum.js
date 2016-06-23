@@ -853,18 +853,35 @@ function onDocumentMouseWheel(event) {
     }
 
     latestInteraction = Date.now();
+    var oldHfov = config.hfov;
+    var newHfov = 0;
+
     if (event.wheelDeltaY) {
         // WebKit
-        setHfov(config.hfov - event.wheelDeltaY * 0.05);
+        newHfov = config.hfov - event.wheelDeltaY * 0.05;
+        setHfov(newHfov);
         zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.wheelDelta) {
         // Opera / Explorer 9
-        setHfov(config.hfov - event.wheelDelta * 0.05);
+        newHfov = config.hfov - event.wheelDelta * 0.05;
+        setHfov(newHfov);
         zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.detail) {
         // Firefox
-        setHfov(config.hfov + event.detail * 1.5);
+        newHfov = config.hfov + event.detail * 1.5;
+        setHfov(newHfov);
         zoomSpeed = event.detail > 0 ? 1 : -1;
+    }
+
+    if ( newHfov >= config.minHfov && newHfov <= config.maxHfov ) {
+        var hfovDiff = (oldHfov - newHfov) / 2;
+        var newMinPitch = Math.max(-90, Math.min(config.minPitch-hfovDiff, 90));
+        var newMaxPitch = Math.max(-90, Math.min(config.maxPitch+hfovDiff, 90));
+
+        if ( newMinPitch <= newMaxPitch ) {
+            config.minPitch = newMinPitch;
+            config.maxPitch = newMaxPitch;
+        }
     }
     
     animateInit();
