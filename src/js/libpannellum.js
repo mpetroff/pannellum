@@ -523,7 +523,11 @@ function Renderer(container, image, imageType, dynamic) {
             if (program.nodeCache.length > 200 &&
                 program.nodeCache.length > program.currentNodes.length + 50) {
                 // Remove older nodes from cache
-                program.nodeCache.splice(200, program.nodeCache.length - 200);
+                var removed = program.nodeCache.splice(200, program.nodeCache.length - 200);
+                for (var i = 0; i < removed.length; i++) {
+                    // Explicitly delete textures
+                    gl.deleteTexture(removed[i].texture);
+                }
             }
             program.currentNodes = [];
             
@@ -935,7 +939,57 @@ function Renderer(container, image, imageType, dynamic) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
-    
+
+    // Based on http://blog.tojicode.com/2012/03/javascript-memory-optimization-and.html
+    var loadTexture = (function() {
+        var cacheTop = 4;   // Maximum number of concurrents loads
+        var textureImageCache = {};
+        var pendingTextureRequests = [];
+
+        function TextureImageLoader() {
+            var self = this;
+            this.texture = this.callback = null;
+            this.image = new Image();
+            this.image.addEventListener('load', function() {
+                processLoadedTexture(self.image, self.texture);
+                releaseTextureImageLoader(self);
+                self.callback(self.texture);
+            });
+        };
+
+        TextureImageLoader.prototype.loadTexture = function(src, texture, callback) {
+            this.texture = texture;
+            this.callback = callback;
+            this.image.src = src;
+        };
+
+        function PendingTextureRequest(src, texture, callback) {
+            this.src = src;
+            this.texture = texture;
+            this.callback = callback;
+        };
+
+        function releaseTextureImageLoader(til) {
+            if (pendingTextureRequests.length) {
+                var req = pendingTextureRequests.shift();
+                til.loadTexture(req.src, req.texture, req.callback);
+            } else
+                textureImageCache[cacheTop++] = til;
+        }
+
+        for (var i = 0; i < cacheTop; i++)
+            textureImageCache[i] = new TextureImageLoader();
+
+        return function(src, callback) {
+            var texture = gl.createTexture();
+            if (cacheTop)
+                textureImageCache[--cacheTop].loadTexture(src, texture, callback);
+            else
+                pendingTextureRequests.push(new PendingTextureRequest(src, texture, callback));
+            return texture;
+        };
+    })();
+
     /**
      * Loads image and creates texture for a multires node / tile.
      * @private
@@ -943,15 +997,10 @@ function Renderer(container, image, imageType, dynamic) {
      */
     function processNextTile(node) {
         if (!node.texture) {
-            node.texture = gl.createTexture();
-            node.image = new Image();
-            node.image.crossOrigin = 'anonymous';
-            node.image.onload = function() {
-                processLoadedTexture(node.image, node.texture);
+            loadTexture(encodeURI(node.path + '.' + image.extension), function(texture) {
+                node.texture = texture;
                 node.textureLoaded = true;
-                delete node.image;
-            };
-            node.image.src = encodeURI(node.path + '.' + image.extension);
+            });
         }
     }
     
