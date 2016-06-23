@@ -37,7 +37,6 @@ function Viewer(container, initialConfig) {
 // Declare variables
 var config,
     renderer,
-    oldRenderer,
     preview,
     isUserInteracting = false,
     latestInteraction = Date.now(),
@@ -372,11 +371,8 @@ function absoluteURL(url) {
  * @private
  */
 function onImageLoad() {
-    renderer = new libpannellum.renderer(renderContainer, panoImage, config.type, config.dynamic);
-    if (config.dynamic !== true) {
-        // Allow image to be garbage collected
-        panoImage = undefined;
-    }
+    if (!renderer)
+        renderer = new libpannellum.renderer(renderContainer);
 
     // Only add event listeners once
     if (!listenersAdded) {
@@ -1355,7 +1351,11 @@ function orientationListener(e) {
  */
 function renderInit() {
     try {
-        renderer.init(config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback);
+        renderer.init(panoImage, config.type, config.dynamic, config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback);
+        if (config.dynamic !== true) {
+            // Allow image to be garbage collected
+            panoImage = undefined;
+        }
     } catch(event) {
         // Panorama not loaded
         
@@ -1367,6 +1367,9 @@ function renderInit() {
                 event.width + 'px wide, but your device only supports images up to ' +
                 event.maxWidth + 'px wide. Try another device.' +
                 ' (If you\'re the author, try scaling down the image.)');
+        } else {
+            anError('Unknown error. Check developer console.');
+            throw event;
         }
     }
 }
@@ -1378,19 +1381,15 @@ function renderInit() {
  * @private
  */
 function renderInitCallback() {
-    if (oldRenderer !== undefined) {
-        oldRenderer.destroy();
-        
-        // Fade if specified
-        if (config.sceneFadeDuration && oldRenderer.fadeImg !== undefined) {
-            oldRenderer.fadeImg.style.opacity = 0;
-            // Remove image
-            var fadeImg = oldRenderer.fadeImg;
-            oldRenderer = undefined;
-            setTimeout(function() {
-                renderContainer.removeChild(fadeImg);
-            }, config.sceneFadeDuration);
-        }
+    // Fade if specified
+    if (config.sceneFadeDuration && renderer.fadeImg !== undefined) {
+        renderer.fadeImg.style.opacity = 0;
+        // Remove image
+        var fadeImg = renderer.fadeImg;
+        delete renderer.fadeImg;
+        setTimeout(function() {
+            renderContainer.removeChild(fadeImg);
+        }, config.sceneFadeDuration);
     }
     
     // Show compass if applicable
@@ -1651,7 +1650,7 @@ function processOptions() {
                 break;
             
             case 'autoLoad':
-                if (config[key] === true && oldRenderer === undefined) {
+                if (config[key] === true && renderer === undefined) {
                     // Show loading box
                     infoDisplay.load.box.style.display = 'inline';
                     // Hide load button
@@ -1809,7 +1808,6 @@ function load() {
  */
 function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     loaded = false;
-    oldRenderer = renderer;
     
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
@@ -1827,7 +1825,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
             fadeImg.src = data;
         }
         renderContainer.appendChild(fadeImg);
-        oldRenderer.fadeImg = fadeImg;
+        renderer.fadeImg = fadeImg;
         return;
     }
     

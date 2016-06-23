@@ -29,40 +29,66 @@ window.libpannellum = (function(window, document, undefined) {
  * Creates a new panorama renderer.
  * @constructor
  * @param {HTMLElement} container - The container element for the renderer.
- * @param {Image|Array|Object} image - Input image; format varies based on
- *      `imageType`. For `equirectangular`, this is an image; for `cubemap`,
- *      this is an array of images for the cube faces in the order [+z, +x, -z,
- *      -x, +y, -y]; for `multires`, this is a configuration object.
- * @param {string} imageType - The type of the image: `equirectangular`,
- *      `cubemap`, or `multires`.
- * @param {boolean} dynamic - Whether or not the image is dynamic (e.g. video).
  */
-function Renderer(container, image, imageType, dynamic) {
+function Renderer(container) {
     var canvas = document.createElement('canvas');
     canvas.style.width = canvas.style.height = '100%';
     container.appendChild(canvas);
 
-    // Default argument for image type
-    if (typeof imageType === undefined){
-        imageType = 'equirectangular';
-    }
-
-    var program, gl;
+    var program, gl, vs, fs;
     var fallbackImgSize;
     var world;
     var vtmps;
     var pose;
+    var image, imageType, dynamic;
+    var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
 
     /**
      * Initialize renderer.
      * @memberof Renderer
      * @instance
+     * @param {Image|Array|Object} image - Input image; format varies based on
+     *      `imageType`. For `equirectangular`, this is an image; for
+     *      `cubemap`, this is an array of images for the cube faces in the
+     *      order [+z, +x, -z, -x, +y, -y]; for `multires`, this is a
+     *      configuration object.
+     * @param {string} imageType - The type of the image: `equirectangular`,
+     *      `cubemap`, or `multires`.
+     * @param {boolean} dynamic - Whether or not the image is dynamic (e.g. video).
      * @param {number} haov - Initial horizontal angle of view.
      * @param {number} vaov - Initial vertical angle of view.
      * @param {number} voffset - Initial vertical offset angle.
      * @param {function} callback - Load callback function.
      */
-    this.init = function(haov, vaov, voffset, callback) {
+    this.init = function(_image, _imageType, _dynamic, haov, vaov, voffset, callback) {
+        // Default argument for image type
+        if (typeof _imageType === undefined)
+            _imageType = 'equirectangular';
+        imageType = _imageType;
+        image = _image;
+        dynamic = _dynamic;
+
+        // Clear old data
+        if (program) {
+            if (vs) {
+                gl.detachShader(program, vs);
+                gl.deleteShader(vs);
+            }
+            if (fs) {
+                gl.detachShader(program, fs);
+                gl.deleteShader(fs);
+            }
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+            if (program.texture)
+                gl.deleteTexture(program.texture);
+            if (program.nodeCache)
+                for (var i = 0; i < program.nodeCache.length; i++)
+                    gl.deleteTexture(program.nodeCache[i].texture);
+            gl.deleteProgram(program);
+            program = undefined;
+        }
+
         var s;
         
         // This awful browser specific test exists because iOS 8/9 and IE 11
@@ -77,7 +103,8 @@ function Renderer(container, image, imageType, dynamic) {
             navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 9_/) ||
             navigator.userAgent.match(/Trident.*rv[ :]*11\./)))) {
             // Enable WebGL on canvas
-            gl = canvas.getContext('experimental-webgl', {alpha: false, depth: false});
+            if (!gl)
+                gl = canvas.getContext('experimental-webgl', {alpha: false, depth: false});
         }
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
@@ -232,7 +259,7 @@ function Renderer(container, image, imageType, dynamic) {
         gl.viewport(0, 0, canvas.width, canvas.height);
 
         // Create vertex shader
-        var vs = gl.createShader(gl.VERTEX_SHADER);
+        vs = gl.createShader(gl.VERTEX_SHADER);
         var vertexSrc = v;
         if (imageType == 'multires') {
             vertexSrc = vMulti;
@@ -241,7 +268,7 @@ function Renderer(container, image, imageType, dynamic) {
         gl.compileShader(vs);
 
         // Create fragment shader
-        var fs = gl.createShader(gl.FRAGMENT_SHADER);
+        fs = gl.createShader(gl.FRAGMENT_SHADER);
         var fragmentSrc = fragEquirectangular;
         if (imageType == 'cubemap') {
             glBindType = gl.TEXTURE_CUBE_MAP;
@@ -277,8 +304,9 @@ function Renderer(container, image, imageType, dynamic) {
 
         if (imageType != 'multires') {
             // Provide texture coordinates for rectangle
-            program.texCoordBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, program.texCoordBuffer);
+            if (!texCoordBuffer)
+                texCoordBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,1,1,1,-1,-1,1,1,-1,-1,-1]), gl.STATIC_DRAW);
             gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
@@ -330,16 +358,19 @@ function Renderer(container, image, imageType, dynamic) {
             gl.enableVertexAttribArray(program.vertPosLocation);
 
             // Create buffers
-            program.cubeVertBuf = gl.createBuffer();
-            program.cubeVertTexCoordBuf = gl.createBuffer();
-            program.cubeVertIndBuf = gl.createBuffer();
+            if (!cubeVertBuf)
+                cubeVertBuf = gl.createBuffer();
+            if (!cubeVertTexCoordBuf)
+                cubeVertTexCoordBuf = gl.createBuffer();
+            if (!cubeVertIndBuf)
+                cubeVertIndBuf = gl.createBuffer();
 
             // Bind texture coordinate buffer and pass coordinates to WebGL
-            gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
+            gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertTexCoordBuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
 
             // Bind square index buffer and pass indicies to WebGL
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.cubeVertIndBuf);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertIndBuf);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
 
             // Find uniforms
@@ -631,12 +662,12 @@ function Renderer(container, image, imageType, dynamic) {
                     //gl.uniform4f(program.colorUniform, color[0], color[1], color[2], 1.0);
                     
                     // Bind vertex buffer and pass vertices to WebGL
-                    gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertBuf);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
                     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(program.currentNodes[i].vertices), gl.STATIC_DRAW);
                     gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
                     
                     // Prep for texture
-                    gl.bindBuffer(gl.ARRAY_BUFFER, program.cubeVertTexCoordBuf);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertTexCoordBuf);
                     gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
                     
                     // Bind texture and draw tile
