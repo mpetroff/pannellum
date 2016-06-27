@@ -343,6 +343,7 @@ div.pnlm-tooltip:hover:after {
 }
 
 .pnlm-compass {
+    position: absolute;
     width: 50px;
     height: 50px;
     right: 4px;
