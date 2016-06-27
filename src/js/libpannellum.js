@@ -782,7 +782,7 @@ function Renderer(container) {
                     }
                 }
                 // Handle small tiles that have fewer than four children
-                if (doubleTileSize < image.tileResolution) {
+                if (doubleTileSize <= image.tileResolution) {
                     if (node.x == numTiles) {
                         f1 = 0;
                         i1 = 1;
@@ -808,7 +808,7 @@ function Renderer(container) {
                 ];
                 ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, image.fullpath);
                 children.push(ntmp);
-                if (!(node.x == numTiles && doubleTileSize < image.tileResolution)) {
+                if (!(node.x == numTiles && doubleTileSize <= image.tileResolution)) {
                     vtmp = [v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
                                        v[3],             v[4],             v[5],
                               v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
@@ -817,8 +817,8 @@ function Renderer(container) {
                     ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, image.fullpath);
                     children.push(ntmp);
                 }
-                if (!(node.x == numTiles && doubleTileSize < image.tileResolution) &&
-                    !(node.y == numTiles && doubleTileSize < image.tileResolution)) {
+                if (!(node.x == numTiles && doubleTileSize <= image.tileResolution) &&
+                    !(node.y == numTiles && doubleTileSize <= image.tileResolution)) {
                     vtmp = [v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                               v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
                                        v[6],             v[7],             v[8],
@@ -827,7 +827,7 @@ function Renderer(container) {
                     ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, image.fullpath);
                     children.push(ntmp);
                 }
-                if (!(node.y == numTiles && doubleTileSize < image.tileResolution)) {
+                if (!(node.y == numTiles && doubleTileSize <= image.tileResolution)) {
                     vtmp = [  v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3,
                             v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3,
