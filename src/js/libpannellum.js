@@ -88,6 +88,7 @@ function Renderer(container) {
             gl.deleteProgram(program);
             program = undefined;
         }
+        pose = undefined;
 
         var s;
         
