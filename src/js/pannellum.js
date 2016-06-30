@@ -2067,7 +2067,7 @@ this.startAutoRotate = function() {
  * Stop autoRotate.
  * @memberof Viewer
  * @instance
-  * @returns {Viewer} `this`
+ * @returns {Viewer} `this`
  */
 this.stopAutoRotate = function() {
     config.autoRotate = false;
