@@ -2053,6 +2053,28 @@ this.setNorthOffset = function(heading) {
 };
 
 /**
+ * Start autoRotate.
+ * @memberof Viewer
+ * @instance
+ * @returns {Viewer} `this`
+ */
+this.startAutoRotate = function() {
+    config.autoRotate = true;
+    return this;
+};
+
+/**
+ * Stop autoRotate.
+ * @memberof Viewer
+ * @instance
+  * @returns {Viewer} `this`
+ */
+this.stopAutoRotate = function() {
+    config.autoRotate = false;
+    return this;
+};
+
+/**
  * Returns the panorama renderer.
  * @memberof Viewer
  * @instance
