@@ -2058,6 +2058,32 @@ this.setNorthOffset = function(heading) {
 };
 
 /**
+ * Start auto rotation.
+ * @memberof Viewer
+ * @instance
+ * @param {number} [speed] - Auto rotation speed / direction. If not specified, previous value is used.
+ * @returns {Viewer} `this`
+ */
+this.startAutoRotate = function(speed) {
+    speed = speed || autoRotateSpeed || 1;
+    config.autoRotate = speed;
+    animateInit();
+    return this;
+};
+
+/**
+ * Stop auto rotation.
+ * @memberof Viewer
+ * @instance
+ * @returns {Viewer} `this`
+ */
+this.stopAutoRotate = function() {
+    autoRotateSpeed = config.autoRotate;
+    config.autoRotate = false;
+    return this;
+};
+
+/**
  * Returns the panorama renderer.
  * @memberof Viewer
  * @instance
