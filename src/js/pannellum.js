@@ -60,6 +60,7 @@ var config,
     autoRotateStart,
     autoRotateSpeed = 0,
     externalEventListeners = {},
+    specifiedPhotoSphereExcludes = [],
     update = false, // Should we update when still to render dynamic content
     hotspotsCreated = false;
 
@@ -470,10 +471,13 @@ function parseGPanoXMP(image) {
                 xmp.topPixels !== null) {
                 
                 // Set up viewer using GPano XMP data
-                config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
-                config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
-                config.vOffset = ((xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5) * -180;
-                if (xmp.heading !== null) {
+                if (specifiedPhotoSphereExcludes.indexOf('haov') < 0)
+                    config.haov = xmp.croppedWidth / xmp.fullWidth * 360;
+                if (specifiedPhotoSphereExcludes.indexOf('vaov') < 0)
+                    config.vaov = xmp.croppedHeight / xmp.fullHeight * 180;
+                if (specifiedPhotoSphereExcludes.indexOf('vOffset') < 0)
+                    config.vOffset = ((xmp.topPixels + xmp.croppedHeight / 2) / xmp.fullHeight - 0.5) * -180;
+                if (xmp.heading !== null && specifiedPhotoSphereExcludes.indexOf('northOffset') < 0) {
                     // TODO: make sure this works correctly for partial panoramas
                     config.northOffset = xmp.heading;
                     if (config.compass !== false) {
@@ -1565,6 +1569,7 @@ function mergeConfig(sceneId) {
     config = {};
     var k;
     var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset'];
+    specifiedPhotoSphereExcludes = [];
     
     // Merge default config
     for (k in defaultConfig) {
@@ -1578,7 +1583,7 @@ function mergeConfig(sceneId) {
         if (initialConfig.default.hasOwnProperty(k)) {
             config[k] = initialConfig.default[k];
             if (photoSphereExcludes.indexOf(k) >= 0) {
-                config.ignoreGPanoXMP = true;
+                specifiedPhotoSphereExcludes.push(k);
             }
         }
     }
@@ -1590,7 +1595,7 @@ function mergeConfig(sceneId) {
             if (scene.hasOwnProperty(k)) {
                 config[k] = scene[k];
                 if (photoSphereExcludes.indexOf(k) >= 0) {
-                    config.ignoreGPanoXMP = true;
+                    specifiedPhotoSphereExcludes.push(k);
                 }
             }
         }
@@ -1602,7 +1607,7 @@ function mergeConfig(sceneId) {
         if (initialConfig.hasOwnProperty(k)) {
             config[k] = initialConfig[k];
             if (photoSphereExcludes.indexOf(k) >= 0) {
-                config.ignoreGPanoXMP = true;
+                specifiedPhotoSphereExcludes.push(k);
             }
         }
     }
