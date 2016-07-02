@@ -2214,6 +2214,42 @@ function fireEvent(type) {
     }
 }
 
+/**
+ * Destructor.
+ * @instance
+ * @memberof Viewer
+ */
+this.destroy = function() {
+    if (renderer)
+        renderer.destroy()
+    if (listenersAdded) {
+        container.removeEventListener('mousedown', onDocumentMouseDown, false);
+        document.removeEventListener('mousemove', onDocumentMouseMove, false);
+        document.removeEventListener('mouseup', onDocumentMouseUp, false);
+        container.removeEventListener('mousewheel', onDocumentMouseWheel, false);
+        container.removeEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+        container.removeEventListener('mozfullscreenchange', onFullScreenChange, false);
+        container.removeEventListener('webkitfullscreenchange', onFullScreenChange, false);
+        container.removeEventListener('msfullscreenchange', onFullScreenChange, false);
+        container.removeEventListener('fullscreenchange', onFullScreenChange, false);
+        window.removeEventListener('resize', onDocumentResize, false);
+        window.removeEventListener('orientationchange', onDocumentResize, false);
+        container.removeEventListener('keydown', onDocumentKeyPress, false);
+        container.removeEventListener('keyup', onDocumentKeyUp, false);
+        container.removeEventListener('blur', clearKeys, false);
+        document.removeEventListener('mouseleave', onDocumentMouseUp, false);
+        container.removeEventListener('touchstart', onDocumentTouchStart, false);
+        container.removeEventListener('touchmove', onDocumentTouchMove, false);
+        container.removeEventListener('touchend', onDocumentTouchEnd, false);
+        container.removeEventListener('pointerdown', onDocumentPointerDown, false);
+        container.removeEventListener('pointermove', onDocumentPointerMove, false);
+        container.removeEventListener('pointerup', onDocumentPointerUp, false);
+        container.removeEventListener('pointerleave', onDocumentPointerUp, false);
+    }
+    container.innerHTML = '';
+    container.classList.remove('pnlm-container', 'pnlm-grab', 'pnlm-grabbing');
+}
+
 }
 
 return {
