@@ -90,7 +90,7 @@ var defaultConfig = {
 
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
-container.className += ' pnlm-container';
+container.classList.add('pnlm-container');
 container.tabIndex = 0;
 
 // Create container for renderer
@@ -1492,7 +1492,7 @@ function createHotSpots() {
             }
             
             if (hs.text || hs.video || hs.image) {
-                div.className += ' pnlm-tooltip';
+                div.classList.add('pnlm-tooltip');
                 div.appendChild(span);
                 span.style.width = span.scrollWidth - 20 + 'px';
                 span.style.marginLeft = -(span.scrollWidth - 26) / 2 + 'px';
@@ -2247,7 +2247,9 @@ this.destroy = function() {
         container.removeEventListener('pointerleave', onDocumentPointerUp, false);
     }
     container.innerHTML = '';
-    container.classList.remove('pnlm-container', 'pnlm-grab', 'pnlm-grabbing');
+    container.classList.remove('pnlm-container');
+    container.classList.remove('pnlm-grab');
+    container.classList.remove('pnlm-grabbing');
 }
 
 }
