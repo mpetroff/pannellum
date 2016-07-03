@@ -985,8 +985,8 @@ function Renderer(container) {
             this.image = new Image();
             this.image.addEventListener('load', function() {
                 processLoadedTexture(self.image, self.texture);
-                releaseTextureImageLoader(self);
                 self.callback(self.texture);
+                releaseTextureImageLoader(self);
             });
         };
 
