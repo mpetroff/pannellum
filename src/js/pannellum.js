@@ -1747,6 +1747,7 @@ function onFullScreenChange() {
 
     // Resize renderer (deal with browser quirks and fixes #155)
     renderer.resize();
+    setHfov(config.hfov);
     animateInit();
 }
 
