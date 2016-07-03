@@ -62,7 +62,8 @@ function parseURLParameters() {
             var responseMap = JSON.parse(request.responseText);
 
             // Set JSON file location
-            responseMap.basePath = configFromURL.config.substring(0, configFromURL.config.lastIndexOf('/')+1);
+            if (responseMap.basePath === undefined)
+                responseMap.basePath = configFromURL.config.substring(0, configFromURL.config.lastIndexOf('/')+1);
 
             // Merge options
             for (var key in responseMap) {
