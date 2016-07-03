@@ -983,6 +983,7 @@ function Renderer(container) {
             var self = this;
             this.texture = this.callback = null;
             this.image = new Image();
+            this.image.crossOrigin = 'anonymous';
             this.image.addEventListener('load', function() {
                 processLoadedTexture(self.image, self.texture);
                 self.callback(self.texture);
