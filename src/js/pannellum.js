@@ -485,8 +485,10 @@ function parseGPanoXMP(image) {
                     }
                 }
                 if (xmp.horizonPitch !== null && xmp.horizonRoll !== null) {
-                    panoImage.horizonPitch = xmp.horizonPitch / 180 * Math.PI;
-                    panoImage.horizonRoll = xmp.horizonRoll / 180 * Math.PI;
+                    if (specifiedPhotoSphereExcludes.indexOf('horizonPitch') < 0)
+                        config.horizonPitch = xmp.horizonPitch / 180 * Math.PI;
+                    if (specifiedPhotoSphereExcludes.indexOf('horizonRoll') < 0)
+                        config.horizonRoll = xmp.horizonRoll / 180 * Math.PI;
                 }
                 
                 // TODO: add support for initial view settings
@@ -1355,7 +1357,12 @@ function orientationListener(e) {
  */
 function renderInit() {
     try {
-        renderer.init(panoImage, config.type, config.dynamic, config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback);
+        var params = {};
+        if (config.horizonPitch !== undefined)
+            params.horizonPitch = config.horizonPitch;
+        if (config.horizonRoll !== undefined)
+            params.horizonRoll = config.horizonRoll;
+        renderer.init(panoImage, config.type, config.dynamic, config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback, params);
         if (config.dynamic !== true) {
             // Allow image to be garbage collected
             panoImage = undefined;
@@ -1568,7 +1575,7 @@ function renderHotSpots() {
 function mergeConfig(sceneId) {
     config = {};
     var k;
-    var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset'];
+    var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset', 'horizonPitch', 'horizonRoll'];
     specifiedPhotoSphereExcludes = [];
     
     // Merge default config

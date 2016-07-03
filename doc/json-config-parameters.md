@@ -134,6 +134,16 @@ affects the compass, it only has an effect if `compass` is set to `true`.
 Specifies a URL for a preview image to display before the panorama is loaded.
 
 
+### `horizonPitch`
+
+Specifies pitch of image horizon (for correcting non-leveled panoramas).
+
+
+### `horizonRoll`
+
+Specifies roll of image horizon (for correcting non-leveled panoramas).
+
+
 ### `hotSpots`
 
 This specifies an array of hot spots that can be links to other scenes,
