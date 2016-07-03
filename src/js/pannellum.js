@@ -1865,7 +1865,10 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     
     // Create the new config for the scene
     mergeConfig(sceneId);
-    
+
+    // Stop motion
+    yawSpeed = pitchSpeed = zoomSpeed = 0;
+
     // Reload scene
     processOptions();
     if (workingPitch !== undefined) {
