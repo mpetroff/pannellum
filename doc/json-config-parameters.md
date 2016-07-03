@@ -5,200 +5,196 @@
 ## General options
 
 
-### `type`
+### `type` (string)
 
 This specifies the panorama type. Can be `equirectangular`, `cubemap`, or
 `multires`. Defaults to `equirectangular`.
 
 
-### `title`
+### `title` (string)
 
 If set, the value is displayed as the panorama's title. If no title is desired,
 don't set this parameter.
 
 
-### `author`
+### `author` (string)
 
 If set, the value is displayed as the panorama's author. If no author is
 desired, don't set this parameter.
 
 
-### `basePath`
+### `basePath` (string)
 
 This specifies a base path to load the images from.
 
 
-### `autoLoad`
+### `autoLoad` (boolean)
 
 When set to `true`, the panorama will automatically load. When `false`, the
 user needs to click on the load button to load the panorama. Defaults to
 `false`.
 
 
-### `autoRotate`
+### `autoRotate` (number)
 
 Setting this parameter causes the panorama to automatically rotate when loaded.
 The value specifies the rotation speed in degrees per second. Positive is
 counter-clockwise, and negative is clockwise.
 
 
-### `autoRotateInactivityDelay`
+### `autoRotateInactivityDelay` (number)
 
 Sets the delay, in milliseconds, to start automatically rotating the panorama
 after user activity ceases. This parameter only has an effect if the
 `autoRotate` parameter is set.
 
 
-### `autoRotateStopDelay`
+### `autoRotateStopDelay` (number)
 
 Sets the delay, in milliseconds, to stop automatically rotating the panorama
 after it is loaded. This parameter only has an effect if the `autoRotate`
 parameter is set.
 
 
-### `fallback`
+### `fallback` (string)
 
 If set, the value is used as a URL for a fallback viewer in case Pannellum is
 not supported by the user's device. The user will be given the option to click
 a link and visit this URL if Pannellum fails to work.
 
 
-### `showZoomCtrl`
+### `showZoomCtrl` (boolean)
 
 If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
 
 
-### `keyboardZoom`
+### `keyboardZoom` (boolean)
 
 If set to `false`, zooming with keyboard will be disabled. Defaults to `true`.
 
-### `mouseZoom`
+
+### `mouseZoom` (boolean)
 
 If set to `false`, zooming with mouse wheel will be disabled. Defaults to `true`.
 
 
-### `showFullscreenCtrl`
+### `showFullscreenCtrl` (boolean)
 
 If set to `false`, the fullscreen control will not be displayed. Defaults to
 `true`. The fullscreen button will only be displayed if the browser supports
 the fullscreen API.
 
 
-### `yaw`
+### `yaw` (number)
 
 Sets the panorama's starting yaw position in degrees. Defaults to `0`.
 
 
-### `pitch`
+### `pitch` (number)
 
 Sets the panorama's starting pitch position in degrees. Defaults to `0`.
 
 
-### `hfov`
+### `hfov` (number)
 
 Sets the panorama's starting horizontal field of view in degrees. Defaults to
 `100`.
 
 
-### `minYaw` and `maxYaw`
+### `minYaw` and `maxYaw` (number)
 
 Sets the minimum / maximum yaw the viewer can be centered at, in degrees.
 Defaults to `-360` / `360`, i.e. no limit.
 
 
-### `minPitch` and `maxPitch`
+### `minPitch` and `maxPitch` (number)
 
 Sets the minimum / maximum pitch the viewer can be centered at, in degrees.
 Defaults to `-85` / `85`.
 
 
-### `minHfov` and `maxHfov`
+### `minHfov` and `maxHfov` (number)
 
 Sets the minimum / maximum horizontal field of view, in degrees, that the
 viewer can be set to. Defaults to `50` / `120`.
 
 
-### `compass`
+### `compass` (boolean)
 
 If `true`, a compass is displayed. Defaults to `false`.
 
 
-### `northOffset`
+### `northOffset` (number)
 
 Set the offset, in degrees, of the center of the panorama from North. As this
 affects the compass, it only has an effect if `compass` is set to `true`.
 
 
-### `preview`
+### `preview` (string)
 
 Specifies a URL for a preview image to display before the panorama is loaded.
 
 
-### `horizonPitch`
+### `horizonPitch` and `horizonRoll` (number)
 
-Specifies pitch of image horizon (for correcting non-leveled panoramas).
-
-
-### `horizonRoll`
-
-Specifies roll of image horizon (for correcting non-leveled panoramas).
+Specifies pitch / roll of image horizon (for correcting non-leveled panoramas).
 
 
-### `hotSpots`
+### `hotSpots` (array)
 
 This specifies an array of hot spots that can be links to other scenes,
 information, or external links. Each array element has the following properties.
 
 
-#### `pitch`
+#### `pitch` (number)
 
 Specifies the pitch portion of the hot spot's location.
 
 
-#### `yaw`
+#### `yaw` (number)
 
 Specifies the yaw portion of the hot spot's location.
 
 
-#### `type`
+#### `type` (string)
 
 Specifies the type of the hot spot. Can be `scene` for scene links or `info`
 for information hot spots. A tour configuration file is required for `scene`
 hot spots.
 
-#### `text`
+#### `text` (string)
 
 This specifies the text that is displayed when the user hovers over the hot
 spot.
 
-#### `URL`
+#### `URL` (string)
 
 If specified for an `info` hot spot, the hot spot links to the specified URL.
 Not applicable for `scene` hot spots.
 
-#### `sceneId`
+#### `sceneId` (string)
 
 Specifies the ID of the scene to link to for `scene` hot spots. Not applicable
 for `info` hot spots.
 
-#### `targetPitch`
+#### `targetPitch` (number)
 
 Specifies the pitch of the target scene.
 
-#### `targetYaw`
+#### `targetYaw` (number)
 
 Specifies the yaw of the target scene.
 
-#### `targetHfov`
+#### `targetHfov` (number)
 
 Specifies the HFOV of the target scene.
 
-### `hotSpotDebug`
+### `hotSpotDebug` (boolean)
 
 When `true`, the mouse pointer's pitch and yaw are logged to the console when
 the mouse button is clicked. Defaults to `false`.
 
-### `sceneFadeDuration`
+### `sceneFadeDuration` (number)
 
 Specifies the fade duration, in milliseconds, when transitioning between
 scenes. Not defined by default. Only applicable for tours. Only works with
@@ -208,34 +204,34 @@ WebGL renderer.
 
 ## `equirectangular` specific options
 
-### `panorama`
+### `panorama` (string)
 
 Sets the URL to the equirectangular panorama image. This is relative to
 `basePath` if it is set, else it is relative to the location of
 `pannellum.htm`. An absolute URL can also be used.
 
 
-### `haov`
+### `haov` (number)
 
 Sets the panorama's horizontal angle of view, in degrees. Defaults to `360`.
 This is used if the equirectangular image does not cover a full 360 degrees in
 the horizontal.
 
 
-### `vaov`
+### `vaov` (number)
 
 Sets the panorama's vertical angle of view, in degrees. Defaults to `180`. This
 is used if the equirectangular image does not cover a full 180 degrees in the
 vertical.
 
 
-### `vOffset`
+### `vOffset` (number)
 
 Sets the vertical offset of the center of the equirectangular image from the
 horizon, in degrees. Defaults to `0`. This is used if `vaov` is less than `180`
 and the equirectangular image is not cropped symmetrically.
 
-### `ignoreGPanoXMP`
+### `ignoreGPanoXMP` (boolean)
 
 If set to `true`, any embedded Photo Sphere XMP data will be ignored; else,
 said data will override any existing settings. Defaults to `false`.
@@ -260,14 +256,14 @@ used.
 This contains information about the multiresolution panorama in sub-keys.
 
 
-#### `basePath`
+#### `basePath` (string)
 
 This is the base path of the URLs for the multiresolution tiles. It is relative
 to the regular `basePath` option if it is defined, else it is relative to the
 location of `pannellum.htm`. An absolute URL can also be used.
 
 
-#### `path`
+#### `path` (string)
 
 This is a format string for the location of the multiresolution tiles, relative
 to `multiRes.basePath`, which is relative to `basePath`. Format parameters are
@@ -275,7 +271,7 @@ to `multiRes.basePath`, which is relative to `basePath`. Format parameters are
 `%y` for the y index. For each tile, `.extension` is appended.
 
 
-#### `fallbackPath`
+#### `fallbackPath` (string)
 
 This is a format string for the location of the fallback tiles for the CSS 3D
 transform-based renderer if the WebGL renderer is not supported, relative
@@ -283,22 +279,22 @@ to `multiRes.basePath`, which is relative to `basePath`. The only format
 parameter is `%s`, for the cube face. For each face, `.extension` is appended.
 
 
-#### `extension`
+#### `extension` (string)
 
 Specifies the tiles' file extension. Do not include the `.`.
 
 
-#### `tileResolution`
+#### `tileResolution` (number)
 
 This specifies the size in pixels of each image tile.
 
 
-#### `maxLevel`
+#### `maxLevel` (number)
 
 This specifies the maximum zoom level.
 
 
-#### `cubeResolution`
+#### `cubeResolution` (number)
 
 This specifies the size in pixels of the full resolution cube faces the image
 tiles were created from.
@@ -309,7 +305,7 @@ tiles were created from.
 
 Currently, only equirectangular dynamic content is supported.
 
-### `dynamic`
+### `dynamic` (boolean)
 
 The panorama source is considered dynamic when this is set to `true`. Defaults
 to `false`. This should be set to `true` for video.
