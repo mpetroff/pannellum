@@ -600,7 +600,7 @@ function onDocumentMouseDown(event) {
     }
     
     // Turn off auto-rotation if enabled
-    autoRotateSpeed = config.autoRotate;
+    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
     config.autoRotate = false;
 
     window.removeEventListener('deviceorientation', orientationListener);
@@ -683,6 +683,7 @@ function onDocumentMouseUp() {
     }
     container.classList.add('pnlm-grab');
     container.classList.remove('pnlm-grabbing');
+    latestInteraction = Date.now();
 }
 
 /**
@@ -698,7 +699,7 @@ function onDocumentTouchStart(event) {
     }
 
     // Turn off auto-rotation if enabled
-    autoRotateSpeed = config.autoRotate;
+    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
     config.autoRotate = false;
 
     window.removeEventListener('deviceorientation', orientationListener);
@@ -785,6 +786,7 @@ function onDocumentTouchEnd() {
         pitchSpeed = yawSpeed = 0;
     }
     onPointerDownPointerDist = -1;
+    latestInteraction = Date.now();
 }
 
 var pointerIDs = [],
@@ -859,7 +861,11 @@ function onDocumentMouseWheel(event) {
         return;
     }
 
+    // Turn off auto-rotation if enabled
+    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
+    config.autoRotate = false;
     latestInteraction = Date.now();
+
     if (event.wheelDeltaY) {
         // WebKit
         setHfov(config.hfov - event.wheelDeltaY * 0.05);
@@ -887,8 +893,9 @@ function onDocumentKeyPress(event) {
     event.preventDefault();
     
     // Turn off auto-rotation if enabled
-    autoRotateSpeed = config.autoRotate;
+    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
     config.autoRotate = false;
+    latestInteraction = Date.now();
 
     window.removeEventListener('deviceorientation', orientationListener);
     config.roll = 0;
@@ -1020,7 +1027,9 @@ function keyRepeat() {
     if (!loaded) {
         return;
     }
-    
+
+    var isKeyDown = false;
+
     var prevPitch = config.pitch;
     var prevYaw = config.yaw;
     var prevZoom = config.hfov;
@@ -1040,37 +1049,46 @@ function keyRepeat() {
     // If minus key is down
     if (keysDown[0] && config.keyboardZoom === true) {
         setHfov(config.hfov + (zoomSpeed * 0.8 + 0.5) * diff);
+        isKeyDown = true;
     }
     
     // If plus key is down
     if (keysDown[1] && config.keyboardZoom === true) {
         setHfov(config.hfov + (zoomSpeed * 0.8 - 0.2) * diff);
+        isKeyDown = true;
     }
     
     // If up arrow or "w" is down
     if (keysDown[2] || keysDown[6]) {
         // Pan up
         config.pitch += (pitchSpeed * 0.8 + 0.2) * diff;
+        isKeyDown = true;
     }
     
     // If down arrow or "s" is down
     if (keysDown[3] || keysDown[7]) {
         // Pan down
         config.pitch += (pitchSpeed * 0.8 - 0.2) * diff;
+        isKeyDown = true;
     }
     
     // If left arrow or "a" is down
     if (keysDown[4] || keysDown[8]) {
         // Pan left
         config.yaw += (yawSpeed * 0.8 - 0.2) * diff;
+        isKeyDown = true;
     }
     
     // If right arrow or "d" is down
     if (keysDown[5] || keysDown[9]) {
         // Pan right
         config.yaw += (yawSpeed * 0.8 + 0.2) * diff;
+        isKeyDown = true;
     }
-    
+
+    if (isKeyDown)
+        latestInteraction = Date.now();
+
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
     if (config.autoRotate &&
@@ -1164,6 +1182,8 @@ function animateInit() {
  */
 function animate() {
     render();
+    if (autoRotateStart)
+        clearTimeout(autoRotateStart);
     if (isUserInteracting) {
         requestAnimationFrame(animate);
     } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
@@ -1173,6 +1193,9 @@ function animate() {
         Math.abs(zoomSpeed) > 0.01) {
 
         keyRepeat();
+        if (config.autoRotateInactivityDelay >= 0 && autoRotateSpeed &&
+            Date.now() - latestInteraction > config.autoRotateInactivityDelay)
+            config.autoRotate = autoRotateSpeed;
         requestAnimationFrame(animate);
     } else if (renderer && (renderer.isLoading() || (config.dynamic === true && update))) {
         requestAnimationFrame(animate);
@@ -1181,12 +1204,13 @@ function animate() {
         var autoRotateStartTime = config.autoRotateInactivityDelay -
             (Date.now() - latestInteraction);
         if (autoRotateStartTime > 0) {
-            if (autoRotateStart)
-                clearTimeout(autoRotateStart);
             autoRotateStart = setTimeout(function() {
                 config.autoRotate = autoRotateSpeed;
-                animate();
+                animateInit();
             }, autoRotateStartTime);
+        } else if (config.autoRotateInactivityDelay >= 0 && autoRotateSpeed) {
+            config.autoRotate = autoRotateSpeed;
+            animateInit();
         }
     }
 }
@@ -2094,7 +2118,7 @@ this.startAutoRotate = function(speed) {
  * @returns {Viewer} `this`
  */
 this.stopAutoRotate = function() {
-    autoRotateSpeed = config.autoRotate;
+    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
     config.autoRotate = false;
     return this;
 };
