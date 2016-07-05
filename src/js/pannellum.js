@@ -491,9 +491,9 @@ function parseGPanoXMP(image) {
                 }
                 if (xmp.horizonPitch !== null && xmp.horizonRoll !== null) {
                     if (specifiedPhotoSphereExcludes.indexOf('horizonPitch') < 0)
-                        config.horizonPitch = xmp.horizonPitch / 180 * Math.PI;
+                        config.horizonPitch = xmp.horizonPitch;
                     if (specifiedPhotoSphereExcludes.indexOf('horizonRoll') < 0)
-                        config.horizonRoll = xmp.horizonRoll / 180 * Math.PI;
+                        config.horizonRoll = xmp.horizonRoll;
                 }
                 
                 // TODO: add support for initial view settings
@@ -1388,9 +1388,9 @@ function renderInit() {
     try {
         var params = {};
         if (config.horizonPitch !== undefined)
-            params.horizonPitch = config.horizonPitch;
+            params.horizonPitch = config.horizonPitch * Math.PI / 180;
         if (config.horizonRoll !== undefined)
-            params.horizonRoll = config.horizonRoll;
+            params.horizonRoll = config.horizonRoll * Math.PI / 180;
         renderer.init(panoImage, config.type, config.dynamic, config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback, params);
         if (config.dynamic !== true) {
             // Allow image to be garbage collected

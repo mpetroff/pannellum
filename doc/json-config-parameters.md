@@ -137,7 +137,8 @@ Specifies a URL for a preview image to display before the panorama is loaded.
 
 ### `horizonPitch` and `horizonRoll` (number)
 
-Specifies pitch / roll of image horizon (for correcting non-leveled panoramas).
+Specifies pitch / roll of image horizon, in degrees (for correcting
+non-leveled panoramas).
 
 
 ### `hotSpots` (array)
