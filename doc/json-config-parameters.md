@@ -121,7 +121,8 @@ viewer can be set to. Defaults to `50` / `120`.
 
 ### `compass` (boolean)
 
-If `true`, a compass is displayed. Defaults to `false`.
+If `true`, a compass is displayed. Normally defaults to `false`; defaults to
+`true` if heading information is present in Photo Sphere XMP metadata.
 
 
 ### `northOffset` (number)
@@ -149,12 +150,12 @@ information, or external links. Each array element has the following properties.
 
 #### `pitch` (number)
 
-Specifies the pitch portion of the hot spot's location.
+Specifies the pitch portion of the hot spot's location, in degrees.
 
 
 #### `yaw` (number)
 
-Specifies the yaw portion of the hot spot's location.
+Specifies the yaw portion of the hot spot's location, in degrees.
 
 
 #### `type` (string)
@@ -180,15 +181,15 @@ for `info` hot spots.
 
 #### `targetPitch` (number)
 
-Specifies the pitch of the target scene.
+Specifies the pitch of the target scene, in degrees.
 
 #### `targetYaw` (number)
 
-Specifies the yaw of the target scene.
+Specifies the yaw of the target scene, in degrees.
 
 #### `targetHfov` (number)
 
-Specifies the HFOV of the target scene.
+Specifies the HFOV of the target scene, in degrees.
 
 ### `hotSpotDebug` (boolean)
 
