@@ -1667,7 +1667,15 @@ function processOptions() {
         preview.style.backgroundImage = "url('" + encodeURI(p) + "')";
         renderContainer.appendChild(preview);
     }
-    
+
+    // Reset title / author display
+    if (!config.hasOwnProperty('title'))
+        infoDisplay.title.innerHTML = '';
+    if (!config.hasOwnProperty('author'))
+        infoDisplay.author.innerHTML = '';
+    if (!config.hasOwnProperty('title') && !config.hasOwnProperty('author'))
+        infoDisplay.container.style.display = 'none';
+
     // Process other options
     for (var key in config) {
       if (config.hasOwnProperty(key)) {
