@@ -1030,7 +1030,8 @@ function Renderer(container) {
      * @param {MultiresNode} node - Input node.
      */
     function processNextTile(node) {
-        if (!node.texture) {
+        if (!node.textureLoad) {
+            node.textureLoad = true;
             loadTexture(encodeURI(node.path + '.' + image.extension), function(texture) {
                 node.texture = texture;
                 node.textureLoaded = true;
