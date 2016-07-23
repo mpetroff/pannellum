@@ -16,6 +16,7 @@
     user-select: none;
     outline: 0;
     line-height: 1.4;
+    contain: content;
 }
 
 .pnlm-container * {
