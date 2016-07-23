@@ -7,20 +7,19 @@
 (function(document, videojs, pannellum) {
 'use strict';
 
-videojs.plugin('pannellum', function() {
+videojs.plugin('pannellum', function(config) {
     // Create Pannellum instance
     var player = this;
     var container = player.el();
     var vid = container.getElementsByTagName('video')[0],
-        pnlmContainer = document.createElement('div'),
-        config = {
-            'type': 'equirectangular',
-            'dynamic': true,
-            'showZoomCtrl': false,
-            'showFullscreenCtrl': false,
-            'autoLoad': true,
-            'panorama': vid
-        };
+        pnlmContainer = document.createElement('div');
+    config = config || {};
+    config.type = 'equirectangular';
+    config.dynamic = true;
+    config.showZoomCtrl = false;
+    config.showFullscreenCtrl = false;
+    config.autoLoad = true;
+    config.panorama = vid;
     pnlmContainer.style.visibility = 'hidden';
     var pnlm = pannellum.viewer(pnlmContainer, config);
     container.insertBefore(pnlmContainer, container.firstChild);
