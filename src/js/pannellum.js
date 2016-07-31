@@ -57,6 +57,7 @@ var config,
     pitchSpeed = 0,
     zoomSpeed = 0,
     animating = false,
+    orientation = false,
     autoRotateStart,
     autoRotateSpeed = 0,
     externalEventListeners = {},
@@ -183,9 +184,18 @@ if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webk
 // Device orientation toggle
 controls.orientation = document.createElement('div');
 controls.orientation.addEventListener('click', function(e) {
-    window.addEventListener('deviceorientation', orientationListener);
+    if (orientation) {
+        stopOrientation();
+    } else {
+        orientation = true;
+        window.addEventListener('deviceorientation', orientationListener);
+        controls.orientation.classList.add('pnlm-orientation-button-active');
+    }
 });
-controls.orientation.className = 'pnlm-orientation-button pnlm-sprite pnlm-controls pnlm-control';
+controls.orientation.addEventListener('mousedown', function(e) {e.stopPropagation();});
+controls.orientation.addEventListener('touchstart', function(e) {e.stopPropagation();});
+controls.orientation.addEventListener('pointerdown', function(e) {e.stopPropagation();});
+controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
 if (window.DeviceOrientationEvent) {
     window.addEventListener('deviceorientation', function(e) {
         window.removeEventListener('deviceorientation', this);
@@ -383,7 +393,7 @@ function onImageLoad() {
     // Only add event listeners once
     if (!listenersAdded) {
         listenersAdded = true;
-        container.addEventListener('mousedown', onDocumentMouseDown, false);
+        dragFix.addEventListener('mousedown', onDocumentMouseDown, false);
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('mouseup', onDocumentMouseUp, false);
         if (config.mouseZoom) {
@@ -400,13 +410,13 @@ function onImageLoad() {
         container.addEventListener('keyup', onDocumentKeyUp, false);
         container.addEventListener('blur', clearKeys, false);
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
-        container.addEventListener('touchstart', onDocumentTouchStart, false);
-        container.addEventListener('touchmove', onDocumentTouchMove, false);
-        container.addEventListener('touchend', onDocumentTouchEnd, false);
-        container.addEventListener('pointerdown', onDocumentPointerDown, false);
-        container.addEventListener('pointermove', onDocumentPointerMove, false);
-        container.addEventListener('pointerup', onDocumentPointerUp, false);
-        container.addEventListener('pointerleave', onDocumentPointerUp, false);
+        dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
+        dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
+        dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+        dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
+        dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
+        dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
+        dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
 
         // Deal with MS pointer events
         if (window.navigator.pointerEnabled)
@@ -603,7 +613,7 @@ function onDocumentMouseDown(event) {
     autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
     config.autoRotate = false;
 
-    window.removeEventListener('deviceorientation', orientationListener);
+    stopOrientation();
     config.roll = 0;
 
     zoomSpeed = 0;
@@ -702,7 +712,7 @@ function onDocumentTouchStart(event) {
     autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
     config.autoRotate = false;
 
-    window.removeEventListener('deviceorientation', orientationListener);
+    stopOrientation();
     config.roll = 0;
 
     zoomSpeed = 0;
@@ -897,7 +907,7 @@ function onDocumentKeyPress(event) {
     config.autoRotate = false;
     latestInteraction = Date.now();
 
-    window.removeEventListener('deviceorientation', orientationListener);
+    stopOrientation();
     config.roll = 0;
 
     // Record key pressed
@@ -1925,6 +1935,16 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
 }
 
 /**
+ * Stop using device orientation.
+ * @private
+ */
+function stopOrientation() {
+    window.removeEventListener('deviceorientation', orientationListener);
+    controls.orientation.classList.remove('pnlm-orientation-button-active');
+    orientation = false;
+}
+
+/**
  * Escapes HTML string (to mitigate possible DOM XSS attacks).
  * @private
  * @param {string} s - String to escape
@@ -2273,7 +2293,7 @@ this.destroy = function() {
     if (renderer)
         renderer.destroy()
     if (listenersAdded) {
-        container.removeEventListener('mousedown', onDocumentMouseDown, false);
+        dragFix.removeEventListener('mousedown', onDocumentMouseDown, false);
         document.removeEventListener('mousemove', onDocumentMouseMove, false);
         document.removeEventListener('mouseup', onDocumentMouseUp, false);
         container.removeEventListener('mousewheel', onDocumentMouseWheel, false);
@@ -2288,13 +2308,13 @@ this.destroy = function() {
         container.removeEventListener('keyup', onDocumentKeyUp, false);
         container.removeEventListener('blur', clearKeys, false);
         document.removeEventListener('mouseleave', onDocumentMouseUp, false);
-        container.removeEventListener('touchstart', onDocumentTouchStart, false);
-        container.removeEventListener('touchmove', onDocumentTouchMove, false);
-        container.removeEventListener('touchend', onDocumentTouchEnd, false);
-        container.removeEventListener('pointerdown', onDocumentPointerDown, false);
-        container.removeEventListener('pointermove', onDocumentPointerMove, false);
-        container.removeEventListener('pointerup', onDocumentPointerUp, false);
-        container.removeEventListener('pointerleave', onDocumentPointerUp, false);
+        dragFix.removeEventListener('touchstart', onDocumentTouchStart, false);
+        dragFix.removeEventListener('touchmove', onDocumentTouchMove, false);
+        dragFix.removeEventListener('touchend', onDocumentTouchEnd, false);
+        dragFix.removeEventListener('pointerdown', onDocumentPointerDown, false);
+        dragFix.removeEventListener('pointermove', onDocumentPointerMove, false);
+        dragFix.removeEventListener('pointerup', onDocumentPointerUp, false);
+        dragFix.removeEventListener('pointerleave', onDocumentPointerUp, false);
     }
     container.innerHTML = '';
     container.classList.remove('pnlm-container');

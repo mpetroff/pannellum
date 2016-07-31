@@ -108,7 +108,14 @@
 .pnlm-fullscreen-toggle-button, .pnlm-orientation-button {
     width: 26px;
     height: 26px;
+}
+
+.pnlm-orientation-button-inactive {
     background-position: 0 -156px;
+}
+
+.pnlm-orientation-button-active {
+    background-position: 0 -182px;
 }
 
 .pnlm-fullscreen-toggle-button-inactive {
