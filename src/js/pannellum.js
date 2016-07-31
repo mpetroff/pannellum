@@ -34,6 +34,8 @@ window.pannellum = (function(window, document, undefined) {
  */
 function Viewer(container, initialConfig) {
 
+var _this = this;
+
 // Declare variables
 var config,
     renderer,
@@ -58,6 +60,7 @@ var config,
     orientation = false,
     autoRotateStart,
     autoRotateSpeed = 0,
+    origHfov,
     animatedMove = {},
     externalEventListeners = {},
     specifiedPhotoSphereExcludes = [],
@@ -234,7 +237,9 @@ function init() {
         anError();
         return;
     }
-    
+
+    origHfov = config.hfov;
+
     var i, p;
     
     if (config.type == 'cubemap') {
@@ -1245,8 +1250,11 @@ function animate() {
 
         keyRepeat();
         if (config.autoRotateInactivityDelay >= 0 && autoRotateSpeed &&
-            Date.now() - latestInteraction > config.autoRotateInactivityDelay)
+            Date.now() - latestInteraction > config.autoRotateInactivityDelay &&
+            !config.autoRotate) {
             config.autoRotate = autoRotateSpeed;
+            _this.lookAt(0, undefined, origHfov, 3000);
+        }
         requestAnimationFrame(animate);
     } else if (renderer && (renderer.isLoading() || (config.dynamic === true && update))) {
         requestAnimationFrame(animate);
@@ -1258,10 +1266,12 @@ function animate() {
         if (autoRotateStartTime > 0) {
             autoRotateStart = setTimeout(function() {
                 config.autoRotate = autoRotateSpeed;
+                _this.lookAt(0, undefined, origHfov, 3000);
                 animateInit();
             }, autoRotateStartTime);
         } else if (config.autoRotateInactivityDelay >= 0 && autoRotateSpeed) {
             config.autoRotate = autoRotateSpeed;
+            _this.lookAt(0, undefined, origHfov, 3000);
             animateInit();
         }
     }
@@ -2051,7 +2061,7 @@ this.setPitch = function(pitch, animated) {
     } else {
         config.pitch = pitch;
     }
-    requestAnimationFrame(animate);
+    animateInit();
     return this;
 };
 
@@ -2114,7 +2124,7 @@ this.setYaw = function(yaw, animated) {
     } else {
         config.yaw = yaw;
     }
-    requestAnimationFrame(animate);
+    animateInit();
     return this;
 };
 
@@ -2171,7 +2181,7 @@ this.setHfov = function(hfov, animated) {
     } else {
         setHfov(hfov);
     }
-    requestAnimationFrame(animate);
+    animateInit();
     return this;
 };
 
@@ -2239,7 +2249,7 @@ this.getNorthOffset = function() {
  */
 this.setNorthOffset = function(heading) {
     config.northOffset = Math.max(360, Math.min(0, heading));
-    requestAnimationFrame(animate);
+    animateInit();
     return this;
 };
 
@@ -2291,7 +2301,7 @@ this.setUpdate = function(bool) {
     if (renderer === undefined)
         onImageLoad();
     else
-        requestAnimationFrame(animate);
+        animateInit();
     return this;
 }
 
