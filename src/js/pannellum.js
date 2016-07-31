@@ -1105,7 +1105,10 @@ function keyRepeat() {
         config.autoRotateStopDelay !== false) {
         // Pan
         if (newTime - prevTime > 0.001) {
-            config.yaw -= config.autoRotate * (newTime - prevTime) / 1000;
+            diff = (newTime - prevTime) / 1000;
+            var yawDiff = (yawSpeed - config.autoRotate * 0.2) * diff
+            yawDiff = Math.sign(yawDiff) * Math.min(Math.abs(config.autoRotate * diff), Math.abs(yawDiff));
+            config.yaw += yawDiff;
         }
         
         // Deal with stopping auto rotation after a set delay
@@ -1118,7 +1121,7 @@ function keyRepeat() {
     }
 
     // "Inertia"
-    if (diff > 0) {
+    if (diff > 0 && !config.autoRotate) {
         // "Friction"
         var friction = 0.85;
         
@@ -1143,7 +1146,7 @@ function keyRepeat() {
         zoomSpeed = zoomSpeed * 0.8 + (config.hfov - prevZoom) / diff * 0.2;
         
         // Limit speed
-        var maxSpeed = 5;
+        var maxSpeed = config.autoRotate ? Math.abs(config.autoRotate) : 5;
         yawSpeed = Math.min(maxSpeed, Math.max(yawSpeed, -maxSpeed));
         pitchSpeed = Math.min(maxSpeed, Math.max(pitchSpeed, -maxSpeed));
         zoomSpeed = Math.min(maxSpeed, Math.max(zoomSpeed, -maxSpeed));
@@ -1211,6 +1214,7 @@ function animate() {
         requestAnimationFrame(animate);
     } else {
         animating = false;
+        prevTime = undefined;
         var autoRotateStartTime = config.autoRotateInactivityDelay -
             (Date.now() - latestInteraction);
         if (autoRotateStartTime > 0) {
