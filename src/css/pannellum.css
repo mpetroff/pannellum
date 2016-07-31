@@ -105,9 +105,21 @@
     border-radius: 0 0 3px 3px;
 }
 
-.pnlm-fullscreen-toggle-button, .pnlm-orientation-button {
+.pnlm-fullscreen-toggle-button, .pnlm-orientation-button, .pnlm-hot-spot-debug-indicator {
     width: 26px;
     height: 26px;
+}
+
+.pnlm-hot-spot-debug-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 13px;
+    display: none;
 }
 
 .pnlm-orientation-button-inactive {

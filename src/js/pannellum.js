@@ -114,6 +114,11 @@ dragFix.addEventListener('contextmenu', aboutMessage);
 // Create info display
 var infoDisplay = {};
 
+// Hot spot debug indicator
+var hotSpotDebugIndicator = document.createElement('div');
+hotSpotDebugIndicator.className = 'pnlm-sprite pnlm-hot-spot-debug-indicator';
+container.appendChild(hotSpotDebugIndicator);
+
 // Panorama info
 infoDisplay.container = document.createElement('div');
 infoDisplay.container.className = 'pnlm-panorama-info';
@@ -1793,6 +1798,13 @@ function processOptions() {
                     // Hide fullscreen control
                     controls.fullscreen.style.display = 'none';
                 }
+                break;
+
+            case 'hotSpotDebug':
+                if (config[key])
+                    hotSpotDebugIndicator.style.display = 'block';
+                else
+                    hotSpotDebugIndicator.style.display = 'none';
                 break;
         }
       }
