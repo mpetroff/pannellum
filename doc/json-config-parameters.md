@@ -212,20 +212,17 @@ Sets the URL to the equirectangular panorama image. This is relative to
 `basePath` if it is set, else it is relative to the location of
 `pannellum.htm`. An absolute URL can also be used.
 
-
 ### `haov` (number)
 
 Sets the panorama's horizontal angle of view, in degrees. Defaults to `360`.
 This is used if the equirectangular image does not cover a full 360 degrees in
 the horizontal.
 
-
 ### `vaov` (number)
 
 Sets the panorama's vertical angle of view, in degrees. Defaults to `180`. This
 is used if the equirectangular image does not cover a full 180 degrees in the
 vertical.
-
 
 ### `vOffset` (number)
 
@@ -237,6 +234,11 @@ and the equirectangular image is not cropped symmetrically.
 
 If set to `true`, any embedded Photo Sphere XMP data will be ignored; else,
 said data will override any existing settings. Defaults to `false`.
+
+### `backgroundColor` ([number, number, number])
+
+Specifies an array containing RGB values [0, 1] that sets the background color
+shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
 
 
 

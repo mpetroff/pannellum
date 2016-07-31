@@ -59,7 +59,7 @@ function Renderer(container) {
      * @param {number} vaov - Initial vertical angle of view.
      * @param {number} voffset - Initial vertical offset angle.
      * @param {function} callback - Load callback function.
-     * @param {Object} [params] - Other configuration parameters (`horizonPitch`, `horizonRoll`).
+     * @param {Object} [params] - Other configuration parameters (`horizonPitch`, `horizonRoll`, `backgroundColor`).
      */
     this.init = function(_image, _imageType, _dynamic, haov, vaov, voffset, callback, params) {
         // Default argument for image type
@@ -329,6 +329,14 @@ function Renderer(container) {
             gl.uniform1f(program.h, haov / (Math.PI * 2.0));
             gl.uniform1f(program.v, vaov / Math.PI);
             gl.uniform1f(program.vo, voffset / Math.PI * 2);
+
+            // Set background color
+            if (imageType == 'equirectangular') {
+                program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
+                var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+                color.push(1);
+                gl.uniform4fv(program.backgroundColor, color);
+            }
 
             // Create texture
             program.texture = gl.createTexture();
@@ -1246,6 +1254,9 @@ var fragEquirectangular = [
 // Coordinates passed in from vertex shader
 'varying vec2 v_texCoord;',
 
+// Background color (display for partial panoramas)
+'uniform vec4 u_backgroundColor;',
+
 'void main() {',
     // Map canvas/camera to sphere
     'float x = v_texCoord.x * u_aspectRatio;',
@@ -1273,7 +1284,7 @@ var fragEquirectangular = [
     // Look up color from texture
     // Map from [-1,1] to [0,1] and flip y-axis
     'if(coord.x < -u_h || coord.x > u_h || coord.y < -u_v + u_vo || coord.y > u_v + u_vo)',
-        'gl_FragColor = vec4(0, 0, 0, 1.0);',
+        'gl_FragColor = u_backgroundColor;',
     'else',
         'gl_FragColor = texture2D(u_image, vec2((coord.x + u_h) / (u_h * 2.0), (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
 '}'
