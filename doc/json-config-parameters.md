@@ -85,6 +85,11 @@ If set to `false`, the fullscreen control will not be displayed. Defaults to
 the fullscreen API.
 
 
+### `showControls` (boolean)
+
+If set to `false`, no controls are displayed. Defaults to `true`.
+
+
 ### `yaw` (number)
 
 Sets the panorama's starting yaw position in degrees. Defaults to `0`.

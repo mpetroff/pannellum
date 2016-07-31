@@ -1779,7 +1779,7 @@ function processOptions() {
                 break;
             
             case 'showZoomCtrl':
-                if (config[key]) {
+                if (config[key] && config.showControls != false) {
                     // Show zoom controls
                     controls.zoom.style.display = 'block';
                 } else {
@@ -1789,7 +1789,7 @@ function processOptions() {
                 break;
 
             case 'showFullscreenCtrl':
-                if (config[key] && ('fullscreen' in document || 'mozFullScreen' in document ||
+                if (config[key] && config.showControls != false && ('fullscreen' in document || 'mozFullScreen' in document ||
                     'webkitIsFullScreen' in document || 'msFullscreenElement' in document)) {
                     
                     // Show fullscreen control
@@ -1806,6 +1806,13 @@ function processOptions() {
                 else
                     hotSpotDebugIndicator.style.display = 'none';
                 break;
+
+            case 'showControls':
+                if (!config[key]) {
+                    controls.orientation.style.display = 'none';
+                    controls.zoom.style.display = 'none';
+                    controls.fullscreen.style.display = 'none';
+                }
         }
       }
     }
