@@ -53,13 +53,12 @@ var config,
     listenersAdded = false,
     panoImage,
     prevTime,
-    yawSpeed = 0,
-    pitchSpeed = 0,
-    zoomSpeed = 0,
+    speed = {'yaw': 0, 'pitch': 0, 'hfov': 0},
     animating = false,
     orientation = false,
     autoRotateStart,
     autoRotateSpeed = 0,
+    animatedMove = {},
     externalEventListeners = {},
     specifiedPhotoSphereExcludes = [],
     update = false, // Should we update when still to render dynamic content
@@ -610,13 +609,12 @@ function onDocumentMouseDown(event) {
     }
     
     // Turn off auto-rotation if enabled
-    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
-    config.autoRotate = false;
+    stopAnimation();
 
     stopOrientation();
     config.roll = 0;
 
-    zoomSpeed = 0;
+    speed.hfov = 0;
 
     isUserInteracting = true;
     latestInteraction = Date.now();
@@ -666,13 +664,13 @@ function onDocumentMouseMove(event) {
         var pos = mousePosition(event);
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(pos.x / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
-        yawSpeed = (yaw - config.yaw) % 360 * 0.2;
+        speed.yaw = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
         
         var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
         
         var pitch = ((Math.atan(pos.y / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
-        pitchSpeed = (pitch - config.pitch) * 0.2;
+        speed.pitch = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
     }
 }
@@ -689,7 +687,7 @@ function onDocumentMouseUp() {
     if (Date.now() - latestInteraction > 15) {
         // Prevents jump when user rapidly moves mouse, stops, and then
         // releases the mouse button
-        pitchSpeed = yawSpeed = 0;
+        speed.pitch = speed.yaw = 0;
     }
     container.classList.add('pnlm-grab');
     container.classList.remove('pnlm-grabbing');
@@ -709,13 +707,12 @@ function onDocumentTouchStart(event) {
     }
 
     // Turn off auto-rotation if enabled
-    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
-    config.autoRotate = false;
+    stopAnimation();
 
     stopOrientation();
     config.roll = 0;
 
-    zoomSpeed = 0;
+    speed.hfov = 0;
 
     // Calculate touch position relative to top left of viewer container
     var pos0 = mousePosition(event.targetTouches[0]);
@@ -777,11 +774,11 @@ function onDocumentTouchMove(event) {
         var touchmovePanSpeedCoeff = config.hfov / 360;
 
         var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
-        yawSpeed = (yaw - config.yaw) % 360 * 0.2;
+        speed.yaw = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
 
         var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
-        pitchSpeed = (pitch - config.pitch) * 0.2;
+        speed.pitch = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
     }
 }
@@ -793,7 +790,7 @@ function onDocumentTouchMove(event) {
 function onDocumentTouchEnd() {
     isUserInteracting = false;
     if (Date.now() - latestInteraction > 150) {
-        pitchSpeed = yawSpeed = 0;
+        speed.pitch = speed.yaw = 0;
     }
     onPointerDownPointerDist = -1;
     latestInteraction = Date.now();
@@ -872,22 +869,21 @@ function onDocumentMouseWheel(event) {
     }
 
     // Turn off auto-rotation if enabled
-    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
-    config.autoRotate = false;
+    stopAnimation();
     latestInteraction = Date.now();
 
     if (event.wheelDeltaY) {
         // WebKit
         setHfov(config.hfov - event.wheelDeltaY * 0.05);
-        zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
+        speed.hfov = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.wheelDelta) {
         // Opera / Explorer 9
         setHfov(config.hfov - event.wheelDelta * 0.05);
-        zoomSpeed = event.wheelDelta < 0 ? 1 : -1;
+        speed.hfov = event.wheelDelta < 0 ? 1 : -1;
     } else if (event.detail) {
         // Firefox
         setHfov(config.hfov + event.detail * 1.5);
-        zoomSpeed = event.detail > 0 ? 1 : -1;
+        speed.hfov = event.detail > 0 ? 1 : -1;
     }
     
     animateInit();
@@ -903,8 +899,7 @@ function onDocumentKeyPress(event) {
     event.preventDefault();
     
     // Turn off auto-rotation if enabled
-    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
-    config.autoRotate = false;
+    stopAnimation();
     latestInteraction = Date.now();
 
     stopOrientation();
@@ -1058,41 +1053,41 @@ function keyRepeat() {
     
     // If minus key is down
     if (keysDown[0] && config.keyboardZoom === true) {
-        setHfov(config.hfov + (zoomSpeed * 0.8 + 0.5) * diff);
+        setHfov(config.hfov + (speed.hfov * 0.8 + 0.5) * diff);
         isKeyDown = true;
     }
     
     // If plus key is down
     if (keysDown[1] && config.keyboardZoom === true) {
-        setHfov(config.hfov + (zoomSpeed * 0.8 - 0.2) * diff);
+        setHfov(config.hfov + (speed.hfov * 0.8 - 0.2) * diff);
         isKeyDown = true;
     }
     
     // If up arrow or "w" is down
     if (keysDown[2] || keysDown[6]) {
         // Pan up
-        config.pitch += (pitchSpeed * 0.8 + 0.2) * diff;
+        config.pitch += (speed.pitch * 0.8 + 0.2) * diff;
         isKeyDown = true;
     }
     
     // If down arrow or "s" is down
     if (keysDown[3] || keysDown[7]) {
         // Pan down
-        config.pitch += (pitchSpeed * 0.8 - 0.2) * diff;
+        config.pitch += (speed.pitch * 0.8 - 0.2) * diff;
         isKeyDown = true;
     }
     
     // If left arrow or "a" is down
     if (keysDown[4] || keysDown[8]) {
         // Pan left
-        config.yaw += (yawSpeed * 0.8 - 0.2) * diff;
+        config.yaw += (speed.yaw * 0.8 - 0.2) * diff;
         isKeyDown = true;
     }
     
     // If right arrow or "d" is down
     if (keysDown[5] || keysDown[9]) {
         // Pan right
-        config.yaw += (yawSpeed * 0.8 + 0.2) * diff;
+        config.yaw += (speed.yaw * 0.8 + 0.2) * diff;
         isKeyDown = true;
     }
 
@@ -1106,7 +1101,7 @@ function keyRepeat() {
         // Pan
         if (newTime - prevTime > 0.001) {
             diff = (newTime - prevTime) / 1000;
-            var yawDiff = (yawSpeed - config.autoRotate * 0.2) * diff
+            var yawDiff = (speed.yaw - config.autoRotate * 0.2) * diff
             yawDiff = Math.sign(yawDiff) * Math.min(Math.abs(config.autoRotate * diff), Math.abs(yawDiff));
             config.yaw += yawDiff;
         }
@@ -1120,48 +1115,90 @@ function keyRepeat() {
         }
     }
 
+    // Animated moves
+    if (animatedMove.pitch) {
+        animateMove('pitch');
+        prevPitch = config.pitch;
+    }
+    if (animatedMove.yaw) {
+        animateMove('yaw');
+        prevYaw = config.yaw;
+    }
+    if (animatedMove.hfov) {
+        animateMove('hfov');
+        prevZoom = config.hfov;
+    }
+
     // "Inertia"
     if (diff > 0 && !config.autoRotate) {
         // "Friction"
         var friction = 0.85;
         
         // Yaw
-        if (!keysDown[4] && !keysDown[5] && !keysDown[8] && !keysDown[9]) {
-            config.yaw += yawSpeed * diff * friction;
+        if (!keysDown[4] && !keysDown[5] && !keysDown[8] && !keysDown[9] && !animatedMove.yaw) {
+            config.yaw += speed.yaw * diff * friction;
         }
         // Pitch
-        if (!keysDown[2] && !keysDown[3] && !keysDown[6] && !keysDown[7]) {
-            config.pitch += pitchSpeed * diff * friction;
+        if (!keysDown[2] && !keysDown[3] && !keysDown[6] && !keysDown[7] && !animatedMove.pitch) {
+            config.pitch += speed.pitch * diff * friction;
         }
         // Zoom
-        if (!keysDown[0] && !keysDown[1]) {
-            setHfov(config.hfov + zoomSpeed * diff * friction);
+        if (!keysDown[0] && !keysDown[1] && !animatedMove.hfov) {
+            setHfov(config.hfov + speed.hfov * diff * friction);
         }
     }
 
     prevTime = newTime;
     if (diff > 0) {
-        yawSpeed = yawSpeed * 0.8 + (config.yaw - prevYaw) / diff * 0.2;
-        pitchSpeed = pitchSpeed * 0.8 + (config.pitch - prevPitch) / diff * 0.2;
-        zoomSpeed = zoomSpeed * 0.8 + (config.hfov - prevZoom) / diff * 0.2;
+        speed.yaw = speed.yaw * 0.8 + (config.yaw - prevYaw) / diff * 0.2;
+        speed.pitch = speed.pitch * 0.8 + (config.pitch - prevPitch) / diff * 0.2;
+        speed.hfov = speed.hfov * 0.8 + (config.hfov - prevZoom) / diff * 0.2;
         
         // Limit speed
         var maxSpeed = config.autoRotate ? Math.abs(config.autoRotate) : 5;
-        yawSpeed = Math.min(maxSpeed, Math.max(yawSpeed, -maxSpeed));
-        pitchSpeed = Math.min(maxSpeed, Math.max(pitchSpeed, -maxSpeed));
-        zoomSpeed = Math.min(maxSpeed, Math.max(zoomSpeed, -maxSpeed));
+        speed.yaw = Math.min(maxSpeed, Math.max(speed.yaw, -maxSpeed));
+        speed.pitch = Math.min(maxSpeed, Math.max(speed.pitch, -maxSpeed));
+        speed.hfov = Math.min(maxSpeed, Math.max(speed.hfov, -maxSpeed));
     }
     
     // Stop movement if opposite controls are pressed
     if (keysDown[0] && keysDown[0]) {
-        zoomSpeed = 0;
+        speed.hfov = 0;
     }
     if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {
-        pitchSpeed = 0;
+        speed.pitch = 0;
     }
     if ((keysDown[4] || keysDown[8]) && (keysDown[5] || keysDown[9])) {
-        yawSpeed = 0;
+        speed.yaw = 0;
     }
+}
+
+/**
+ * Animates moves.
+ * @param {string} axis - Axis to animate
+ * @private
+ */
+function animateMove(axis) {
+    var t = animatedMove[axis];
+    var normTime = Math.min(1, Math.max((Date.now() - t.startTime) / 1000 / (t.duration / 1000), 0));
+    var result = t.startPosition + timingFunction(normTime) * (t.endPosition - t.startPosition);
+    if ((t.endPosition > t.startPosition && result >= t.endPosition) ||
+        (t.endPosition < t.startPosition && result <= t.endPosition)) {
+        result = t.endPosition;
+        speed[axis] = 0;
+        delete animatedMove[axis];
+    }
+    config[axis] = result;
+}
+
+/**
+ * @param {number} t - Normalized time in animation
+ * @return {number} Position in animation
+ * @private
+ */
+function timingFunction(t) {
+    // easeInOutQuad from https://gist.github.com/gre/1650294
+    return t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 }
 
 /**
@@ -1202,8 +1239,9 @@ function animate() {
     } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
         keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] ||
         keysDown[8] || keysDown[9] || config.autoRotate ||
-        Math.abs(yawSpeed) > 0.01 || Math.abs(pitchSpeed) > 0.01 ||
-        Math.abs(zoomSpeed) > 0.01) {
+        animatedMove.pitch || animatedMove.yaw || animatedMove.hfov ||
+        Math.abs(speed.yaw) > 0.01 || Math.abs(speed.pitch) > 0.01 ||
+        Math.abs(speed.hfov) > 0.01) {
 
         keyRepeat();
         if (config.autoRotateInactivityDelay >= 0 && autoRotateSpeed &&
@@ -1825,11 +1863,12 @@ function zoomOut() {
 }
 
 /**
- * Sets viewer's horizontal field of view.
+ * Clamps horzontal field of view to viewer's limits.
  * @private
- * @param {number} hfov - Desired horizontal field of view in degrees.
+ * @param {number} hfov - Input horizontal field of view (in degrees)
+ * @return {number} - Clamped horizontal field of view (in degrees)
  */
-function setHfov(hfov) {
+function constrainHfov(hfov) {
     // Keep field of view within bounds
     var minHfov = config.minHfov;
     if (config.type == 'multires' && renderer) {
@@ -1838,14 +1877,33 @@ function setHfov(hfov) {
     if (minHfov >= config.maxHfov) {
         // Don't change view if bounds don't make sense
         console.log('HFOV bounds do not make sense (minHfov >= maxHfov).')
-        return;
+        return config.hfov;
     } if (hfov < minHfov) {
-        config.hfov = minHfov;
+        return minHfov;
     } else if (hfov > config.maxHfov) {
-        config.hfov = config.maxHfov;
+        return config.maxHfov;
     } else {
-        config.hfov = hfov;
+        return hfov;
     }
+}
+
+/**
+ * Sets viewer's horizontal field of view.
+ * @private
+ * @param {number} hfov - Desired horizontal field of view in degrees.
+ */
+function setHfov(hfov) {
+    config.hfov = constrainHfov(hfov);
+}
+
+/**
+ * Stops auto rotation and animated moves.
+ * @private
+ */
+function stopAnimation() {
+    animatedMove = {};
+    autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
+    config.autoRotate = false;
 }
 
 /**
@@ -1921,7 +1979,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     mergeConfig(sceneId);
 
     // Stop motion
-    yawSpeed = pitchSpeed = zoomSpeed = 0;
+    speed.yaw = speed.pitch = speed.hfov = 0;
 
     // Reload scene
     processOptions();
@@ -1978,10 +2036,21 @@ this.getPitch = function() {
  * @memberof Viewer
  * @instance
  * @param {number} pitch - Pitch in degrees
+ * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
  * @returns {Viewer} `this`
  */
-this.setPitch = function(pitch) {
-    config.pitch = pitch;
+this.setPitch = function(pitch, animated) {
+    animated = animated == undefined ? 1000: Number(animated);
+    if (animated) {
+        animatedMove.pitch = {
+            'startTime': Date.now(),
+            'startPosition': config.pitch,
+            'endPosition': pitch,
+            'duration': animated
+        }
+    } else {
+        config.pitch = pitch;
+    }
     requestAnimationFrame(animate);
     return this;
 };
@@ -2024,16 +2093,27 @@ this.getYaw = function() {
  * @memberof Viewer
  * @instance
  * @param {number} yaw - Yaw in degrees [-180, 180]
+ * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
  * @returns {Viewer} `this`
  */
-this.setYaw = function(yaw) {
+this.setYaw = function(yaw, animated) {
     while (yaw > 180) {
         yaw -= 360;
     }
     while (yaw < -180) {
         yaw += 360;
     }
-    config.yaw = yaw;
+    animated = animated == undefined ? 1000: Number(animated);
+    if (animated) {
+        animatedMove.yaw = {
+            'startTime': Date.now(),
+            'startPosition': config.yaw,
+            'endPosition': yaw,
+            'duration': animated
+        }
+    } else {
+        config.yaw = yaw;
+    }
     requestAnimationFrame(animate);
     return this;
 };
@@ -2076,10 +2156,21 @@ this.getHfov = function() {
  * @memberof Viewer
  * @instance
  * @param {number} hfov - Horizontal field of view in degrees
+ * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
  * @returns {Viewer} `this`
  */
-this.setHfov = function(hfov) {
-    setHfov(hfov);
+this.setHfov = function(hfov, animated) {
+    animated = animated == undefined ? 1000: Number(animated);
+    if (animated) {
+        animatedMove.hfov = {
+            'startTime': Date.now(),
+            'startPosition': config.hfov,
+            'endPosition': constrainHfov(hfov),
+            'duration': animated
+        }
+    } else {
+        setHfov(hfov);
+    }
     requestAnimationFrame(animate);
     return this;
 };
@@ -2107,6 +2198,27 @@ this.setHfovBounds = function(bounds) {
     config.maxHfov = Math.max(0, bounds[1]);
     return this;
 };
+
+/**
+ * Set a new view. Any parameters not specified remain the same.
+ * @memberof Viewer
+ * @instance
+ * @param {number} [pitch] - Target pitch
+ * @param {number} [yaw] - Target yaw
+ * @param {number} [hfov] - Target hfov
+ * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+ * @returns {Viewer} `this`
+ */
+this.lookAt = function(pitch, yaw, hfov, animated) {
+    animated = animated == undefined ? 1000: Number(animated);
+    if (pitch !== undefined)
+        this.setPitch(pitch, animated);
+    if (yaw !== undefined)
+        this.setYaw(yaw, animated);
+    if (hfov !== undefined)
+        this.setHfov(hfov, animated);
+    return this;
+}
 
 /**
  * Returns the panorama's north offset.
