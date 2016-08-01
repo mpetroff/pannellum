@@ -61,6 +61,7 @@ var config,
     autoRotateStart,
     autoRotateSpeed = 0,
     origHfov,
+    origPitch,
     animatedMove = {},
     externalEventListeners = {},
     specifiedPhotoSphereExcludes = [],
@@ -244,6 +245,7 @@ function init() {
     }
 
     origHfov = config.hfov;
+    origPitch = config.pitch;
 
     var i, p;
     
@@ -1117,7 +1119,7 @@ function keyRepeat() {
         if (newTime - prevTime > 0.001) {
             diff = (newTime - prevTime) / 1000;
             var yawDiff = (speed.yaw - config.autoRotate * 0.2) * diff
-            yawDiff = Math.sign(yawDiff) * Math.min(Math.abs(config.autoRotate * diff), Math.abs(yawDiff));
+            yawDiff = Math.sign(-config.autoRotate) * Math.min(Math.abs(config.autoRotate * diff), Math.abs(yawDiff));
             config.yaw += yawDiff;
         }
         
@@ -1263,7 +1265,7 @@ function animate() {
             Date.now() - latestInteraction > config.autoRotateInactivityDelay &&
             !config.autoRotate) {
             config.autoRotate = autoRotateSpeed;
-            _this.lookAt(0, undefined, origHfov, 3000);
+            _this.lookAt(origPitch, undefined, origHfov, 3000);
         }
         requestAnimationFrame(animate);
     } else if (renderer && (renderer.isLoading() || (config.dynamic === true && update))) {
@@ -1276,12 +1278,12 @@ function animate() {
         if (autoRotateStartTime > 0) {
             autoRotateStart = setTimeout(function() {
                 config.autoRotate = autoRotateSpeed;
-                _this.lookAt(0, undefined, origHfov, 3000);
+                _this.lookAt(origPitch, undefined, origHfov, 3000);
                 animateInit();
             }, autoRotateStartTime);
         } else if (config.autoRotateInactivityDelay >= 0 && autoRotateSpeed) {
             config.autoRotate = autoRotateSpeed;
-            _this.lookAt(0, undefined, origHfov, 3000);
+            _this.lookAt(origPitch, undefined, origHfov, 3000);
             animateInit();
         }
     }
