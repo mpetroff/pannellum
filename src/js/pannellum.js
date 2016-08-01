@@ -638,6 +638,7 @@ function onDocumentMouseDown(event) {
     container.classList.add('pnlm-grabbing');
     container.classList.remove('pnlm-grab');
     
+    fireEvent('mousedown', event);
     animateInit();
 }
 
@@ -650,8 +651,10 @@ function onDocumentMouseDown(event) {
 function mouseEventToCoords(event) {
     var pos = mousePosition(event);
     var canvas = renderer.getCanvas();
-    var x = pos.x / canvas.width * 2 - 1;
-    var y = (1 - pos.y / canvas.height * 2) * canvas.height / canvas.width;
+    var canvasWidth = canvas.width / (window.devicePixelRatio || 1),
+        canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+    var x = pos.x / canvasWidth * 2 - 1;
+    var y = (1 - pos.y / canvasHeight * 2) * canvasHeight / canvasWidth;
     var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
     var s = Math.sin(config.pitch * Math.PI / 180);
     var c = Math.cos(config.pitch * Math.PI / 180);
@@ -671,15 +674,17 @@ function onDocumentMouseMove(event) {
     if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         var canvas = renderer.getCanvas();
+        var canvasWidth = canvas.width / (window.devicePixelRatio || 1),
+            canvasHeight = canvas.height / (window.devicePixelRatio || 1);
         var pos = mousePosition(event);
         //TODO: This still isn't quite right
-        var yaw = ((Math.atan(onPointerDownPointerX / canvas.width * 2 - 1) - Math.atan(pos.x / canvas.width * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
+        var yaw = ((Math.atan(onPointerDownPointerX / canvasWidth * 2 - 1) - Math.atan(pos.x / canvasWidth * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
         speed.yaw = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
         
-        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvas.height / canvas.width) * 180 / Math.PI;
+        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvasHeight / canvasWidth) * 180 / Math.PI;
         
-        var pitch = ((Math.atan(pos.y / canvas.height * 2 - 1) - Math.atan(onPointerDownPointerY / canvas.height * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
+        var pitch = ((Math.atan(pos.y / canvasHeight * 2 - 1) - Math.atan(onPointerDownPointerY / canvasHeight * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
         speed.pitch = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
     }
