@@ -192,13 +192,10 @@ if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webk
 // Device orientation toggle
 controls.orientation = document.createElement('div');
 controls.orientation.addEventListener('click', function(e) {
-    if (orientation) {
+    if (orientation)
         stopOrientation();
-    } else {
-        orientation = true;
-        window.addEventListener('deviceorientation', orientationListener);
-        controls.orientation.classList.add('pnlm-orientation-button-active');
-    }
+    else
+        startOrientation();
 });
 controls.orientation.addEventListener('mousedown', function(e) {e.stopPropagation();});
 controls.orientation.addEventListener('touchstart', function(e) {e.stopPropagation();});
@@ -1820,6 +1817,12 @@ function processOptions() {
                     controls.zoom.style.display = 'none';
                     controls.fullscreen.style.display = 'none';
                 }
+                break;
+
+            case 'orientationOnByDefault':
+                if (config[key])
+                    startOrientation();
+                break;
         }
       }
     }
@@ -2040,6 +2043,16 @@ function stopOrientation() {
     window.removeEventListener('deviceorientation', orientationListener);
     controls.orientation.classList.remove('pnlm-orientation-button-active');
     orientation = false;
+}
+
+/**
+ * Start using device orientation.
+ * @private
+ */
+function startOrientation() {
+    orientation = true;
+    window.addEventListener('deviceorientation', orientationListener);
+    controls.orientation.classList.add('pnlm-orientation-button-active');
 }
 
 /**

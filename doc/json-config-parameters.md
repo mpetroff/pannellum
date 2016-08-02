@@ -63,6 +63,13 @@ not supported by the user's device. The user will be given the option to click
 a link and visit this URL if Pannellum fails to work.
 
 
+### `orientationOnByDefault` (boolean)
+
+If set to `true`, device orientation control will be used when the panorama is
+loaded, if the device supports it. If false, device orientation control needs
+to be activated by pressing a button. Defaults to `false`.
+
+
 ### `showZoomCtrl` (boolean)
 
 If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
