@@ -1913,9 +1913,9 @@ function constrainHfov(hfov) {
     if (config.type == 'multires' && renderer) {
         minHfov = Math.min(minHfov, renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9));
     }
-    if (minHfov >= config.maxHfov) {
+    if (minHfov > config.maxHfov) {
         // Don't change view if bounds don't make sense
-        console.log('HFOV bounds do not make sense (minHfov >= maxHfov).')
+        console.log('HFOV bounds do not make sense (minHfov > maxHfov).')
         return config.hfov;
     } if (hfov < minHfov) {
         return minHfov;
