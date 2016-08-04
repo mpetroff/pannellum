@@ -1888,6 +1888,7 @@ function onFullScreenChange() {
 function zoomIn() {
     if (loaded) {
         setHfov(config.hfov - 5);
+        animateInit();
     }
 }
 
@@ -1898,6 +1899,7 @@ function zoomIn() {
 function zoomOut() {
     if (loaded) {
         setHfov(config.hfov + 5);
+        animateInit();
     }
 }
 
