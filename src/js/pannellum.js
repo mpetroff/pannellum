@@ -1543,6 +1543,10 @@ function createHotSpots() {
             return a.pitch < b.pitch;
         });
         config.hotSpots.forEach(function(hs) {
+            // Make sure hot spot pitch and yaw are numbers
+            hs.pitch = Number(hs.pitch) || 0;
+            hs.yaw = Number(hs.yaw) || 0;
+
             var div = document.createElement('div');
             div.className = 'pnlm-hotspot-base'
             if (hs.cssClass)
