@@ -1658,10 +1658,10 @@ function renderHotSpots() {
                 canvasHeight = canvas.height / (window.devicePixelRatio || 1);
             var transform = 'translate(' + (-canvasWidth /
                 hfovTan * Math.sin((-hs.yaw + config.yaw) * Math.PI / 180) *
-                hsPitchCos / z / 2 + canvasWidth / 2 - 13) + 'px, ' +
+                hsPitchCos / z / 2 + (canvasWidth - hs.div.offsetWidth) / 2) + 'px, ' +
                 (-canvasWidth / hfovTan * (hsPitchSin *
                 configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
-                canvasHeight / 2 - 13) + 'px) translateZ(9999px)';
+                (canvasHeight - hs.div.offsetHeight) / 2) + 'px) translateZ(9999px)';
             hs.div.style.webkitTransform = transform;
             hs.div.style.MozTransform = transform;
             hs.div.style.transform = transform;
