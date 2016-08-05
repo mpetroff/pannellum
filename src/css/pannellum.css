@@ -313,16 +313,18 @@
     color: #eee;
 }
 
-.pnlm-hotspot {
+.pnlm-hotspot-base {
     position: absolute;
-    height: 26px;
-    width: 26px;
     visibility: hidden;
     cursor: default;
-    border-radius: 13px;
     vertical-align: middle;
     top: 0;
     z-index: 1;
+}
+.pnlm-hotspot {
+    height: 26px;
+    width: 26px;
+    border-radius: 13px;
 }
 .pnlm-hotspot:hover {
     background-color: rgba(255,255,255,0.2);
@@ -343,14 +345,13 @@ div.pnlm-tooltip span {
     text-align: center;
     max-width: 200px;
     padding: 5px 10px;
-    margin-top: -41px;
     margin-left: -220px;
     cursor: default;
 }
 div.pnlm-tooltip:hover span{
     visibility: visible;
 }
-div.pnlm-tooltip:hover:after {
+div.pnlm-tooltip:hover span:after {
     content: '';
     position: absolute;
     width: 0;
@@ -358,8 +359,9 @@ div.pnlm-tooltip:hover:after {
     border-width: 10px;
     border-style: solid;
     border-color: rgba(0,0,0,0.7) transparent transparent transparent;
-    top: -12px;
-    left: 3px;
+    bottom: -20px;
+    left: -10px;
+    margin: 0 50%;
 }
 
 .pnlm-compass {
