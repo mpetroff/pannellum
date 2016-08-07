@@ -1185,56 +1185,7 @@ var vMulti = [
 ].join('');
 
 // Fragment shader
-var fragCube = [
-'precision mediump float;',
-
-'uniform float u_aspectRatio;',
-'uniform float u_psi;',
-'uniform float u_theta;',
-'uniform float u_f;',
-'uniform float u_h;',
-'uniform float u_v;',
-'uniform float u_vo;',
-'uniform float u_rot;',
-
-'const float PI = 3.14159265358979323846264;',
-
-// Texture
-'uniform samplerCube u_image;',
-
-// Coordinates passed in from vertex shader
-'varying vec2 v_texCoord;',
-
-'void main() {',
-    // Find the vector of focal point to view plane
-    'vec3 planePos = vec3(v_texCoord.xy, 0.0);',
-    'planePos.x *= u_aspectRatio;',
-    'float sinrot = sin(u_rot);',
-    'float cosrot = cos(u_rot);',
-    'vec3 rotPos = vec3(planePos.x * cosrot - planePos.y * sinrot, planePos.x * sinrot + planePos.y * cosrot, 0.0);',
-    'vec3 viewVector = rotPos - vec3(0.0, 0.0, -u_f);',
-
-    // Rotate vector for psi (yaw) and theta (pitch)
-    'float sinpsi = sin(-u_psi);',
-    'float cospsi = cos(-u_psi);',
-    'float sintheta = sin(u_theta);',
-    'float costheta = cos(u_theta);',
-    
-    // Now apply the rotations
-    'vec3 viewVectorTheta = viewVector;',
-    'viewVectorTheta.z = viewVector.z * costheta - viewVector.y * sintheta;',
-    'viewVectorTheta.y = viewVector.z * sintheta + viewVector.y * costheta;',
-    'vec3 viewVectorPsi = viewVectorTheta;',
-    'viewVectorPsi.x = viewVectorTheta.x * cospsi - viewVectorTheta.z * sinpsi;',
-    'viewVectorPsi.z = viewVectorTheta.x * sinpsi + viewVectorTheta.z * cospsi;',
-
-    // Look up color from texture
-    'gl_FragColor = textureCube(u_image, viewVectorPsi);',
-'}'
-].join('\n');
-
-// Fragment shader
-var fragEquirectangular = [
+var fragEquiCubeBase = [
 'precision mediump float;',
 
 'uniform float u_aspectRatio;',
@@ -1250,6 +1201,7 @@ var fragEquirectangular = [
 
 // Texture
 'uniform sampler2D u_image;',
+'uniform samplerCube u_imageCube;',
 
 // Coordinates passed in from vertex shader
 'varying vec2 v_texCoord;',
@@ -1271,16 +1223,24 @@ var fragEquirectangular = [
     'float root = sqrt(rot_x * rot_x + a * a);',
     'float lambda = atan(rot_x / root, a / root) + u_psi;',
     'float phi = atan((rot_y * costheta + u_f * sintheta) / root);',
+].join('\n');
 
+// Fragment shader
+var fragCube = fragEquiCubeBase + [
+    // Look up color from texture
+    'float cosphi = cos(phi);',
+    'gl_FragColor = textureCube(u_imageCube, vec3(cosphi*sin(lambda), sin(phi), cosphi*cos(lambda)));',
+'}'
+].join('\n');
+
+// Fragment shader
+var fragEquirectangular = fragEquiCubeBase + [
     // Wrap image
-    'if(lambda > PI)',
-        'lambda = lambda - PI * 2.0;',
-    'if(lambda < -PI)',
-       'lambda = lambda + PI * 2.0;',
-    
+    'lambda = mod(lambda + PI, PI * 2.0) - PI;',
+
     // Map texture to sphere
     'vec2 coord = vec2(lambda / PI, phi / (PI / 2.0));',
-    
+
     // Look up color from texture
     // Map from [-1,1] to [0,1] and flip y-axis
     'if(coord.x < -u_h || coord.x > u_h || coord.y < -u_v + u_vo || coord.y > u_v + u_vo)',
