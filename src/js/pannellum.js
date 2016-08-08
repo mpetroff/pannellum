@@ -2405,6 +2405,16 @@ this.toggleFullscreen = function() {
 }
 
 /**
+ * Get configuration of current scene.
+ * @memberof Viewer
+ * @instance
+ * @returns {Object} Configuration of current scene
+ */
+this.getConfig = function() {
+    return config;
+}
+
+/**
  * Subscribe listener to specified event.
  * @memberof Viewer
  * @instance
