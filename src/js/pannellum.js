@@ -84,12 +84,17 @@ var defaultConfig = {
     vOffset: 0,
     autoRotate: false,
     autoRotateInactivityDelay: -1,
+    autoRotateStopDelay: false,
     type: 'equirectangular',
     northOffset: 0,
     showFullscreenCtrl: true,
     dynamic: false,
     keyboardZoom: true,
-    mouseZoom: true
+    mouseZoom: true,
+    showZoomCtrl: true,
+    autoLoad: false,
+    showControls: true,
+    orientationOnByDefault: false,
 };
 
 // Initialize container
