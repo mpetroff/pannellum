@@ -1988,6 +1988,7 @@ function load() {
  */
 function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     loaded = false;
+    animatedMove = {};
     
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
