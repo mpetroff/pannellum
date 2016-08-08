@@ -84,7 +84,7 @@ var defaultConfig = {
     vOffset: 0,
     autoRotate: false,
     autoRotateInactivityDelay: -1,
-    autoRotateStopDelay: false,
+    autoRotateStopDelay: undefined,
     type: 'equirectangular',
     northOffset: 0,
     showFullscreenCtrl: true,
