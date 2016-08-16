@@ -334,8 +334,7 @@ function Renderer(container) {
             if (imageType == 'equirectangular') {
                 program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
                 var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
-                color.push(1);
-                gl.uniform4fv(program.backgroundColor, color);
+                gl.uniform4fv(program.backgroundColor, color.concat([1]));
             }
 
             // Create texture
