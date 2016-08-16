@@ -115,14 +115,14 @@ Sets the panorama's starting horizontal field of view in degrees. Defaults to
 
 ### `minYaw` and `maxYaw` (number)
 
-Sets the minimum / maximum yaw the viewer can be centered at, in degrees.
-Defaults to `-360` / `360`, i.e. no limit.
+Sets the minimum / maximum yaw the viewer edge can be at, in degrees.
+Defaults to `-180` / `180`, i.e. no limit.
 
 
 ### `minPitch` and `maxPitch` (number)
 
-Sets the minimum / maximum pitch the viewer can be centered at, in degrees.
-Defaults to `-85` / `85`.
+Sets the minimum / maximum pitch the viewer edge can be at, in degrees.
+Defaults to `undefined`, so the viewer center can reach `-90` / `90`.
 
 
 ### `minHfov` and `maxHfov` (number)

@@ -95,6 +95,8 @@ var defaultConfig = {
     autoLoad: false,
     showControls: true,
     orientationOnByDefault: false,
+    hotSpotDebug: false,
+    backgroundColor: [0, 0, 0],
 };
 
 // Initialize container
