@@ -193,7 +193,7 @@ controls.container.appendChild(controls.zoom);
 controls.fullscreen = document.createElement('div');
 controls.fullscreen.addEventListener('click', toggleFullscreen);
 controls.fullscreen.className = 'pnlm-fullscreen-toggle-button pnlm-sprite pnlm-fullscreen-toggle-button-inactive pnlm-controls pnlm-control';
-if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled)
+if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled)
     controls.container.appendChild(controls.fullscreen);
 
 // Device orientation toggle
