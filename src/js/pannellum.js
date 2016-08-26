@@ -2051,7 +2051,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     if (workingHfov !== undefined) {
         config.hfov = workingHfov;
     }
-    fireEvent('scenechange');
+    fireEvent('scenechange', sceneId);
     load();
 }
 
