@@ -25,3 +25,8 @@ Fired when an error is cleared.
 ## `mousedown`
 
 Fired when the mouse button is pressed. Passes `MouseEvent` to handler.
+
+
+## `mouseup`
+
+Fired when the mouse button is released. Passes `MouseEvent` to handler.

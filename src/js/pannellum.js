@@ -713,6 +713,8 @@ function onDocumentMouseUp() {
     container.classList.add('pnlm-grab');
     container.classList.remove('pnlm-grabbing');
     latestInteraction = Date.now();
+
+    fireEvent('mouseup', event);
 }
 
 /**
