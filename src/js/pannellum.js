@@ -2443,13 +2443,38 @@ this.getConfig = function() {
  * @memberof Viewer
  * @instance
  * @param {Object} hs - The configuration for the hotspot
- * @returns {Object} Configuration of current scene
+ * @returns {Viewer} `this`
  */
 this.addHotSpot = function(hs) {
     createHotSpot(hs);
     config.hotSpots.push(hs);
     renderHotSpot(hs);
     return this;
+}
+
+/**
+ * Remove the hotspot that has that id
+ * @memberof Viewer
+ * @instance
+ * @param {string} hotSpotId - The id of the hotspot
+ * @returns {boolean} True if successfully deleted the hotspot, else false
+ */
+this.removeHotSpot = function(hotSpotId) {
+    for (var i=0; i < config.hotSpots.length; ++i) {
+        if (config.hotSpots[i].hasOwnProperty("id") && config.hotSpots[i].id === hotSpotId) {
+            var current = config.hotSpots[i].div;
+            while(current.parentNode != renderContainer) {
+                current = current.parentNode;
+            }
+            renderContainer.removeChild(current);
+            delete config.hotSpots[i].div;
+            
+            config.hotSpots.splice(i, 1);
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 /**
