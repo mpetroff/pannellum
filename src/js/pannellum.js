@@ -700,7 +700,7 @@ function onDocumentMouseMove(event) {
  * Event handler for mouse up events. Stops panning.
  * @private
  */
-function onDocumentMouseUp() {
+function onDocumentMouseUp(event) {
     if (!isUserInteracting) {
         return;
     }
