@@ -1539,12 +1539,95 @@ function renderInitCallback() {
 }
 
 /**
+ * Creates hot spot element for the current scene.
+ * @private
+ * @param {Object} hs - The configuration for the hotspot
+ */
+function createHotSpot(hs) {
+    // Make sure hot spot pitch and yaw are numbers
+    hs.pitch = Number(hs.pitch) || 0;
+    hs.yaw = Number(hs.yaw) || 0;
+
+    var div = document.createElement('div');
+    div.className = 'pnlm-hotspot-base'
+    if (hs.cssClass)
+        div.className += ' ' + hs.cssClass;
+    else
+        div.className += ' pnlm-hotspot pnlm-sprite pnlm-' + escapeHTML(hs.type);
+
+    var span = document.createElement('span');
+    if (hs.text)
+        span.innerHTML = escapeHTML(hs.text);
+
+    var a;
+    if (hs.video) {
+        var video = document.createElement('video'),
+            p = hs.video;
+        if (config.basePath && !absoluteURL(p))
+            p = config.basePath + p;
+        video.src = encodeURI(p);
+        video.controls = true;
+        video.style.width = hs.width + 'px';
+        renderContainer.appendChild(div);
+        span.appendChild(video);
+    } else if (hs.image) {
+        var p = hs.image;
+        if (config.basePath && !absoluteURL(p))
+            p = config.basePath + p;
+        a = document.createElement('a');
+        a.href = encodeURI(hs.URL ? hs.URL : p);
+        a.target = '_blank';
+        span.appendChild(a);
+        var image = document.createElement('img');
+        image.src = encodeURI(p);
+        image.style.width = hs.width + 'px';
+        image.style.paddingTop = '5px';
+        renderContainer.appendChild(div);
+        a.appendChild(image);
+        span.style.maxWidth = 'initial';
+    } else if (hs.URL) {
+        a = document.createElement('a');
+        a.href = encodeURI(hs.URL);
+        a.target = '_blank';
+        renderContainer.appendChild(a);
+        div.style.cursor = 'pointer';
+        span.style.cursor = 'pointer';
+        a.appendChild(div);
+    } else {
+        if (hs.sceneId) {
+            div.onclick = function() {
+                loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
+                return false;
+            };
+            div.ontouchend = function() {
+                loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
+                return false;
+            };
+            div.style.cursor = 'pointer';
+            span.style.cursor = 'pointer';
+        }
+        renderContainer.appendChild(div);
+    }
+
+    if (hs.createTooltipFunc) {
+        hs.createTooltipFunc(div, hs.createTooltipArgs);
+    } else if (hs.text || hs.video || hs.image) {
+        div.classList.add('pnlm-tooltip');
+        div.appendChild(span);
+        span.style.width = span.scrollWidth - 20 + 'px';
+        span.style.marginLeft = -(span.scrollWidth - div.offsetWidth) / 2 + 'px';
+        span.style.marginTop = -span.scrollHeight - 12 + 'px';
+    }
+    hs.div = div;
+};
+
+/**
  * Creates hot spot elements for the current scene.
  * @private
  */
 function createHotSpots() {
     if (hotspotsCreated) return;
-    
+
     if (!config.hotSpots) {
         config.hotSpots = [];
     } else {
@@ -1552,83 +1635,7 @@ function createHotSpots() {
         config.hotSpots = config.hotSpots.sort(function(a, b) {
             return a.pitch < b.pitch;
         });
-        config.hotSpots.forEach(function(hs) {
-            // Make sure hot spot pitch and yaw are numbers
-            hs.pitch = Number(hs.pitch) || 0;
-            hs.yaw = Number(hs.yaw) || 0;
-
-            var div = document.createElement('div');
-            div.className = 'pnlm-hotspot-base'
-            if (hs.cssClass)
-                div.className += ' ' + hs.cssClass;
-            else
-                div.className += ' pnlm-hotspot pnlm-sprite pnlm-' + escapeHTML(hs.type);
-            
-            var span = document.createElement('span');
-            if (hs.text)
-                span.innerHTML = escapeHTML(hs.text);
-            
-            var a;
-            if (hs.video) {
-                var video = document.createElement('video'),
-                    p = hs.video;
-                if (config.basePath && !absoluteURL(p))
-                    p = config.basePath + p;
-                video.src = encodeURI(p);
-                video.controls = true;
-                video.style.width = hs.width + 'px';
-                renderContainer.appendChild(div);
-                span.appendChild(video);
-            } else if (hs.image) {
-                var p = hs.image;
-                if (config.basePath && !absoluteURL(p))
-                    p = config.basePath + p;
-                a = document.createElement('a');
-                a.href = encodeURI(hs.URL ? hs.URL : p);
-                a.target = '_blank';
-                span.appendChild(a);
-                var image = document.createElement('img');
-                image.src = encodeURI(p);
-                image.style.width = hs.width + 'px';
-                image.style.paddingTop = '5px';
-                renderContainer.appendChild(div);
-                a.appendChild(image);
-                span.style.maxWidth = 'initial';
-            } else if (hs.URL) {
-                a = document.createElement('a');
-                a.href = encodeURI(hs.URL);
-                a.target = '_blank';
-                renderContainer.appendChild(a);
-                div.style.cursor = 'pointer';
-                span.style.cursor = 'pointer';
-                a.appendChild(div);
-            } else {
-                if (hs.sceneId) {
-                    div.onclick = function() {
-                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
-                        return false;
-                    };
-                    div.ontouchend = function() {
-                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
-                        return false;
-                    };
-                    div.style.cursor = 'pointer';
-                    span.style.cursor = 'pointer';
-                }
-                renderContainer.appendChild(div);
-            }
-            
-            if (hs.createTooltipFunc) {
-                hs.createTooltipFunc(div, hs.createTooltipArgs);
-            } else if (hs.text || hs.video || hs.image) {
-                div.classList.add('pnlm-tooltip');
-                div.appendChild(span);
-                span.style.width = span.scrollWidth - 20 + 'px';
-                span.style.marginLeft = -(span.scrollWidth - div.offsetWidth) / 2 + 'px';
-                span.style.marginTop = -span.scrollHeight - 12 + 'px';
-            }
-            hs.div = div;
-        });
+        config.hotSpots.forEach(createHotSpot);
     }
     hotspotsCreated = true;
     renderHotSpots();
@@ -1654,39 +1661,45 @@ function destroyHotSpots() {
 }
 
 /**
+ * Renders hot spot, updating its position and visibility.
+ * @private
+ */
+function renderHotSpot(hs) {
+    var hsPitchSin = Math.sin(hs.pitch * Math.PI / 180);
+    var hsPitchCos = Math.cos(hs.pitch * Math.PI / 180);
+    var configPitchSin = Math.sin(config.pitch * Math.PI / 180);
+    var configPitchCos = Math.cos(config.pitch * Math.PI / 180);
+    var yawCos = Math.cos((-hs.yaw + config.yaw) * Math.PI / 180);
+    var hfovTan = Math.tan(config.hfov * Math.PI / 360);
+    var z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
+    if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
+      ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
+        hs.div.style.visibility = 'hidden';
+    } else {
+        hs.div.style.visibility = 'visible';
+        // Subpixel rendering doesn't work in Firefox
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
+        var canvas = renderer.getCanvas(),
+            canvasWidth = canvas.width / (window.devicePixelRatio || 1),
+            canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+        var transform = 'translate(' + (-canvasWidth /
+            hfovTan * Math.sin((-hs.yaw + config.yaw) * Math.PI / 180) *
+            hsPitchCos / z / 2 + (canvasWidth - hs.div.offsetWidth) / 2) + 'px, ' +
+            (-canvasWidth / hfovTan * (hsPitchSin *
+            configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
+            (canvasHeight - hs.div.offsetHeight) / 2) + 'px) translateZ(9999px)';
+        hs.div.style.webkitTransform = transform;
+        hs.div.style.MozTransform = transform;
+        hs.div.style.transform = transform;
+    }
+}
+
+/**
  * Renders hot spots, updating their positions and visibility.
  * @private
  */
 function renderHotSpots() {
-    config.hotSpots.forEach(function(hs) {
-        var hsPitchSin = Math.sin(hs.pitch * Math.PI / 180);
-        var hsPitchCos = Math.cos(hs.pitch * Math.PI / 180);
-        var configPitchSin = Math.sin(config.pitch * Math.PI / 180);
-        var configPitchCos = Math.cos(config.pitch * Math.PI / 180);
-        var yawCos = Math.cos((-hs.yaw + config.yaw) * Math.PI / 180);
-        var hfovTan = Math.tan(config.hfov * Math.PI / 360);
-        var z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
-        if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
-          ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
-            hs.div.style.visibility = 'hidden';
-        } else {
-            hs.div.style.visibility = 'visible';
-            // Subpixel rendering doesn't work in Firefox
-            // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
-            var canvas = renderer.getCanvas(),
-                canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-                canvasHeight = canvas.height / (window.devicePixelRatio || 1);
-            var transform = 'translate(' + (-canvasWidth /
-                hfovTan * Math.sin((-hs.yaw + config.yaw) * Math.PI / 180) *
-                hsPitchCos / z / 2 + (canvasWidth - hs.div.offsetWidth) / 2) + 'px, ' +
-                (-canvasWidth / hfovTan * (hsPitchSin *
-                configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
-                (canvasHeight - hs.div.offsetHeight) / 2) + 'px) translateZ(9999px)';
-            hs.div.style.webkitTransform = transform;
-            hs.div.style.MozTransform = transform;
-            hs.div.style.transform = transform;
-        }
-    });
+    config.hotSpots.forEach(renderHotSpot);
 }
 
 /**
@@ -2425,6 +2438,47 @@ this.toggleFullscreen = function() {
  */
 this.getConfig = function() {
     return config;
+}
+
+/**
+ * Add a new hot spot.
+ * @memberof Viewer
+ * @instance
+ * @param {Object} hs - The configuration for the hot spot
+ * @returns {Viewer} `this`
+ */
+this.addHotSpot = function(hs) {
+    createHotSpot(hs);
+    config.hotSpots.push(hs);
+    renderHotSpot(hs);
+    return this;
+}
+
+/**
+ * Remove a hot spot.
+ * @memberof Viewer
+ * @instance
+ * @param {string} hotSpotId - The ID of the hot spot
+ * @returns {boolean} True if deletion is successful, else false
+ */
+this.removeHotSpot = function(hotSpotId) {
+    if (!config.hotSpots)
+        return false;
+    for (var i = 0; i < config.hotSpots.length; i++) {
+        if (config.hotSpots[i].hasOwnProperty('id') &&
+            // Delete hot spot DOM elements
+            config.hotSpots[i].id === hotSpotId) {
+            var current = config.hotSpots[i].div;
+            while (current.parentNode != renderContainer)
+                current = current.parentNode;
+            renderContainer.removeChild(current);
+            delete config.hotSpots[i].div;
+            // Remove hot spot from configuration
+            config.hotSpots.splice(i, 1);
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
