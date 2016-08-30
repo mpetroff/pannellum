@@ -700,7 +700,7 @@ function onDocumentMouseMove(event) {
  * Event handler for mouse up events. Stops panning.
  * @private
  */
-function onDocumentMouseUp() {
+function onDocumentMouseUp(event) {
     if (!isUserInteracting) {
         return;
     }
@@ -713,6 +713,8 @@ function onDocumentMouseUp() {
     container.classList.add('pnlm-grab');
     container.classList.remove('pnlm-grabbing');
     latestInteraction = Date.now();
+
+    fireEvent('mouseup', event);
 }
 
 /**
