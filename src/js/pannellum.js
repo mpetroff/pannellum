@@ -1119,13 +1119,12 @@ function keyRepeat() {
 
     // If auto-rotate
     var inactivityInterval = Date.now() - latestInteraction;
-    if (config.autoRotate &&
-        config.autoRotateStopDelay !== false) {
+    if (config.autoRotate) {
         // Pan
         if (newTime - prevTime > 0.001) {
-            diff = (newTime - prevTime) / 1000;
-            var yawDiff = (speed.yaw - config.autoRotate * 0.2) * diff
-            yawDiff = Math.sign(-config.autoRotate) * Math.min(Math.abs(config.autoRotate * diff), Math.abs(yawDiff));
+            var timeDiff = (newTime - prevTime) / 1000;
+            var yawDiff = (speed.yaw / timeDiff * diff - config.autoRotate * 0.2) * timeDiff
+            yawDiff = Math.sign(-config.autoRotate) * Math.min(Math.abs(config.autoRotate * timeDiff), Math.abs(yawDiff));
             config.yaw += yawDiff;
         }
         
@@ -1134,6 +1133,8 @@ function keyRepeat() {
             config.autoRotateStopDelay -= newTime - prevTime;
             if (config.autoRotateStopDelay <= 0) {
                 config.autoRotateStopDelay = false;
+                autoRotateSpeed = config.autoRotate;
+                config.autoRotate = 0;
             }
         }
     }
@@ -2324,6 +2325,7 @@ this.setNorthOffset = function(heading) {
 this.startAutoRotate = function(speed) {
     speed = speed || autoRotateSpeed || 1;
     config.autoRotate = speed;
+    _this.lookAt(origPitch, undefined, origHfov, 3000);
     animateInit();
     return this;
 };
@@ -2337,6 +2339,7 @@ this.startAutoRotate = function(speed) {
 this.stopAutoRotate = function() {
     autoRotateSpeed = config.autoRotate ? config.autoRotate : autoRotateSpeed;
     config.autoRotate = false;
+    config.autoRotateInactivityDelay = -1;
     return this;
 };
 
