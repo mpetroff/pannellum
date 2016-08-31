@@ -2420,6 +2420,33 @@ this.getScene = function() {
 }
 
 /**
+ * Add a new scene
+ * @memberof Viewer
+ * @instance
+ * @param {string} sceneId - The id of the new scene
+ * @param {string} config - The configuration of the new scene 
+ * @returns {Viewer} `this`
+ */
+this.addScene = function(sceneId, config) {
+    initialConfig.scenes[sceneId] = config;
+    return this;
+};
+
+/**
+ * Remove a scene
+ * @memberof Viewer
+ * @instance
+ * @param {string} sceneId - The ID of the scene
+ * @returns {boolean} False if the scene is the current scene or if the scene doesn't exists, else true
+ */
+this.removeScene = function(sceneId) {
+    if (config.scene === sceneId || !initialConfig.scenes.hasOwnProperty(sceneId)) return false;
+    
+    delete initialConfig.scenes[sceneId];
+    return true;
+};
+
+/**
  * Toggle fullscreen.
  * @memberof Viewer
  * @instance
