@@ -2466,8 +2466,8 @@ this.removeHotSpot = function(hotSpotId) {
         return false;
     for (var i = 0; i < config.hotSpots.length; i++) {
         if (config.hotSpots[i].hasOwnProperty('id') &&
-            // Delete hot spot DOM elements
             config.hotSpots[i].id === hotSpotId) {
+            // Delete hot spot DOM elements
             var current = config.hotSpots[i].div;
             while (current.parentNode != renderContainer)
                 current = current.parentNode;
