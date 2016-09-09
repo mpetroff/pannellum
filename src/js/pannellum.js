@@ -2472,12 +2472,23 @@ this.getConfig = function() {
  * @memberof Viewer
  * @instance
  * @param {Object} hs - The configuration for the hot spot
+ * @param {string} [sceneId] - Adds hot spot to specified scene if provided, else to current scene
  * @returns {Viewer} `this`
+ * @throws Throws an error if the scene ID is provided but invalid
  */
-this.addHotSpot = function(hs) {
-    createHotSpot(hs);
-    config.hotSpots.push(hs);
-    renderHotSpot(hs);
+this.addHotSpot = function(hs, sceneId) {
+    if (sceneId === undefined || config.scene == sceneId) {
+        // Add to current scene
+        createHotSpot(hs);
+        config.hotSpots.push(hs);
+        renderHotSpot(hs);
+    } else {
+        // Add to a different scene
+        if (initialConfig.scenes.hasOwnProperty(sceneId))
+            initialConfig.scenes[sceneId].hotSpots.push(hs);
+        else
+            throw 'Invalid scene ID!'
+    }
     return this;
 }
 
