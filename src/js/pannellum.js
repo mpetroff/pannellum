@@ -1618,6 +1618,13 @@ function createHotSpot(hs) {
         span.style.marginLeft = -(span.scrollWidth - div.offsetWidth) / 2 + 'px';
         span.style.marginTop = -span.scrollHeight - 12 + 'px';
     }
+    if (hs.clickHandlerFunc) {
+        div.addEventListener('click', function(e) {
+            hs.clickHandlerFunc(e, hs.clickHandlerArgs);
+        }, 'false');
+        div.style.cursor = 'pointer';
+        span.style.cursor = 'pointer';
+    }
     hs.div = div;
 };
 
