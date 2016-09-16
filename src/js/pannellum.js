@@ -394,7 +394,7 @@ function init() {
  */
 function absoluteURL(url) {
     // From http://stackoverflow.com/a/19709846
-    return new RegExp('^(?:[a-z]+:)?//', 'i').test(url) | url[0] == '/';
+    return new RegExp('^(?:[a-z]+:)?//', 'i').test(url) | url[0] == '/' | url.slice(0, 5) == 'blob:';
 };
 
 /**
