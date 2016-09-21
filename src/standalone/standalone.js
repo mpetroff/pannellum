@@ -43,6 +43,7 @@ function parseURLParameters() {
                 break;
             default:
                 anError('An invalid configuration parameter was specified: ' + option);
+                return;
         }
     }
 
