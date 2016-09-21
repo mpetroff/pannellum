@@ -6,8 +6,14 @@ function anError(error) {
 }
 
 function parseURLParameters() {
-    var URL = decodeURI(window.location.href).split('?');
-    URL.shift();
+    var URL;
+    if (window.location.hash.length > 0) {
+        // Prefered method since parameters aren't sent to server
+        URL = [window.location.hash.slice(1)];
+    } else {
+        URL = decodeURI(window.location.href).split('?');
+        URL.shift();
+    }
     if (URL.length < 1) {
         // Display error if no configuration parameters are specified
         anError('No configuration options were specified.');
