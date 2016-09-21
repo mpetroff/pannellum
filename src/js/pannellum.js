@@ -2330,7 +2330,7 @@ this.getNorthOffset = function() {
  * @returns {Viewer} `this`
  */
 this.setNorthOffset = function(heading) {
-    config.northOffset = Math.max(360, Math.min(0, heading));
+    config.northOffset = Math.min(360, Math.max(0, heading));
     animateInit();
     return this;
 };
