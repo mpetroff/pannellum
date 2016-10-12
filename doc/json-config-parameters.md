@@ -193,11 +193,17 @@ for `info` hot spots.
 
 #### `targetPitch` (number)
 
-Specifies the pitch of the target scene, in degrees.
+Specifies the pitch of the target scene, in degrees. Can also be set to `same`,
+which uses the current pitch of the current scene as the initial pitch of the
+target scene.
 
 #### `targetYaw` (number)
 
-Specifies the yaw of the target scene, in degrees.
+Specifies the yaw of the target scene, in degrees. Can also be set to `same` or
+`sameAzimuth`. These settings use the current yaw of the current scene as the
+initial yaw of the target scene; `same` uses the current yaw directly, while
+`sameAzimuth` takes into account the `northOffset` values of both scenes to
+maintain the same direction with regard to north.
 
 #### `targetHfov` (number)
 
