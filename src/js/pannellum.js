@@ -1672,29 +1672,37 @@ function destroyHotSpots() {
  * @private
  */
 function renderHotSpot(hs) {
-    var hsPitchSin = Math.sin(hs.pitch * Math.PI / 180);
-    var hsPitchCos = Math.cos(hs.pitch * Math.PI / 180);
-    var configPitchSin = Math.sin(config.pitch * Math.PI / 180);
-    var configPitchCos = Math.cos(config.pitch * Math.PI / 180);
-    var yawCos = Math.cos((-hs.yaw + config.yaw) * Math.PI / 180);
-    var hfovTan = Math.tan(config.hfov * Math.PI / 360);
+    var hsPitchSin = Math.sin(hs.pitch * Math.PI / 180),
+        hsPitchCos = Math.cos(hs.pitch * Math.PI / 180),
+        configPitchSin = Math.sin(config.pitch * Math.PI / 180),
+        configPitchCos = Math.cos(config.pitch * Math.PI / 180),
+        yawCos = Math.cos((-hs.yaw + config.yaw) * Math.PI / 180);
     var z = hsPitchSin * configPitchSin + hsPitchCos * yawCos * configPitchCos;
     if ((hs.yaw <= 90 && hs.yaw > -90 && z <= 0) ||
       ((hs.yaw > 90 || hs.yaw <= -90) && z <= 0)) {
         hs.div.style.visibility = 'hidden';
     } else {
+        var yawSin = Math.sin((-hs.yaw + config.yaw) * Math.PI / 180),
+            hfovTan = Math.tan(config.hfov * Math.PI / 360);
         hs.div.style.visibility = 'visible';
         // Subpixel rendering doesn't work in Firefox
         // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
         var canvas = renderer.getCanvas(),
             canvasWidth = canvas.width / (window.devicePixelRatio || 1),
             canvasHeight = canvas.height / (window.devicePixelRatio || 1);
-        var transform = 'translate(' + (-canvasWidth /
-            hfovTan * Math.sin((-hs.yaw + config.yaw) * Math.PI / 180) *
-            hsPitchCos / z / 2 + (canvasWidth - hs.div.offsetWidth) / 2) + 'px, ' +
-            (-canvasWidth / hfovTan * (hsPitchSin *
-            configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2 +
-            (canvasHeight - hs.div.offsetHeight) / 2) + 'px) translateZ(9999px)';
+        var coord = [-canvasWidth / hfovTan * yawSin * hsPitchCos / z / 2,
+            -canvasWidth / hfovTan * (hsPitchSin * configPitchCos -
+            hsPitchCos * yawCos * configPitchSin) / z / 2];
+        // Apply roll
+        var rollSin = Math.sin(config.roll * Math.PI / 180),
+            rollCos = Math.cos(config.roll * Math.PI / 180);
+        coord = [coord[0] * rollCos - coord[1] * rollSin,
+                 coord[0] * rollSin + coord[1] * rollCos];
+        // Apply transform
+        coord[0] += (canvasWidth - hs.div.offsetWidth) / 2;
+        coord[1] += (canvasHeight - hs.div.offsetHeight) / 2;
+        var transform = 'translate(' + coord[0] + 'px, ' + coord[1] +
+            'px) translateZ(9999px) rotate(' + config.roll + 'deg)';
         hs.div.style.webkitTransform = transform;
         hs.div.style.MozTransform = transform;
         hs.div.style.transform = transform;
