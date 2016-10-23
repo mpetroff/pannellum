@@ -417,6 +417,13 @@ function Renderer(container) {
                 container.removeChild(world);
             }
         }
+        if (gl) {
+            // The spec says this is only supposed to simulate losing the WebGL
+            // context, but in practice it tends to actually free the memory.
+            var extension = gl.getExtension('WEBGL_lose_context');
+            if (extension)
+                extension.loseContext();
+        }
     };
 
     /**
