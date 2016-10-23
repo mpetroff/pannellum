@@ -35,8 +35,6 @@ function parseURLParameters() {
             case 'autoLoad': case 'ignoreGPanoXMP':
                 configFromURL[option] = JSON.parse(value);
                 break;
-            case 'tour':
-                console.log('The `tour` parameter is deprecated and will be removed. Use the `config` parameter instead.')
             case 'author': case 'title': case 'firstScene': case 'fallback':
             case 'preview': case 'panorama': case 'config':
                 configFromURL[option] = decodeURIComponent(value);
@@ -50,9 +48,6 @@ function parseURLParameters() {
     var request;
 
     // Check for JSON configuration file
-    if (configFromURL.tour) {
-        configFromURL.config = configFromURL.tour;
-    }
     if (configFromURL.config) {
         // Get JSON configuration file
         request = new XMLHttpRequest();
