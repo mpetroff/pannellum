@@ -1368,6 +1368,7 @@ function render() {
 
 /**
  * Creates a new quaternion.
+ * @private
  * @constructor
  * @param {Number} w - W value
  * @param {Number} x - X value

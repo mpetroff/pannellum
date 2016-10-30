@@ -2,6 +2,76 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.3.0
+--------------------------
+
+New Features:
+
+ - Device orientation support for mobile devices
+ - Event framework for API
+ - Partial panorama background color can now be set using
+   `backgroundColor` parameter
+ - Custom hot spots are now supported as are hot spot click handlers
+ - Hot spots can now specify target HFOV (`targetHfov` parameter)
+ - Parameter to hide all controls (`showControls`)
+ - Parameter to disable mouse zooming (`mouseZoom`)
+
+New API functions:
+
+ - Destructor (`destroy`)
+ - Look at position (`lookAt`)
+ - Get current scene ID (`getScene`)
+ - Load scene (`loadScene`)
+ - Add and remove scenes (`addScene` and `removeScene`)
+ - Add and remove hot spots (`addHotSpot` and `removeHotSpot`)
+ - Auto rotate start / stop (`startAutoRotate` and `stopAutoRotate`)
+ - Retrieve current configuration (`getConfig`)
+ - Toggle fullscreen (`toggleFullscreen`)
+ - Get and set north offset (`getNorthOffset` and `setNorthOffset`)
+
+Improvements:
+
+ - Pitch and yaw limits are now applied to edge of viewer instead of center
+ - Panorama extents can now be set using URL parameters
+ - Individual XMP metadata parameters can now be overridden
+ - Horizon pitch and roll can now be manually set (was previously only
+   supported via XMP metadata)
+ - When auto rotate restarts, the pitch and HFOV now return to their
+   original values
+ - API movements can now be animated
+ - Standalone viewer is more mobile friendly
+ - Improved touch panning interaction
+ - Fragments identifiers can now be used for standalone viewer configuration
+ - Blob URLs are now supported
+ - Added hot spot debug indicator
+ - Video.js plugin now accepts a Pannellum configuration
+
+Bugfixes:
+
+ - Fixed numerous auto rotate bugs
+ - Auto rotate speed is now actually in degrees per second
+ - Long error URLs are now properly wrapped
+ - Fixed mobile device orientation change bug
+ - Fixed Safari fullscreen bug
+ - Fullscreen now works in IE
+ - Fixed Chrome bug where hot spots appeared above controls
+ - Scene fades with multires now work properly
+ - Hot spot target pointing now works when set to zero
+ - Hot spots without text are now properly handled
+ - Fixed memory leaks
+ - Fixed multires tile loading error
+ - Fixed a few URL handling bugs
+ - Fixed multires zoom jumping when viewer was resized
+ - Title and author are now reset when changing scenes
+ - Mouse handlers now work with Hi-DPI displays
+ - Minimum and maximum HFOV can now both be set to the same value
+
+Backwards-Incompatible Configuration Parameter Changes:
+
+ - The deprecated `tour` parameter was removed; tour JSON configuration files
+   can be used with the `config` parameter
+
+
 Changes in Pannellum 2.2.1
 --------------------------
 

@@ -1,4 +1,4 @@
-# Events
+# API Events
 
 ## `load`
 
