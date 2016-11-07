@@ -1124,7 +1124,7 @@ function keyRepeat() {
         if (newTime - prevTime > 0.001) {
             var timeDiff = (newTime - prevTime) / 1000;
             var yawDiff = (speed.yaw / timeDiff * diff - config.autoRotate * 0.2) * timeDiff
-            yawDiff = Math.sign(-config.autoRotate) * Math.min(Math.abs(config.autoRotate * timeDiff), Math.abs(yawDiff));
+            yawDiff = (-config.autoRotate > 0 ? 1 : -1) * Math.min(Math.abs(config.autoRotate * timeDiff), Math.abs(yawDiff));
             config.yaw += yawDiff;
         }
         
