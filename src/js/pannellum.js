@@ -1321,10 +1321,8 @@ function render() {
             minYaw = config.minYaw + config.hfov / 2;
             maxYaw = config.maxYaw - config.hfov / 2;
             if (yawRange < config.hfov) {
-                // Keep either min or max yaw in view when both can be seen at once
-                var diff = config.hfov - yawRange;
-                minYaw -= diff;
-                maxYaw += diff;
+                // Lock yaw to average of min and max yaw when both can be seen at once
+                minYaw = maxYaw = (minYaw + maxYaw) / 2;
             }
         }
         config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
@@ -1343,10 +1341,8 @@ function render() {
             maxPitch = config.maxPitch - vfov / 2;
         var pitchRange = config.maxPitch - config.minPitch;
         if (pitchRange < vfov) {
-            // Keep either min or max pitch in view when both can be seen at once
-            var diff = vfov - pitchRange;
-            minPitch -= diff;
-            maxPitch += diff;
+            // Lock pitch to average of min and max pitch when both can be seen at once
+            minPitch = maxPitch = (minPitch + maxPitch) / 2;
         }
         if (isNaN(minPitch))
             minPitch = -90;
