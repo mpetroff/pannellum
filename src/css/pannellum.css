@@ -35,14 +35,9 @@
     background-image: url('img/sprites.svg');
 }
 
-.pnlm-container:-moz-full-screen {
-    height: 100% !important;
-    width: 100% !important;
-}
-.pnlm-container:-webkit-full-screen {
-    height: 100% !important;
-    width: 100% !important;
-}
+.pnlm-container:-moz-full-screen,
+.pnlm-container:-webkit-full-screen,
+.pnlm-container:-ms-fullscreen,
 .pnlm-container:fullscreen {
     height: 100% !important;
     width: 100% !important;
