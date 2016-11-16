@@ -1258,7 +1258,7 @@ function animate() {
     render();
     if (autoRotateStart)
         clearTimeout(autoRotateStart);
-    if (isUserInteracting) {
+    if (isUserInteracting || orientation) {
         requestAnimationFrame(animate);
     } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
         keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] ||
@@ -1455,7 +1455,6 @@ function orientationListener(e) {
     config.pitch = q[0] / Math.PI * 180;
     config.roll = -q[1] / Math.PI * 180;
     config.yaw = -q[2] / Math.PI * 180 + config.northOffset;
-    animate();
 }
 
 /**
@@ -2101,6 +2100,7 @@ function startOrientation() {
     orientation = true;
     window.addEventListener('deviceorientation', orientationListener);
     controls.orientation.classList.add('pnlm-orientation-button-active');
+    requestAnimationFrame(animate);
 }
 
 /**
