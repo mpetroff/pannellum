@@ -89,6 +89,7 @@ var defaultConfig = {
     northOffset: 0,
     showFullscreenCtrl: true,
     dynamic: false,
+    doubleClickZoom: true,
     keyboardZoom: true,
     mouseZoom: true,
     showZoomCtrl: true,
@@ -415,6 +416,9 @@ function onImageLoad() {
             container.addEventListener('mousewheel', onDocumentMouseWheel, false);
             container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
         }
+        if (config.doubleClickZoom) {
+            dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
+        }
         container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
         container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
         container.addEventListener('msfullscreenchange', onFullScreenChange, false);
@@ -646,6 +650,20 @@ function onDocumentMouseDown(event) {
     
     fireEvent('mousedown', event);
     animateInit();
+}
+
+/**
+ * Event handler for double clicks. Zooms in at clicked location
+ * @private
+ * @param {MouseEvent} event - Document mouse down event.
+ */
+function onDocumentDoubleClick(event) {
+    if (config.minHfov === config.hfov) {
+        _this.setHfov(origHfov, 1000);
+    } else {
+        var coords = mouseEventToCoords(event);
+        _this.lookAt(coords[0], coords[1], config.minHfov, 1000);
+    }
 }
 
 /**
@@ -2598,6 +2616,7 @@ this.destroy = function() {
         renderer.destroy()
     if (listenersAdded) {
         dragFix.removeEventListener('mousedown', onDocumentMouseDown, false);
+        dragFix.removeEventListener('dblclick', onDocumentDoubleClick, false);
         document.removeEventListener('mousemove', onDocumentMouseMove, false);
         document.removeEventListener('mouseup', onDocumentMouseUp, false);
         container.removeEventListener('mousewheel', onDocumentMouseWheel, false);
