@@ -409,7 +409,7 @@ function onImageLoad() {
     if (!listenersAdded) {
         listenersAdded = true;
         dragFix.addEventListener('mousedown', onDocumentMouseDown, false);
-        container.addEventListener('dblclick', onDocumentDoubleClick, false);
+        dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('mouseup', onDocumentMouseUp, false);
         if (config.mouseZoom) {
@@ -2613,6 +2613,7 @@ this.destroy = function() {
         renderer.destroy()
     if (listenersAdded) {
         dragFix.removeEventListener('mousedown', onDocumentMouseDown, false);
+        dragFix.removeEventListener('dblclick', onDocumentDoubleClick, false);
         document.removeEventListener('mousemove', onDocumentMouseMove, false);
         document.removeEventListener('mouseup', onDocumentMouseUp, false);
         container.removeEventListener('mousewheel', onDocumentMouseWheel, false);
