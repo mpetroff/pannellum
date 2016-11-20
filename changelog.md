@@ -2,6 +2,20 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.3.1
+--------------------------
+
+Bugfixes:
+
+ - Removed use of poorly supported ES6 `Math.sign` function
+ - Fixed fullscreen bug in Internet Explorer
+ - Fixed framerate issue with device orientation control enabled
+
+Improvements:
+
+ - Better handling of view limits when both limits are in view
+
+
 Changes in Pannellum 2.3.0
 --------------------------
 

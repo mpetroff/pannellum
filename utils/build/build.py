@@ -98,7 +98,7 @@ def build(files, css, html, filename, release=False):
     
     js = merge(files)
     if release:
-        version = read('../VERSION')
+        version = read('../VERSION').strip()
     else:
         version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip()
     js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + version)
