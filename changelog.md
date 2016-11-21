@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.3.2
+--------------------------
+
+Bugfixes:
+
+ - Fix Chrome fullscreen regression introduced in 2.3.1
+
+
 Changes in Pannellum 2.3.1
 --------------------------
 
