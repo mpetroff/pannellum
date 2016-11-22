@@ -89,6 +89,7 @@ var defaultConfig = {
     northOffset: 0,
     showFullscreenCtrl: true,
     dynamic: false,
+    doubleClickZoom: true,
     keyboardZoom: true,
     mouseZoom: true,
     showZoomCtrl: true,
@@ -409,12 +410,14 @@ function onImageLoad() {
     if (!listenersAdded) {
         listenersAdded = true;
         dragFix.addEventListener('mousedown', onDocumentMouseDown, false);
-        dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('mouseup', onDocumentMouseUp, false);
         if (config.mouseZoom) {
             container.addEventListener('mousewheel', onDocumentMouseWheel, false);
             container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+        }
+        if (config.doubleClickZoom) {
+            dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
         }
         container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
         container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
