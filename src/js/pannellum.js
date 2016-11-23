@@ -1609,12 +1609,11 @@ function createHotSpot(hs) {
         a.appendChild(div);
     } else {
         if (hs.sceneId) {
-            div.onclick = function() {
-                loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
-                return false;
-            };
-            div.ontouchend = function() {
-                loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
+            div.onclick = div.ontouchend = function() {
+                if (!div.clicked) {
+                    div.clicked = true;
+                    loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
+                }
                 return false;
             };
             div.style.cursor = 'pointer';
