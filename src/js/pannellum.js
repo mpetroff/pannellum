@@ -2132,7 +2132,8 @@ function escapeHTML(s) {
         .replace("'", '&#39;')
         .replace('<', '&lt;')
         .replace('>', '&gt;')
-        .replace('/', '&#x2f;');
+        .replace('/', '&#x2f;')
+        .replace('\n', '<br>');     // Allow line breaks
 }
 
 /**
