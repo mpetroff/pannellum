@@ -1793,9 +1793,8 @@ function processOptions() {
     // panoramas
     if ('preview' in config) {
         var p = config.preview;
-        if (config.basePath) {
+        if (config.basePath && !absoluteURL(p))
             p = config.basePath + p;
-        }
         preview = document.createElement('div');
         preview.className = 'pnlm-preview-img';
         preview.style.backgroundImage = "url('" + encodeURI(p) + "')";
