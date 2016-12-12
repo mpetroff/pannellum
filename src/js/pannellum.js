@@ -2211,12 +2211,6 @@ this.getYaw = function() {
  * @returns {Viewer} `this`
  */
 this.setYaw = function(yaw, animated) {
-    while (yaw > 180) {
-        yaw -= 360;
-    }
-    while (yaw < -180) {
-        yaw += 360;
-    }
     animated = animated == undefined ? 1000: Number(animated);
     if (animated) {
         animatedMove.yaw = {
