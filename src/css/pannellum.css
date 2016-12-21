@@ -24,10 +24,12 @@
 }
 
 .pnlm-grab {
+    cursor: grab;
     cursor: url('img/grab.svg') 12 8, default;
 }
 
 .pnlm-grabbing {
+    cursor: grabbing;
     cursor: url('img/grabbing.svg') 12 8, default;
 }
 
