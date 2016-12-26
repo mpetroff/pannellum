@@ -66,7 +66,7 @@ function Renderer(container) {
         if (typeof _imageType === undefined)
             _imageType = 'equirectangular';
 
-        if (_imageType != 'equirectangular' || _imageType != 'cubemap' ||
+        if (_imageType != 'equirectangular' && _imageType != 'cubemap' &&
             _imageType != 'multires') {
             console.log('Error: invalid image type specified!');
             throw {type: 'config error'};
