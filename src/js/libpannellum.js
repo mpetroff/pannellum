@@ -65,6 +65,13 @@ function Renderer(container) {
         // Default argument for image type
         if (typeof _imageType === undefined)
             _imageType = 'equirectangular';
+
+        if (_imageType != 'equirectangular' || _imageType != 'cubemap' ||
+            _imageType != 'multires') {
+            console.log('Error: invalid image type specified!');
+            throw {type: 'config error'};
+        }
+
         imageType = _imageType;
         image = _image;
         dynamic = _dynamic;
