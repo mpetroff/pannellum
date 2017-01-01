@@ -2136,6 +2136,16 @@ function escapeHTML(s) {
 }
 
 /**
+ * Checks whether or not a panorama is loaded.
+ * @memberof Viewer
+ * @instance
+ * @returns {boolean} `true` if a panorama is loaded, else `false`
+ */
+this.isLoaded = function() {
+    return loaded;
+};
+
+/**
  * Returns the pitch of the center of the view.
  * @memberof Viewer
  * @instance
