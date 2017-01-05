@@ -2553,6 +2553,15 @@ this.removeHotSpot = function(hotSpotId) {
 }
 
 /**
+ * This method should be called if the viewer's container is resized.
+ * @memberof Viewer
+ * @instance
+ */
+this.resize = function() {
+    onDocumentResize();
+}
+
+/**
  * Subscribe listener to specified event.
  * @memberof Viewer
  * @instance
