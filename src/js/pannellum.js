@@ -2562,6 +2562,16 @@ this.resize = function() {
 }
 
 /**
+ * Check if a panorama is loaded.
+ * @memberof Viewer
+ * @instance
+ * @returns {boolean} True if a panorama is loaded, else false
+ */
+this.isLoaded = function() {
+    return loaded;
+}
+
+/**
  * Subscribe listener to specified event.
  * @memberof Viewer
  * @instance
