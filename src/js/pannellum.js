@@ -936,9 +936,6 @@ function onDocumentMouseWheel(event) {
  * @param {KeyboardEvent} event - Document key press event.
  */
 function onDocumentKeyPress(event) {
-    // Override default action
-    event.preventDefault();
-    
     // Turn off auto-rotation if enabled
     stopAnimation();
     latestInteraction = Date.now();
@@ -947,10 +944,11 @@ function onDocumentKeyPress(event) {
     config.roll = 0;
 
     // Record key pressed
-    var keynumber = event.keycode;
-    if (event.which) {
-        keynumber = event.which;
-    }
+    var keynumber = event.which || event.keycode;
+
+    // Override default action except for tabbing
+    if (keynumber != 9)
+        event.preventDefault();
     
     // If escape key is pressed
     if (keynumber == 27) {
