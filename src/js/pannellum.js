@@ -1226,7 +1226,11 @@ function animateMove(axis) {
         (t.endPosition < t.startPosition && result <= t.endPosition)) {
         result = t.endPosition;
         speed[axis] = 0;
+        var callback = animatedMove[axis].callback,
+            callbackArgs = animatedMove[axis].callbackArgs;
         delete animatedMove[axis];
+        if (typeof callback == 'function')
+            callback(callbackArgs);
     }
     config[axis] = result;
 }
@@ -2159,16 +2163,20 @@ this.getPitch = function() {
  * @instance
  * @param {number} pitch - Pitch in degrees
  * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+ * @param {function} [callback] - Function to call when animation finishes
+ * @param {object} [callbackArgs] - Arguments to pass to callback function
  * @returns {Viewer} `this`
  */
-this.setPitch = function(pitch, animated) {
+this.setPitch = function(pitch, animated, callback, callbackArgs) {
     animated = animated == undefined ? 1000: Number(animated);
     if (animated) {
         animatedMove.pitch = {
             'startTime': Date.now(),
             'startPosition': config.pitch,
             'endPosition': pitch,
-            'duration': animated
+            'duration': animated,
+            'callback': callback,
+            'callbackArgs': callbackArgs
         }
     } else {
         config.pitch = pitch;
@@ -2216,16 +2224,20 @@ this.getYaw = function() {
  * @instance
  * @param {number} yaw - Yaw in degrees [-180, 180]
  * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+ * @param {function} [callback] - Function to call when animation finishes
+ * @param {object} [callbackArgs] - Arguments to pass to callback function
  * @returns {Viewer} `this`
  */
-this.setYaw = function(yaw, animated) {
+this.setYaw = function(yaw, animated, callback, callbackArgs) {
     animated = animated == undefined ? 1000: Number(animated);
     if (animated) {
         animatedMove.yaw = {
             'startTime': Date.now(),
             'startPosition': config.yaw,
             'endPosition': yaw,
-            'duration': animated
+            'duration': animated,
+            'callback': callback,
+            'callbackArgs': callbackArgs
         }
     } else {
         config.yaw = yaw;
@@ -2273,16 +2285,20 @@ this.getHfov = function() {
  * @instance
  * @param {number} hfov - Horizontal field of view in degrees
  * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+ * @param {function} [callback] - Function to call when animation finishes
+ * @param {object} [callbackArgs] - Arguments to pass to callback function
  * @returns {Viewer} `this`
  */
-this.setHfov = function(hfov, animated) {
+this.setHfov = function(hfov, animated, callback, callbackArgs) {
     animated = animated == undefined ? 1000: Number(animated);
     if (animated) {
         animatedMove.hfov = {
             'startTime': Date.now(),
             'startPosition': config.hfov,
             'endPosition': constrainHfov(hfov),
-            'duration': animated
+            'duration': animated,
+            'callback': callback,
+            'callbackArgs': callbackArgs
         }
     } else {
         setHfov(hfov);
@@ -2323,16 +2339,22 @@ this.setHfovBounds = function(bounds) {
  * @param {number} [yaw] - Target yaw
  * @param {number} [hfov] - Target hfov
  * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+ * @param {function} [callback] - Function to call when animation finishes
+ * @param {object} [callbackArgs] - Arguments to pass to callback function
  * @returns {Viewer} `this`
  */
-this.lookAt = function(pitch, yaw, hfov, animated) {
+this.lookAt = function(pitch, yaw, hfov, animated, callback, callbackArgs) {
     animated = animated == undefined ? 1000: Number(animated);
-    if (pitch !== undefined)
-        this.setPitch(pitch, animated);
-    if (yaw !== undefined)
-        this.setYaw(yaw, animated);
+    if (pitch !== undefined) {
+        this.setPitch(pitch, animated, callback, callbackArgs);
+        callback = undefined;
+    }
+    if (yaw !== undefined) {
+        this.setYaw(yaw, animated, callback, callbackArgs);
+        callback = undefined;
+    }
     if (hfov !== undefined)
-        this.setHfov(hfov, animated);
+        this.setHfov(hfov, animated, callback, callbackArgs);
     return this;
 }
 
