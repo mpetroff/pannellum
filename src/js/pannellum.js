@@ -1528,6 +1528,7 @@ function renderInitCallback() {
         delete renderer.fadeImg;
         setTimeout(function() {
             renderContainer.removeChild(fadeImg);
+            fireEvent('scenechangefadedone');
         }, config.sceneFadeDuration);
     }
     
