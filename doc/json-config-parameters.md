@@ -154,6 +154,14 @@ Specifies pitch / roll of image horizon, in degrees (for correcting
 non-leveled panoramas).
 
 
+### `animationTimingFunction` (function) [API only]
+
+This specifies a timing function to be used for animating movements such as
+when the `lookAt` method is called. The default timing function is
+`easeInOutQuad`. If a custom function is specified, it should take a number
+[0, 1] as its only argument and return a number [0, 1].
+
+
 ### `hotSpots` (array)
 
 This specifies an array of hot spots that can be links to other scenes,

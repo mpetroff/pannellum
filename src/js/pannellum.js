@@ -98,6 +98,7 @@ var defaultConfig = {
     orientationOnByDefault: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
+    animationTimingFunction: timingFunction,
 };
 
 // Initialize container
@@ -1221,7 +1222,7 @@ function keyRepeat() {
 function animateMove(axis) {
     var t = animatedMove[axis];
     var normTime = Math.min(1, Math.max((Date.now() - t.startTime) / 1000 / (t.duration / 1000), 0));
-    var result = t.startPosition + timingFunction(normTime) * (t.endPosition - t.startPosition);
+    var result = t.startPosition + config.animationTimingFunction(normTime) * (t.endPosition - t.startPosition);
     if ((t.endPosition > t.startPosition && result >= t.endPosition) ||
         (t.endPosition < t.startPosition && result <= t.endPosition)) {
         result = t.endPosition;
