@@ -80,9 +80,11 @@ If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
 If set to `false`, zooming with keyboard will be disabled. Defaults to `true`.
 
 
-### `mouseZoom` (boolean)
+### `mouseZoom` (boolean or string)
 
 If set to `false`, zooming with mouse wheel will be disabled. Defaults to `true`.
+Can also be set to `fullscreenonly`, in which case it is only enabled when the
+viewer is fullscreen.
 
 
 ### `showFullscreenCtrl` (boolean)

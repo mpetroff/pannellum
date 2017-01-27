@@ -905,8 +905,8 @@ function onDocumentPointerUp(event) {
 function onDocumentMouseWheel(event) {
     event.preventDefault();
     
-    // Only do something if the panorama is loaded
-    if (!loaded) {
+    // Only do something if the panorama is loaded and mouse wheel zoom is enabled
+    if (!loaded || (config.mouseZoom == 'fullscreenonly' && !fullscreenActive)) {
         return;
     }
 
