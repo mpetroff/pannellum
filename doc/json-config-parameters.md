@@ -150,6 +150,21 @@ affects the compass, it only has an effect if `compass` is set to `true`.
 Specifies a URL for a preview image to display before the panorama is loaded.
 
 
+### `previewTitle` (string)
+
+Specifies the title to be displayed while the load button is displayed.
+
+
+### `previewAuthor` (string)
+
+Specifies the author to be displayed while the load button is displayed.
+
+
+### `loadButtonLabel` (string)
+
+Label to display on load button. Defaults to `Click to Load Panorama`.
+
+
 ### `horizonPitch` and `horizonRoll` (number)
 
 Specifies pitch / roll of image horizon, in degrees (for correcting

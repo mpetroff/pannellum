@@ -99,6 +99,7 @@ var defaultConfig = {
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
     animationTimingFunction: timingFunction,
+    loadButtonLabel: 'Click to\nLoad\nPanorama',
 };
 
 // Initialize container
@@ -174,8 +175,10 @@ container.appendChild(controls.container);
 // Load button
 controls.load = document.createElement('div');
 controls.load.className = 'pnlm-load-button';
-controls.load.innerHTML = '<p>Click to<br>Load<br>Panorama<p>';
-controls.load.addEventListener('click', load);
+controls.load.addEventListener('click', function() {
+    processOptions();
+    load();
+});
 container.appendChild(controls.load);
 
 // Zoom controls
@@ -233,7 +236,7 @@ if (initialConfig.firstScene) {
 } else {
     mergeConfig(null);
 }
-processOptions();
+processOptions(true);
 
 /**
  * Initializes viewer.
@@ -1789,13 +1792,16 @@ function mergeConfig(sceneId) {
 
 /**
  * Processes configuration options.
+ * @param {boolean} [isPreview] - Whether or not the preview is being displayed
  * @private
  */
-function processOptions() {
+function processOptions(isPreview) {
+    isPreview = isPreview ? isPreview : false;
+
     // Process preview first so it always loads before the browser hits its
     // maximum number of connections to a server as can happen with cubic
     // panoramas
-    if ('preview' in config) {
+    if (isPreview && 'preview' in config) {
         var p = config.preview;
         if (config.basePath && !absoluteURL(p))
             p = config.basePath + p;
@@ -1803,6 +1809,16 @@ function processOptions() {
         preview.className = 'pnlm-preview-img';
         preview.style.backgroundImage = "url('" + encodeURI(p) + "')";
         renderContainer.appendChild(preview);
+    }
+
+    // Handle different preview values
+    var title = config.title,
+        author = config.author;
+    if (isPreview) {
+        if ('previewTitle' in config)
+            config.title = config.previewTitle;
+        if ('previewAuthor' in config)
+            config.author = config.previewAuthor;
     }
 
     // Reset title / author display
@@ -1887,8 +1903,24 @@ function processOptions() {
                 if (config[key])
                     startOrientation();
                 break;
+
+            case 'loadButtonLabel':
+                controls.load.innerHTML = '<p>' + escapeHTML(config[key]) + '</p>';
+                break;
         }
       }
+    }
+
+    if (isPreview) {
+        // Restore original values if changed for preview
+        if (title)
+            config.title = title;
+        else
+            delete config.title;
+        if (author)
+            config.author = author;
+        else
+            delete config.author;
     }
 }
 
