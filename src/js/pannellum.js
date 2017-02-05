@@ -102,6 +102,8 @@ var defaultConfig = {
     loadButtonLabel: 'Click to\nLoad\nPanorama',
 };
 
+var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
+
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
 container.classList.add('pnlm-container');
@@ -950,9 +952,10 @@ function onDocumentKeyPress(event) {
     // Record key pressed
     var keynumber = event.which || event.keycode;
 
-    // Override default action except for tabbing
-    if (keynumber != 9)
-        event.preventDefault();
+    // Override default action for keys that are used
+    if (usedKeyNumbers.indexOf(keynumber) < 0)
+        return
+    event.preventDefault();
     
     // If escape key is pressed
     if (keynumber == 27) {
@@ -982,14 +985,13 @@ function clearKeys() {
  * @param {KeyboardEvent} event - Document key up event.
  */
 function onDocumentKeyUp(event) {
-    // Override default action
-    event.preventDefault();
+    // Record key pressed
+    var keynumber = event.which || event.keycode;
     
-    // Record key released
-    var keynumber = event.keycode;
-    if (event.which) {
-        keynumber = event.which;
-    }
+    // Override default action for keys that are used
+    if (usedKeyNumbers.indexOf(keynumber) < 0)
+        return
+    event.preventDefault();
     
     // Change key
     changeKey(keynumber, false);
@@ -1005,12 +1007,12 @@ function changeKey(keynumber, value) {
     var keyChanged = false;
     switch(keynumber) {
         // If minus key is released
-        case 109: case 189: case 17:
+        case 109: case 189: case 17: case 173:
             if (keysDown[0] != value) { keyChanged = true; }
             keysDown[0] = value; break;
         
         // If plus key is released
-        case 107: case 187: case 16:
+        case 107: case 187: case 16: case 61:
             if (keysDown[1] != value) { keyChanged = true; }
             keysDown[1] = value; break;
         
