@@ -2163,14 +2163,14 @@ function startOrientation() {
  */
 function escapeHTML(s) {
     if (!initialConfig.escapeHTML)
-        return String(s).replace('\n', '<br>');
-    return String(s).replace(/&/g, '&amp;')
-        .replace('"', '&quot;')
-        .replace("'", '&#39;')
-        .replace('<', '&lt;')
-        .replace('>', '&gt;')
-        .replace('/', '&#x2f;')
-        .replace('\n', '<br>');     // Allow line breaks
+        return String(s).split('\n').join('<br>');
+    return String(s).split(/&/g).join('&amp;')
+        .split('"').join('&quot;')
+        .split("'").join('&#39;')
+        .split('<').join('&lt;')
+        .split('>').join('&gt;')
+        .split('/').join('&#x2f;')
+        .split('\n').join('<br>');  // Allow line breaks
 }
 
 /**
