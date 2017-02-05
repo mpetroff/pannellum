@@ -80,6 +80,7 @@ function parseURLParameters() {
                 document.title = configFromURL.title;
 
             // Create viewer
+            configFromURL.escapeHTML = true;
             pannellum.viewer('container', configFromURL);
         };
         request.open('GET', configFromURL.config);
@@ -92,6 +93,7 @@ function parseURLParameters() {
         document.title = configFromURL.title;
 
     // Create viewer
+    configFromURL.escapeHTML = true;
     pannellum.viewer('container', configFromURL);
 }
 

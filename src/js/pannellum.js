@@ -2130,6 +2130,8 @@ function startOrientation() {
  * @returns {string} Escaped string
  */
 function escapeHTML(s) {
+    if (!initialConfig.escapeHTML)
+        return String(s).replace('\n', '<br>');
     return String(s).replace(/&/g, '&amp;')
         .replace('"', '&quot;')
         .replace("'", '&#39;')

@@ -164,6 +164,14 @@ when the `lookAt` method is called. The default timing function is
 [0, 1] as its only argument and return a number [0, 1].
 
 
+### `escapeHTML` (boolean)
+
+When true, HTML is escaped from configuration strings to help mitigate possible
+DOM XSS attacks. This is always `true` when using the standalone viewer since
+the configuration is provided via the URL; it defaults to `false` but can be
+set to `true` when using the API.
+
+
 ### `hotSpots` (array)
 
 This specifies an array of hot spots that can be links to other scenes,
