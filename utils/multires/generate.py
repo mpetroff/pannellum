@@ -34,8 +34,12 @@ import math
 from distutils.spawn import find_executable
 import subprocess
 
-# find external programs
-nona = find_executable('nona')
+# Find external programs
+try:
+    nona = find_executable('nona')
+except KeyError:
+    # Handle case of PATH not being set
+    nona = None
 
 # Parse input
 parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from an full equirectangular panorama.',
