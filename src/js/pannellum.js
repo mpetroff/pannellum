@@ -215,12 +215,22 @@ controls.orientation.addEventListener('mousedown', function(e) {e.stopPropagatio
 controls.orientation.addEventListener('touchstart', function(e) {e.stopPropagation();});
 controls.orientation.addEventListener('pointerdown', function(e) {e.stopPropagation();});
 controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
+var orientationSupport, startOrientationIfSupported = false;
+function deviceOrientationTest(e) {
+    window.removeEventListener('deviceorientation', deviceOrientationTest);
+    if (e && e.alpha !== null && e.beta !== null && e.gamma !== null) {
+        controls.container.appendChild(controls.orientation);
+        orientationSupport = true;
+        if (startOrientationIfSupported)
+            startOrientation();
+    } else {
+        orientationSupport = false;
+    }
+}
 if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', function(e) {
-        window.removeEventListener('deviceorientation', this);
-        if (e && e.alpha !== null && e.beta !== null && e.gamma !== null)
-            controls.container.appendChild(controls.orientation);
-    });
+    window.addEventListener('deviceorientation', deviceOrientationTest);
+} else {
+    orientationSupport = false;
 }
 
 // Compass
@@ -1902,8 +1912,12 @@ function processOptions(isPreview) {
                 break;
 
             case 'orientationOnByDefault':
-                if (config[key])
-                    startOrientation();
+                if (config[key]) {
+                    if (orientationSupport === undefined)
+                        startOrientationIfSupported = true;
+                    else if (orientationSupport === true)
+                        startOrientation();
+                }
                 break;
 
             case 'loadButtonLabel':
