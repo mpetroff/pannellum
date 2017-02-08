@@ -918,12 +918,12 @@ function onDocumentPointerUp(event) {
  * @param {WheelEvent} event - Document mouse wheel event.
  */
 function onDocumentMouseWheel(event) {
-    event.preventDefault();
-    
     // Only do something if the panorama is loaded and mouse wheel zoom is enabled
     if (!loaded || (config.mouseZoom == 'fullscreenonly' && !fullscreenActive)) {
         return;
     }
+
+    event.preventDefault();
 
     // Turn off auto-rotation if enabled
     stopAnimation();
