@@ -100,6 +100,7 @@ var defaultConfig = {
     backgroundColor: [0, 0, 0],
     animationTimingFunction: timingFunction,
     loadButtonLabel: 'Click to\nLoad\nPanorama',
+    draggable: true,
 };
 
 var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
@@ -630,7 +631,7 @@ function onDocumentMouseDown(event) {
     container.focus();
     
     // Only do something if the panorama is loaded
-    if (!loaded) {
+    if (!loaded || !config.draggable) {
         return;
     }
     
@@ -759,7 +760,7 @@ function onDocumentMouseUp(event) {
  */
 function onDocumentTouchStart(event) {
     // Only do something if the panorama is loaded
-    if (!loaded) {
+    if (!loaded || !config.draggable) {
         return;
     }
 
