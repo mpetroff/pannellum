@@ -87,6 +87,11 @@ Can also be set to `fullscreenonly`, in which case it is only enabled when the
 viewer is fullscreen.
 
 
+### `draggable` (boolean)
+
+If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
+
+
 ### `showFullscreenCtrl` (boolean)
 
 If set to `false`, the fullscreen control will not be displayed. Defaults to
