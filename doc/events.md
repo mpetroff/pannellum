@@ -36,3 +36,13 @@ Fired when the mouse button is pressed. Passes `MouseEvent` to handler.
 ## `mouseup`
 
 Fired when the mouse button is released. Passes `MouseEvent` to handler.
+
+
+## `touchstart`
+
+Fired when a touch starts. Passes `TouchEvent` to handler.
+
+
+## `touchend`
+
+Fired when a touch ends. Passes `TouchEvent` to handler.
