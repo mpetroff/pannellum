@@ -7,8 +7,14 @@ function anError(error) {
 
 var viewer;
 function parseURLParameters() {
-    var URL = decodeURI(window.location.href).split('?');
-    URL.shift();
+    var URL;
+    if (window.location.hash.length > 0) {
+        // Prefered method since parameters aren't sent to server
+        URL = [window.location.hash.slice(1)];
+    } else {
+        URL = decodeURI(window.location.href).split('?');
+        URL.shift();
+    }
     if (URL.length < 1) {
         // Display error if no configuration parameters are specified
         anError('No configuration options were specified.');
@@ -30,23 +36,19 @@ function parseURLParameters() {
             case 'autoLoad': case 'ignoreGPanoXMP':
                 configFromURL[option] = JSON.parse(value);
                 break;
-            case 'tour':
-                console.log('The `tour` parameter is deprecated and will be removed. Use the `config` parameter instead.')
             case 'author': case 'title': case 'firstScene': case 'fallback':
             case 'preview': case 'panorama': case 'config':
                 configFromURL[option] = decodeURIComponent(value);
                 break;
             default:
                 anError('An invalid configuration parameter was specified: ' + option);
+                return;
         }
     }
 
     var request;
 
     // Check for JSON configuration file
-    if (configFromURL.tour) {
-        configFromURL.config = configFromURL.tour;
-    }
     if (configFromURL.config) {
         // Get JSON configuration file
         request = new XMLHttpRequest();
@@ -63,7 +65,8 @@ function parseURLParameters() {
             var responseMap = JSON.parse(request.responseText);
 
             // Set JSON file location
-            responseMap.basePath = configFromURL.config.substring(0, configFromURL.config.lastIndexOf('/')+1);
+            if (responseMap.basePath === undefined)
+                responseMap.basePath = configFromURL.config.substring(0, configFromURL.config.lastIndexOf('/')+1);
 
             // Merge options
             for (var key in responseMap) {
@@ -78,6 +81,7 @@ function parseURLParameters() {
                 document.title = configFromURL.title;
 
             // Create viewer
+            configFromURL.escapeHTML = true;
             viewer = pannellum.viewer('container', configFromURL);
         };
         request.open('GET', configFromURL.config);
@@ -90,6 +94,7 @@ function parseURLParameters() {
         document.title = configFromURL.title;
 
     // Create viewer
+    configFromURL.escapeHTML = true;
     pannellum.viewer('container', configFromURL);
 }
 

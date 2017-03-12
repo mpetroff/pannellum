@@ -16,6 +16,7 @@
     user-select: none;
     outline: 0;
     line-height: 1.4;
+    contain: content;
 }
 
 .pnlm-container * {
@@ -23,10 +24,12 @@
 }
 
 .pnlm-grab {
+    cursor: grab;
     cursor: url('img/grab.svg') 12 8, default;
 }
 
 .pnlm-grabbing {
+    cursor: grabbing;
     cursor: url('img/grabbing.svg') 12 8, default;
 }
 
@@ -39,6 +42,10 @@
     width: 100% !important;
 }
 .pnlm-container:-webkit-full-screen {
+    height: 100% !important;
+    width: 100% !important;
+}
+.pnlm-container:-ms-fullscreen {
     height: 100% !important;
     width: 100% !important;
 }
@@ -104,10 +111,29 @@
     border-radius: 0 0 3px 3px;
 }
 
-.pnlm-fullscreen-toggle-button, .pnlm-orientation-button {
+.pnlm-fullscreen-toggle-button, .pnlm-orientation-button, .pnlm-hot-spot-debug-indicator {
     width: 26px;
     height: 26px;
+}
+
+.pnlm-hot-spot-debug-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 13px;
+    display: none;
+}
+
+.pnlm-orientation-button-inactive {
     background-position: 0 -156px;
+}
+
+.pnlm-orientation-button-active {
+    background-position: 0 -182px;
 }
 
 .pnlm-fullscreen-toggle-button-inactive {
@@ -293,16 +319,18 @@
     color: #eee;
 }
 
-.pnlm-hotspot {
+.pnlm-hotspot-base {
     position: absolute;
-    height: 26px;
-    width: 26px;
     visibility: hidden;
     cursor: default;
-    border-radius: 13px;
     vertical-align: middle;
     top: 0;
     z-index: 1;
+}
+.pnlm-hotspot {
+    height: 26px;
+    width: 26px;
+    border-radius: 13px;
 }
 .pnlm-hotspot:hover {
     background-color: rgba(255,255,255,0.2);
@@ -323,14 +351,13 @@ div.pnlm-tooltip span {
     text-align: center;
     max-width: 200px;
     padding: 5px 10px;
-    margin-top: -41px;
     margin-left: -220px;
     cursor: default;
 }
 div.pnlm-tooltip:hover span{
     visibility: visible;
 }
-div.pnlm-tooltip:hover:after {
+div.pnlm-tooltip:hover span:after {
     content: '';
     position: absolute;
     width: 0;
@@ -338,8 +365,9 @@ div.pnlm-tooltip:hover:after {
     border-width: 10px;
     border-style: solid;
     border-color: rgba(0,0,0,0.7) transparent transparent transparent;
-    top: -12px;
-    left: 3px;
+    bottom: -20px;
+    left: -10px;
+    margin: 0 50%;
 }
 
 .pnlm-compass {
