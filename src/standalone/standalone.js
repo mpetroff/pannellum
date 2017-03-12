@@ -5,6 +5,7 @@ function anError(error) {
     document.getElementById('container').appendChild(errorMsg);
 }
 
+var viewer;
 function parseURLParameters() {
     var URL;
     if (window.location.hash.length > 0) {
@@ -81,7 +82,7 @@ function parseURLParameters() {
 
             // Create viewer
             configFromURL.escapeHTML = true;
-            pannellum.viewer('container', configFromURL);
+            viewer = pannellum.viewer('container', configFromURL);
         };
         request.open('GET', configFromURL.config);
         request.send();
