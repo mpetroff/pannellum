@@ -95,7 +95,7 @@ function parseURLParameters() {
 
     // Create viewer
     configFromURL.escapeHTML = true;
-    pannellum.viewer('container', configFromURL);
+    viewer = pannellum.viewer('container', configFromURL);
 }
 
 // Display error if opened from local file
