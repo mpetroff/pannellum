@@ -5,6 +5,7 @@ function anError(error) {
     document.getElementById('container').appendChild(errorMsg);
 }
 
+var viewer;
 function parseURLParameters() {
     var URL = decodeURI(window.location.href).split('?');
     URL.shift();
@@ -77,7 +78,7 @@ function parseURLParameters() {
                 document.title = configFromURL.title;
 
             // Create viewer
-            pannellum.viewer('container', configFromURL);
+            viewer = pannellum.viewer('container', configFromURL);
         };
         request.open('GET', configFromURL.config);
         request.send();
