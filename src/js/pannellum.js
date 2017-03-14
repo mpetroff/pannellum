@@ -803,6 +803,10 @@ function onDocumentTouchStart(event) {
  * @param {TouchEvent} event - Document touch move event.
  */
 function onDocumentTouchMove(event) {
+    if (!config.draggable) {
+        return;
+    }
+
     // Override default action
     event.preventDefault();
     if (loaded) {
