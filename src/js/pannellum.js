@@ -58,6 +58,7 @@ var config,
     speed = {'yaw': 0, 'pitch': 0, 'hfov': 0},
     animating = false,
     orientation = false,
+    orientationYawOffset = 0,
     autoRotateStart,
     autoRotateSpeed = 0,
     origHfov,
@@ -1498,7 +1499,7 @@ function orientationListener(e) {
     var q = computeQuaternion(e.alpha, e.beta, e.gamma).toEulerAngles();
     config.pitch = q[0] / Math.PI * 180;
     config.roll = -q[1] / Math.PI * 180;
-    config.yaw = -q[2] / Math.PI * 180 + config.northOffset;
+    config.yaw = -q[2] / Math.PI * 180 + config.northOffset + orientationYawOffset;
 }
 
 /**
@@ -2174,6 +2175,7 @@ function stopOrientation() {
  */
 function startOrientation() {
     orientation = true;
+    orientationYawOffset = config.yaw;
     window.addEventListener('deviceorientation', orientationListener);
     controls.orientation.classList.add('pnlm-orientation-button-active');
     requestAnimationFrame(animate);
