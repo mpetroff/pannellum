@@ -888,7 +888,8 @@ function onDocumentPointerMove(event) {
     if (event.pointerType == 'touch') {
         for (var i = 0; i < pointerIDs.length; i++) {
             if (event.pointerId == pointerIDs[i]) {
-                pointerCoordinates[i] = {clientX: event.clientX, clientY: event.clientY};
+                pointerCoordinates[i].clientX = event.clientX;
+                pointerCoordinates[i].clientY = event.clientY;
                 event.targetTouches = pointerCoordinates;
                 onDocumentTouchMove(event);
                 //event.preventDefault();
