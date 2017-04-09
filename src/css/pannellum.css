@@ -40,18 +40,22 @@
 .pnlm-container:-moz-full-screen {
     height: 100% !important;
     width: 100% !important;
+    position: static !important;
 }
 .pnlm-container:-webkit-full-screen {
     height: 100% !important;
     width: 100% !important;
+    position: static !important;
 }
 .pnlm-container:-ms-fullscreen {
     height: 100% !important;
     width: 100% !important;
+    position: static !important;
 }
 .pnlm-container:fullscreen {
     height: 100% !important;
     width: 100% !important;
+    position: static !important;
 }
 
 .pnlm-render-container {
