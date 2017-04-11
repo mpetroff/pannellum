@@ -114,6 +114,8 @@ function Renderer(container) {
             // Enable WebGL on canvas
             if (!gl)
                 gl = canvas.getContext('experimental-webgl', {alpha: false, depth: false});
+            if (gl.getError() == 1286)
+                handleWebGLError1286();
         }
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
@@ -402,8 +404,9 @@ function Renderer(container) {
         }
 
         // Check if there was an error
-        if (gl.getError() !== 0) {
-            console.log('Error: Something went wrong with WebGL!');
+        var err = gl.getError();
+        if (err !== 0) {
+            console.log('Error: Something went wrong with WebGL!', err);
             throw {type: 'webgl error'};
         }
 
@@ -443,6 +446,8 @@ function Renderer(container) {
         canvas.width = canvas.clientWidth * pixelRatio;
         canvas.height = canvas.clientHeight * pixelRatio;
         if (gl) {
+            if (gl.getError() == 1286)
+                handleWebGLError1286();
             gl.viewport(0, 0, canvas.width, canvas.height);
             if (imageType != 'multires') {
                 gl.uniform1f(program.aspectRatio, canvas.width / canvas.height);
@@ -1161,6 +1166,18 @@ function Renderer(container) {
         return testZ != 4;
         
 
+    }
+
+    /**
+     * On iOS (iPhone 5c, iOS 10.3), this WebGL error occurs when the canvas is
+     * too big. Unfortuately, there's no way to test for this beforehand, so we
+     * reduce the canvas size if this error is thrown.
+     * @private
+     */
+    function handleWebGLError1286() {
+        console.log('Reducing canvas size due to error 1286!');
+        canvas.width = Math.round(canvas.width / 2);
+        canvas.height = Math.round(canvas.height / 2);
     }
 }
 

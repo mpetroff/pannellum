@@ -693,8 +693,8 @@ function onDocumentDoubleClick(event) {
 function mouseEventToCoords(event) {
     var pos = mousePosition(event);
     var canvas = renderer.getCanvas();
-    var canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-        canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+    var canvasWidth = canvas.clientWidth,
+        canvasHeight = canvas.clientHeight;
     var x = pos.x / canvasWidth * 2 - 1;
     var y = (1 - pos.y / canvasHeight * 2) * canvasHeight / canvasWidth;
     var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
@@ -716,8 +716,8 @@ function onDocumentMouseMove(event) {
     if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         var canvas = renderer.getCanvas();
-        var canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-            canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+        var canvasWidth = canvas.clientWidth,
+            canvasHeight = canvas.clientHeight;
         var pos = mousePosition(event);
         //TODO: This still isn't quite right
         var yaw = ((Math.atan(onPointerDownPointerX / canvasWidth * 2 - 1) - Math.atan(pos.x / canvasWidth * 2 - 1)) * 180 / Math.PI * config.hfov / 90) + onPointerDownYaw;
@@ -1730,8 +1730,8 @@ function renderHotSpot(hs) {
         // Subpixel rendering doesn't work in Firefox
         // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
         var canvas = renderer.getCanvas(),
-            canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-            canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+            canvasWidth = canvas.clientWidth,
+            canvasHeight = canvas.clientHeight;
         var coord = [-canvasWidth / hfovTan * yawSin * hsPitchCos / z / 2,
             -canvasWidth / hfovTan * (hsPitchSin * configPitchCos -
             hsPitchCos * yawCos * configPitchSin) / z / 2];
