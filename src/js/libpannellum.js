@@ -267,7 +267,7 @@ function Renderer(container) {
         var glBindType = gl.TEXTURE_2D;
 
         // Create viewport for entire canvas
-        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
         // Create vertex shader
         vs = gl.createShader(gl.VERTEX_SHADER);
@@ -323,7 +323,7 @@ function Renderer(container) {
 
             // Pass aspect ratio
             program.aspectRatio = gl.getUniformLocation(program, 'u_aspectRatio');
-            gl.uniform1f(program.aspectRatio, canvas.width / canvas.height);
+            gl.uniform1f(program.aspectRatio, canvas.clientWidth / canvas.clientHeight);
 
             // Locate psi, theta, focal length, horizontal extent, vertical extent, and vertical offset
             program.psi = gl.getUniformLocation(program, 'u_psi');
@@ -448,9 +448,9 @@ function Renderer(container) {
         if (gl) {
             if (gl.getError() == 1286)
                 handleWebGLError1286();
-            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
             if (imageType != 'multires') {
-                gl.uniform1f(program.aspectRatio, canvas.width / canvas.height);
+                gl.uniform1f(program.aspectRatio, canvas.clientWidth / canvas.clientHeight);
             }
         }
     };
@@ -523,7 +523,7 @@ function Renderer(container) {
                 r: 'translate3d(' + s + 'px, -' + (s + 2) + 'px, -' + (s + 2) + 'px) rotateY(270deg)'
             };
             focal = 1 / Math.tan(hfov / 2);
-            var zoom = focal * canvas.width / (window.devicePixelRatio || 1) / 2 + 'px';
+            var zoom = focal * canvas.clientWidth / 2 + 'px';
             var transform = 'perspective(' + zoom + ') translateZ(' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) ';
             
             // Apply face transforms
@@ -538,7 +538,7 @@ function Renderer(container) {
         
         if (imageType != 'multires') {
             // Calculate focal length from vertical field of view
-            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (canvas.width / canvas.height));
+            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (canvas.clientWidth / canvas.clientHeight));
             focal = 1 / Math.tan(vfov * 0.5);
 
             // Pass psi, theta, roll, and focal length
@@ -560,7 +560,7 @@ function Renderer(container) {
         
         } else {
             // Create perspective matrix
-            var perspMatrix = makePersp(hfov, canvas.width / canvas.height, 0.1, 100.0);
+            var perspMatrix = makePersp(hfov, canvas.clientWidth / canvas.clientHeight, 0.1, 100.0);
             
             // Find correct zoom level
             checkZoom(hfov);
@@ -973,7 +973,7 @@ function Renderer(container) {
      * @returns {number[]} Generated perspective matrix.
      */
     function makePersp(hfov, aspect, znear, zfar) {
-        var fovy = 2 * Math.atan(Math.tan(hfov/2) * canvas.height / canvas.width);
+        var fovy = 2 * Math.atan(Math.tan(hfov/2) * canvas.clientHeight / canvas.clientWidth);
         var f = 1 / Math.tan(fovy/2);
         return [
             f/aspect,   0,  0,  0,
