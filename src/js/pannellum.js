@@ -1695,18 +1695,19 @@ function createHotSpots() {
  * @private
  */
 function destroyHotSpots() {
-    if (config.hotSpots) {
-        for (var i = 0; i < config.hotSpots.length; i++) {
-            var current = config.hotSpots[i].div;
+    var hs = config.hotSpots;
+    hotspotsCreated = false;
+    delete config.hotSpots;
+    if (hs) {
+        for (var i = 0; i < hs.length; i++) {
+            var current = hs[i].div;
             while(current.parentNode != renderContainer) {
                 current = current.parentNode;
             }
             renderContainer.removeChild(current);
-            delete config.hotSpots[i].div;
+            delete hs.div;
         }
     }
-    hotspotsCreated = false;
-    delete config.hotSpots;
 }
 
 /**
