@@ -116,7 +116,7 @@ function Renderer(container) {
             // Enable WebGL on canvas
             if (!gl)
                 gl = canvas.getContext('experimental-webgl', {alpha: false, depth: false});
-            if (gl && gl.getError() == gl.INVALID_FRAMEBUFFER_OPERATION)
+            if (gl.getError() == 1286)
                 handleWebGLError1286();
         }
         
@@ -448,7 +448,7 @@ function Renderer(container) {
         canvas.width = canvas.clientWidth * pixelRatio;
         canvas.height = canvas.clientHeight * pixelRatio;
         if (gl) {
-            if (gl.getError() == INVALID_FRAMEBUFFER_OPERATION)
+            if (gl.getError() == 1286)
                 handleWebGLError1286();
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
             if (imageType != 'multires') {
@@ -1177,7 +1177,7 @@ function Renderer(container) {
      * @private
      */
     function handleWebGLError1286() {
-        console.log('Reducing canvas size due to error INVALID_FRAMEBUFFER_OPERATION!');
+        console.log('Reducing canvas size due to error 1286!');
         canvas.width = Math.round(canvas.width / 2);
         canvas.height = Math.round(canvas.height / 2);
     }
