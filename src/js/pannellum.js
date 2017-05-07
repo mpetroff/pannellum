@@ -2594,17 +2594,27 @@ this.getConfig = function() {
  * @throws Throws an error if the scene ID is provided but invalid
  */
 this.addHotSpot = function(hs, sceneId) {
+    if (sceneId === undefined && config.scene === undefined) {
+        // Not a tour
+        config.hotSpots.push(hs);
+    } else {
+        // Tour
+        var id = sceneId !== undefined ? sceneId : config.scene;
+        if (initialConfig.scenes.hasOwnProperty(id)) {
+            if (!initialConfig.scenes[id].hasOwnProperty('hotSpots')) {
+                initialConfig.scenes[id].hotSpots = []; // Create hot spots array if needed
+                if (id == config.scene)
+                    config.hotSpots = initialConfig.scenes[id].hotSpots;    // Link to current config
+            }
+            initialConfig.scenes[id].hotSpots.push(hs); // Add hot spot to config
+        } else {
+            throw 'Invalid scene ID!'
+        }
+    }
     if (sceneId === undefined || config.scene == sceneId) {
         // Add to current scene
         createHotSpot(hs);
-        config.hotSpots.push(hs);
         renderHotSpot(hs);
-    } else {
-        // Add to a different scene
-        if (initialConfig.scenes.hasOwnProperty(sceneId))
-            initialConfig.scenes[sceneId].hotSpots.push(hs);
-        else
-            throw 'Invalid scene ID!'
     }
     return this;
 }
