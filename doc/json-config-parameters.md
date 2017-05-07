@@ -247,6 +247,10 @@ maintain the same direction with regard to north.
 
 Specifies the HFOV of the target scene, in degrees.
 
+#### `id`
+
+Specifies hot spot ID, for use with API's `removeHotSpot` function.
+
 #### `cssClass` (string)
 
 If specified, string is used as the CSS class for the hot spot instead of the
