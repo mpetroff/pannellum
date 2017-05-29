@@ -2698,7 +2698,7 @@ this.off = function(type, listener) {
             // Remove listener if found
             externalEventListeners[type].splice(i, 1);
         }
-        if (externalEventListeners[type].length = 0) {
+        if (externalEventListeners[type].length == 0) {
             // Remove category if empty
             delete externalEventListeners[type];
         }
