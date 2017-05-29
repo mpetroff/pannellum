@@ -601,7 +601,7 @@ function Renderer(container) {
             // Only process one tile per frame to improve responsiveness
             for (i = 0; i < program.currentNodes.length; i++) {
                 if (!program.currentNodes[i].texture) {
-                    setTimeout(processNextTile(program.currentNodes[i]), 0);
+                    setTimeout(processNextTile, 0, program.currentNodes[i]);
                     break;
                 }
             }
