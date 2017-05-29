@@ -2620,6 +2620,23 @@ this.addHotSpot = function(hs, sceneId) {
 }
 
 /**
+ * Add a new hot spot to a specific scene.
+ * @memberof Viewer
+ * @instance
+ * @param {string} sceneId - The scene where to add the hot spot
+ * @param {Object} hs - The configuration for the hot spot
+ * @returns {boolean} True if the add was successful, else false
+ */
+this.addHotSpotToScene = function(sceneId, hs) {
+    // TODO: do some checks if it is the actual scene
+    if (initialConfig.scenes.hasOwnProperty(sceneId)) {
+        initialConfig.scenes[sceneId].hotSpots.push(hs);
+        return true;
+    }
+    return false;
+}
+
+/**
  * Remove a hot spot.
  * @memberof Viewer
  * @instance
