@@ -37,7 +37,7 @@ function parseURLParameters() {
                 configFromURL[option] = JSON.parse(value);
                 break;
             case 'author': case 'title': case 'firstScene': case 'fallback':
-            case 'preview': case 'panorama': case 'config':
+            case 'preview': case 'panorama': case 'config': case 'basePath':
                 configFromURL[option] = decodeURIComponent(value);
                 break;
             default:
