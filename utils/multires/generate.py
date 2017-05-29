@@ -71,7 +71,7 @@ if float(origWidth) / origHeight != 2:
 if args.cubeSize != 0:
     cubeSize = args.cubeSize
 else:
-    cubeSize = 8 * int(origWidth / math.pi / 8)
+    cubeSize = 8 * (origWidth / math.pi / 8)
 levels = int(math.ceil(math.log(float(cubeSize) / args.tileSize, 2))) + 1
 origHeight = str(origHeight)
 origWidth = str(origWidth)
