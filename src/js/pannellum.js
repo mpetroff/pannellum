@@ -2127,7 +2127,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     if (targetYaw === 'same') {
         workingYaw = config.yaw;
     } else if (targetYaw === 'sameAzimuth') {
-        workingYaw = config.yaw + config.northOffset - initialConfig.scenes[sceneId].northOffset;
+        workingYaw = config.yaw + (config.northOffset || 0) - (initialConfig.scenes[sceneId].northOffset || 0);
     } else {
         workingYaw = targetYaw;
     }
