@@ -2446,6 +2446,54 @@ this.setNorthOffset = function(heading) {
 };
 
 /**
+ * Returns the panorama's horizon roll.
+ * @memberof Viewer
+ * @instance
+ * @returns {number} Horizon roll in degrees
+ */
+this.getHorizonRoll = function() {
+    return config.horizonRoll;
+};
+
+/**
+ * Sets the panorama's horizon roll.
+ * @memberof Viewer
+ * @instance
+ * @param {number} roll - Horizon roll in degrees [-90, 90]
+ * @returns {Viewer} `this`
+ */
+this.setHorizonRoll = function(roll) {
+    config.horizonRoll = Math.min(90, Math.max(-90, roll));
+    renderer.setPose(config.horizonPitch * Math.PI / 180, config.horizonRoll * Math.PI / 180);
+    animateInit();
+    return this;
+};
+
+/**
+ * Returns the panorama's horizon pitch.
+ * @memberof Viewer
+ * @instance
+ * @returns {number} Horizon pitch in degrees
+ */
+this.getHorizonPitch = function() {
+    return config.horizonPitch;
+};
+
+/**
+ * Sets the panorama's horizon pitch.
+ * @memberof Viewer
+ * @instance
+ * @param {number} pitch - Horizon pitch in degrees [-90, 90]
+ * @returns {Viewer} `this`
+ */
+this.setHorizonPitch = function(pitch) {
+    config.horizonPitch = Math.min(90, Math.max(-90, pitch));
+    renderer.setPose(config.horizonPitch * Math.PI / 180, config.horizonRoll * Math.PI / 180);
+    animateInit();
+    return this;
+};
+
+/**
  * Start auto rotation.
  * @memberof Viewer
  * @instance

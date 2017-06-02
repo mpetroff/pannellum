@@ -460,6 +460,15 @@ function Renderer(container) {
     this.resize();
 
     /**
+     * Set renderer horizon pitch and roll.
+     * @memberof Renderer
+     * @instance
+     */
+    this.setPose = function(horizonPitch, horizonRoll) {
+        pose = [horizonPitch, horizonRoll];
+    };
+
+    /**
      * Render new view of panorama.
      * @memberof Renderer
      * @instance
