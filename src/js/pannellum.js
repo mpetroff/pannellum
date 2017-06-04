@@ -1636,6 +1636,22 @@ function createHotSpot(hs) {
         div.style.cursor = 'pointer';
         span.style.cursor = 'pointer';
         a.appendChild(div);
+    } else if (hs.action) {
+        a = document.createElement('a');
+        a.href = "#";
+	a.ontouchstart = function() {
+		this.touchAvailable = true;
+		hs.action();
+	};
+	a.onclick = function() {
+		if (!this.touchAvailable) {
+			hs.action();
+		}
+	};
+        renderContainer.appendChild(a);
+        div.style.cursor = 'pointer';
+        span.style.cursor = 'pointer';
+        a.appendChild(div);
     } else {
         if (hs.sceneId) {
             div.onclick = div.ontouchend = function() {
