@@ -1601,6 +1601,11 @@ function createHotSpot(hs) {
     var span = document.createElement('span');
     if (hs.text)
         span.innerHTML = escapeHTML(hs.text);
+        if(config.hasOwnProperty('language')){
+          if(hs.hasOwnProperty('text_' + config['language'])){
+            span.innerHTML = escapeHTML(hs['text_' + config['language']]);
+          }
+        }
 
     var a;
     if (hs.video) {
@@ -1859,6 +1864,11 @@ function processOptions(isPreview) {
             case 'title':
                 infoDisplay.title.innerHTML = escapeHTML(config[key]);
                 infoDisplay.container.style.display = 'inline';
+                if(config.hasOwnProperty('language')){
+                  if(config.hasOwnProperty('title_' + config['language'])){
+                    infoDisplay.title.innerHTML = escapeHTML(config['title_' + config['language']]);
+                  }
+                }
                 break;
             
             case 'author':
