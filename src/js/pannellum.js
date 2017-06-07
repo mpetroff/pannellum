@@ -1993,6 +1993,8 @@ function onFullScreenChange() {
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
         controls.fullscreen.classList.add('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = true;
+        // Fix wrong aspect ration on OS X Safari: https://github.com/mpetroff/pannellum/issues/155
+        renderer.resize(); render();
     } else {
         controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = false;
