@@ -2764,8 +2764,9 @@ this.off = function(type, listener) {
  */
 function fireEvent(type) {
     if (type in externalEventListeners) {
-        for (var i = 0; i < externalEventListeners[type].length; i++) {
-            externalEventListeners[type][i].apply(null, [].slice.call(arguments, 1));
+        // Reverse iteration is useful, if event listener is removed inside its definition
+        for (var i = externalEventListeners[type].length; i > 0; i--) {
+            externalEventListeners[type][externalEventListeners[type].length - i].apply(null, [].slice.call(arguments, 1));
         }
     }
 }
