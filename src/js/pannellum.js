@@ -704,6 +704,8 @@ function mouseEventToCoords(event) {
     var root = Math.sqrt(x*x + a*a);
     var pitch = Math.atan((y * c + focal * s) / root) * 180 / Math.PI;
     var yaw = Math.atan2(x / root, a / root) * 180 / Math.PI + config.yaw;
+    if (yaw < -180) yaw += 360;
+    if (yaw > 180) yaw -= 360;
     return [pitch, yaw];
 }
 
@@ -1249,7 +1251,8 @@ function animateMove(axis) {
     var normTime = Math.min(1, Math.max((Date.now() - t.startTime) / 1000 / (t.duration / 1000), 0));
     var result = t.startPosition + config.animationTimingFunction(normTime) * (t.endPosition - t.startPosition);
     if ((t.endPosition > t.startPosition && result >= t.endPosition) ||
-        (t.endPosition < t.startPosition && result <= t.endPosition)) {
+        (t.endPosition < t.startPosition && result <= t.endPosition) ||
+		t.endPosition === t.startPosition) {
         result = t.endPosition;
         speed[axis] = 0;
         var callback = animatedMove[axis].callback,
