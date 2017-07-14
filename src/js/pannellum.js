@@ -2667,7 +2667,8 @@ this.addHotSpot = function(hs, sceneId) {
     if (sceneId === undefined || config.scene == sceneId) {
         // Add to current scene
         createHotSpot(hs);
-        renderHotSpot(hs);
+        if (loaded)
+            renderHotSpot(hs);
     }
     return this;
 }
