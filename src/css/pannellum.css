@@ -23,6 +23,13 @@
     box-sizing: content-box;
 }
 
+.pnlm-ui {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
 .pnlm-grab {
     cursor: grab;
     cursor: url('img/grab.svg') 12 8, default;

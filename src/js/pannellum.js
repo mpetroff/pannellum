@@ -111,19 +111,24 @@ container = typeof container === 'string' ? document.getElementById(container) :
 container.classList.add('pnlm-container');
 container.tabIndex = 0;
 
+// Create container for ui
+var uiContainer = document.createElement('div');
+uiContainer.className = 'pnlm-ui';
+container.appendChild(uiContainer);
+
 // Create container for renderer
 var renderContainer = document.createElement('div');
 renderContainer.className = 'pnlm-render-container';
 container.appendChild(renderContainer);
 var dragFix = document.createElement('div');
 dragFix.className = 'pnlm-dragfix';
-container.appendChild(dragFix);
+uiContainer.appendChild(dragFix);
 
 // Display about information on right click
 var aboutMsg = document.createElement('span');
 aboutMsg.className = 'pnlm-about-msg';
 aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
-container.appendChild(aboutMsg);
+uiContainer.appendChild(aboutMsg);
 dragFix.addEventListener('contextmenu', aboutMessage);
 
 // Create info display
@@ -132,7 +137,7 @@ var infoDisplay = {};
 // Hot spot debug indicator
 var hotSpotDebugIndicator = document.createElement('div');
 hotSpotDebugIndicator.className = 'pnlm-sprite pnlm-hot-spot-debug-indicator';
-container.appendChild(hotSpotDebugIndicator);
+uiContainer.appendChild(hotSpotDebugIndicator);
 
 // Panorama info
 infoDisplay.container = document.createElement('div');
@@ -143,7 +148,7 @@ infoDisplay.container.appendChild(infoDisplay.title);
 infoDisplay.author = document.createElement('div');
 infoDisplay.author.className = 'pnlm-author-box';
 infoDisplay.container.appendChild(infoDisplay.author);
-container.appendChild(infoDisplay.container);
+uiContainer.appendChild(infoDisplay.container);
 
 // Load box
 infoDisplay.load = {};
@@ -163,18 +168,18 @@ infoDisplay.load.box.appendChild(infoDisplay.load.lbar);
 infoDisplay.load.msg = document.createElement('p');
 infoDisplay.load.msg.className = 'pnlm-lmsg';
 infoDisplay.load.box.appendChild(infoDisplay.load.msg);
-container.appendChild(infoDisplay.load.box);
+uiContainer.appendChild(infoDisplay.load.box);
 
 // Error message
 infoDisplay.errorMsg = document.createElement('div');
 infoDisplay.errorMsg.className = 'pnlm-error-msg pnlm-info-box';
-container.appendChild(infoDisplay.errorMsg);
+uiContainer.appendChild(infoDisplay.errorMsg);
 
 // Create controls
 var controls = {};
 controls.container = document.createElement('div');
 controls.container.className = 'pnlm-controls-container';
-container.appendChild(controls.container);
+uiContainer.appendChild(controls.container);
 
 // Load button
 controls.load = document.createElement('div');
@@ -183,7 +188,7 @@ controls.load.addEventListener('click', function() {
     processOptions();
     load();
 });
-container.appendChild(controls.load);
+uiContainer.appendChild(controls.load);
 
 // Zoom controls
 controls.zoom = document.createElement('div');
@@ -238,7 +243,7 @@ if (window.DeviceOrientationEvent) {
 // Compass
 var compass = document.createElement('div');
 compass.className = 'pnlm-compass pnlm-controls pnlm-control';
-container.appendChild(compass);
+uiContainer.appendChild(compass);
 
 // Load and process configuration
 if (initialConfig.firstScene) {
@@ -401,8 +406,8 @@ function init() {
         }
     }
     
-    container.classList.add('pnlm-grab');
-    container.classList.remove('pnlm-grabbing');
+    uiContainer.classList.add('pnlm-grab');
+    uiContainer.classList.remove('pnlm-grabbing');
 }
 
 /**
@@ -431,21 +436,21 @@ function onImageLoad() {
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('mouseup', onDocumentMouseUp, false);
         if (config.mouseZoom) {
-            container.addEventListener('mousewheel', onDocumentMouseWheel, false);
-            container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+            uiContainer.addEventListener('mousewheel', onDocumentMouseWheel, false);
+            uiContainer.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
         }
         if (config.doubleClickZoom) {
             dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
         }
-        container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-        container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-        container.addEventListener('msfullscreenchange', onFullScreenChange, false);
-        container.addEventListener('fullscreenchange', onFullScreenChange, false);
+        uiContainer.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+        uiContainer.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+        uiContainer.addEventListener('msfullscreenchange', onFullScreenChange, false);
+        uiContainer.addEventListener('fullscreenchange', onFullScreenChange, false);
         window.addEventListener('resize', onDocumentResize, false);
         window.addEventListener('orientationchange', onDocumentResize, false);
-        container.addEventListener('keydown', onDocumentKeyPress, false);
-        container.addEventListener('keyup', onDocumentKeyUp, false);
-        container.addEventListener('blur', clearKeys, false);
+        uiContainer.addEventListener('keydown', onDocumentKeyPress, false);
+        uiContainer.addEventListener('keyup', onDocumentKeyUp, false);
+        uiContainer.addEventListener('blur', clearKeys, false);
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
         dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
         dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
@@ -663,8 +668,8 @@ function onDocumentMouseDown(event) {
     onPointerDownYaw = config.yaw;
     onPointerDownPitch = config.pitch;
     
-    container.classList.add('pnlm-grabbing');
-    container.classList.remove('pnlm-grab');
+    uiContainer.classList.add('pnlm-grabbing');
+    uiContainer.classList.remove('pnlm-grab');
     
     fireEvent('mousedown', event);
     animateInit();
@@ -750,8 +755,8 @@ function onDocumentMouseUp(event) {
         // releases the mouse button
         speed.pitch = speed.yaw = 0;
     }
-    container.classList.add('pnlm-grab');
-    container.classList.remove('pnlm-grabbing');
+    uiContainer.classList.add('pnlm-grab');
+    uiContainer.classList.remove('pnlm-grabbing');
     latestInteraction = Date.now();
 
     fireEvent('mouseup', event);
@@ -2812,8 +2817,8 @@ this.destroy = function() {
     }
     container.innerHTML = '';
     container.classList.remove('pnlm-container');
-    container.classList.remove('pnlm-grab');
-    container.classList.remove('pnlm-grabbing');
+    uiContainer.classList.remove('pnlm-grab');
+    uiContainer.classList.remove('pnlm-grabbing');
 }
 
 }
