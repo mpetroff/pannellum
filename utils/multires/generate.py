@@ -107,6 +107,8 @@ print('Generating tiles...')
 for f in range(0, 6):
     size = cubeSize
     face = Image.open(os.path.join(args.output, faces[f]))
+    if face.mode != 'RGB':
+        face = face.convert('RGB')
     for level in range(levels, 0, -1):
         if not os.path.exists(os.path.join(args.output, str(level))):
             os.makedirs(os.path.join(args.output, str(level)))
@@ -130,6 +132,8 @@ for f in range(0, 6):
     if not os.path.exists(os.path.join(args.output, 'fallback')):
         os.makedirs(os.path.join(args.output, 'fallback'))
     face = Image.open(os.path.join(args.output, faces[f]))
+    if face.mode != 'RGB':
+        face = face.convert('RGB')
     face = face.resize([1024, 1024], Image.ANTIALIAS)
     face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension), quality = args.quality)
 
