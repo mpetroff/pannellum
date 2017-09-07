@@ -422,10 +422,10 @@ function Renderer(container) {
      */
     this.destroy = function() {
         if (container !== undefined) {
-            if (canvas !== undefined) {
+            if (canvas !== undefined && container.contains(canvas)) {
                 container.removeChild(canvas);
             }
-            if (world !== undefined) {
+            if (world !== undefined && container.contains(world)) {
                 container.removeChild(world);
             }
         }
