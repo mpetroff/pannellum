@@ -2725,6 +2725,35 @@ this.isLoaded = function() {
 }
 
 /**
+ * Check if device orientation control is supported.
+ * @memberof Viewer
+ * @instance
+ * @returns {boolean} True if supported, else false
+ */
+this.isOrientationSupported = function() {
+    return orientationSupport || false;
+}
+
+/**
+ * Stop using device orientation.
+ * @memberof Viewer
+ * @instance
+ */
+this.stopOrientation = function() {
+    stopOrientation();
+}
+
+/**
+ * Start using device orientation (does nothing if not supported).
+ * @memberof Viewer
+ * @instance
+ */
+this.startOrientation = function() {
+    if (orientationSupport)
+        startOrientation();
+}
+
+/**
  * Subscribe listener to specified event.
  * @memberof Viewer
  * @instance
