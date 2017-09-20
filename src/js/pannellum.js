@@ -2304,7 +2304,14 @@ this.getYaw = function() {
  */
 this.setYaw = function(yaw, animated, callback, callbackArgs) {
     animated = animated == undefined ? 1000: Number(animated);
+    yaw = ((yaw + 180) % 360) - 180 // Keep in bounds
     if (animated) {
+        // Animate in shortest direction
+        if (config.yaw - yaw > 180)
+            yaw += 360
+        else if (yaw - config.yaw > 180)
+            yaw -= 360
+
         animatedMove.yaw = {
             'startTime': Date.now(),
             'startPosition': config.yaw,
