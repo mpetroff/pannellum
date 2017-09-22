@@ -101,6 +101,7 @@ var defaultConfig = {
     backgroundColor: [0, 0, 0],
     animationTimingFunction: timingFunction,
     loadButtonLabel: 'Click to\nLoad\nPanorama',
+    loadingLabel: 'Loading...',
     draggable: true,
 };
 
@@ -154,7 +155,6 @@ uiContainer.appendChild(infoDisplay.container);
 infoDisplay.load = {};
 infoDisplay.load.box = document.createElement('div');
 infoDisplay.load.box.className = 'pnlm-load-box';
-infoDisplay.load.box.innerHTML = '<p>Loading...</p>';
 infoDisplay.load.lbox = document.createElement('div');
 infoDisplay.load.lbox.className = 'pnlm-lbox';
 infoDisplay.load.lbox.innerHTML = '<div class="pnlm-loading"></div>';
@@ -1943,6 +1943,10 @@ function processOptions(isPreview) {
 
             case 'loadButtonLabel':
                 controls.load.innerHTML = '<p>' + escapeHTML(config[key]) + '</p>';
+                break;
+
+            case 'loadingLabel':
+                infoDisplay.load.box.innerHTML = '<p>' + escapeHTML(config[key]) + '</p>';
                 break;
         }
       }
