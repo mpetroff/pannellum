@@ -170,6 +170,11 @@ Specifies the author to be displayed while the load button is displayed.
 Label to display on load button. Defaults to `Click to Load Panorama`.
 
 
+### `loadingLabel` (string)
+
+Label to display on the loading box. Defaults to `Loading...`.
+
+
 ### `horizonPitch` and `horizonRoll` (number)
 
 Specifies pitch / roll of image horizon, in degrees (for correcting
