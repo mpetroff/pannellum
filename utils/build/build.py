@@ -7,6 +7,7 @@ import subprocess
 import urllib.parse
 
 JS = [
+'js/strings.js',
 'js/libpannellum.js',
 'js/RequestAnimationFrame.js',
 'js/pannellum.js',
