@@ -2,7 +2,7 @@ var STRINGS = {
     "ERROR_INVALID_IMG_TYPE": {
         "de": "Error: Falscher Bild-Typ angegeben!",
         "en": "Error: invalid image type specified!",
-        "ru": "Ошибка: неправильный тип Изображение!"
+        "ru": "Ошибка: неправильный тип изображения!"
     },
     "ERROR_IMG_TOO_BIG": {
         "de": "Error: Das Bild ist zu groß. Ihr Gerät unterstützt dies nicht.",
