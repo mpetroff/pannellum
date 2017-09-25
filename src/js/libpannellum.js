@@ -42,6 +42,9 @@ function Renderer(container) {
     var pose;
     var image, imageType, dynamic;
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
+    // based on ISO 639-1: https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    // defaults to 'en' => english
+    var languageCode;
 
     /**
      * Initialize renderer.
@@ -59,16 +62,20 @@ function Renderer(container) {
      * @param {number} vaov - Initial vertical angle of view.
      * @param {number} voffset - Initial vertical offset angle.
      * @param {function} callback - Load callback function.
-     * @param {Object} [params] - Other configuration parameters (`horizonPitch`, `horizonRoll`, `backgroundColor`).
+     * @param {Object} [params] - Other configuration parameters (`horizonPitch`, `horizonRoll`, `backgroundColor`, `languageCode`).
      */
     this.init = function(_image, _imageType, _dynamic, haov, vaov, voffset, callback, params) {
+        // set language code for localized strings
+        // defaults to english if not set!
+        languageCode = params.languageCode ? params.languageCode : 'en';
+        
         // Default argument for image type
         if (typeof _imageType === undefined)
             _imageType = 'equirectangular';
 
         if (_imageType != 'equirectangular' && _imageType != 'cubemap' &&
             _imageType != 'multires') {
-            console.log('Error: invalid image type specified!');
+            console.log(STRINGS.ERROR_INVALID_IMG_TYPE[languageCode]);
             throw {type: 'config error'};
         }
 
@@ -225,7 +232,7 @@ function Renderer(container) {
             
             return;
         } else if (!gl) {
-            console.log('Error: no WebGL support detected!');
+            console.log(STRINGS.ERROR_NO_WEBGL[languageCode]);
             throw {type: 'no webgl'};
         }
         if (image.basePath) {
@@ -248,14 +255,14 @@ function Renderer(container) {
             width = Math.max(image.width, image.height);
             maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
             if (width > maxWidth) {
-                console.log('Error: The image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
+                console.log(STRINGS.ERROR_IMG_TOO_BIG[languageCode] + " " + STRINGS.TEXT_IMG_SUPPORTED_WIDTH[languageCode] + maxWidth + "px.");
                 throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
             }
         } else if (imageType == 'cubemap') {
             width = image[0].width;
             maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
             if (width > maxWidth) {
-                console.log('Error: The cube face image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
+                console.log(STRINGS.ERROR_CUBE_FACE_TOO_BIG[languageCode] + " " + STRINGS.TEXT_IMG_SUPPORTED_WIDTH[languageCode] + maxWidth + "px.");
                 throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
             }
         }
@@ -408,7 +415,7 @@ function Renderer(container) {
         // Check if there was an error
         var err = gl.getError();
         if (err !== 0) {
-            console.log('Error: Something went wrong with WebGL!', err);
+            console.log(STRINGS.ERROR_WEBGL[languageCode], err);
             throw {type: 'webgl error'};
         }
 
@@ -1186,7 +1193,7 @@ function Renderer(container) {
      * @private
      */
     function handleWebGLError1286() {
-        console.log('Reducing canvas size due to error 1286!');
+        console.log(STRINGS.ERROR_WEBGL_1286[languageCode]);
         canvas.width = Math.round(canvas.width / 2);
         canvas.height = Math.round(canvas.height / 2);
     }
