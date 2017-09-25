@@ -36,6 +36,16 @@ function Viewer(container, initialConfig) {
 
 var _this = this;
 
+/** 
+ * make sure that language is set so strings can be translated properly
+ * WARNING: Make sure you use a supported `languageCode`, otherwise you will see 'undefined' strings!
+ */
+if(!initialConfig.languageCode) {
+    console.log("WARNING: 'languageCode' was not (properly) set in the config. Defaults to English('en') now.\
+    If you are the author, check your config.languageCode!");
+    initialConfig.languageCode = 'en';
+}
+
 // Declare variables
 var config,
     renderer,
@@ -100,7 +110,7 @@ var defaultConfig = {
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
     animationTimingFunction: timingFunction,
-    loadButtonLabel: 'Click to\nLoad\nPanorama',
+    loadButtonLabel: STRINGS.TEXT_CLICK_TO_LOAD[initialConfig.languageCode],
     draggable: true,
 };
 
@@ -276,7 +286,7 @@ function init() {
     origPitch = config.pitch;
 
     var i, p;
-    
+
     if (config.type == 'cubemap') {
         panoImage = [];
         for (i = 0; i < 6; i++) {
@@ -303,7 +313,7 @@ function init() {
             panoImage = config.panorama;
         } else {
             if (config.panorama === undefined) {
-                anError('No panorama image was specified.');
+                anError(STRINGS.ERROR_NO_PANORAMA[config.languageCode]);
                 return;
             }
             panoImage = new Image();
@@ -326,7 +336,7 @@ function init() {
             var a = document.createElement('a');
             a.href = e.target.src;
             a.innerHTML = a.href;
-            anError('The file ' + a.outerHTML + ' could not be accessed.');
+            anError(STRINGS.ERROR_FILE_ACCESS[config.languageCode] + " " + a.outerHTML);
         };
         
         for (i = 0; i < panoImage.length; i++) {
@@ -362,7 +372,7 @@ function init() {
                     var a = document.createElement('a');
                     a.href = encodeURI(p);
                     a.innerHTML = a.href;
-                    anError('The file ' + a.outerHTML + ' could not be accessed.');
+                    anError(STRINGS.ERROR_FILE_ACCESS[config.languageCode] + " " + a.outerHTML);
                 }
                 var img = this.response;
                 parseGPanoXMP(img);
@@ -398,7 +408,7 @@ function init() {
                 xhr.open('GET', p, true);
             } catch (e) {
                 // Malformed URL
-                anError('There is something wrong with the panorama URL.');
+                anError(STRINGS.ERROR_PANORAMA_URL[config.languageCode]);
             }
             xhr.responseType = 'blob';
             xhr.setRequestHeader('Accept', 'image/*,*/*;q=0.9');
@@ -485,9 +495,7 @@ function parseGPanoXMP(image) {
         if (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/)) {
             var flagIndex = img.indexOf('\xff\xc2');
             if (flagIndex < 0 || flagIndex > 65536) {
-                anError("Due to iOS 8's broken WebGL implementation, only " +
-                    "progressive encoded JPEGs work for your device (this " +
-                    "panorama uses standard encoding).");
+                anError(STRINGS.ERROR_IOS8_WEBGL[config.languageCode]);
             }
         }
 
@@ -569,7 +577,7 @@ function parseGPanoXMP(image) {
  */
 function anError(errorMsg) {
     if (errorMsg === undefined)
-        errorMsg = 'Your browser does not have the necessary WebGL support to display this panorama.';
+        errorMsg = STRINGS.ERROR_WEBGL[config.languageCode];
     infoDisplay.errorMsg.innerHTML = '<p>' + errorMsg + '</p>';
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'none';
@@ -647,6 +655,7 @@ function onDocumentMouseDown(event) {
     // Log pitch / yaw of mouse click when debugging / placing hot spots
     if (config.hotSpotDebug) {
         var coords = mouseEventToCoords(event);
+        // Dont translate this because the config fields are in english!
         console.log('Pitch: ' + coords[0] + ', Yaw: ' + coords[1] + ', Center Pitch: ' +
             config.pitch + ', Center Yaw: ' + config.yaw + ', HFOV: ' + config.hfov);
     }
@@ -1526,6 +1535,8 @@ function renderInit() {
             params.horizonRoll = config.horizonRoll * Math.PI / 180;
         if (config.backgroundColor !== undefined)
             params.backgroundColor = config.backgroundColor;
+        if (config.languageCode !== undefined)
+            params.languageCode = config.languageCode;
         renderer.init(panoImage, config.type, config.dynamic, config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback, params);
         if (config.dynamic !== true) {
             // Allow image to be garbage collected
@@ -1538,12 +1549,9 @@ function renderInit() {
         if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
         } else if (event.type == 'webgl size error') {
-            anError('This panorama is too big for your device! It\'s ' +
-                event.width + 'px wide, but your device only supports images up to ' +
-                event.maxWidth + 'px wide. Try another device.' +
-                ' (If you\'re the author, try scaling down the image.)');
+            anError(STRINGS.ERROR_IMG_TOO_BIG[config.languageCode] + " " + STRINGS.TEXT_IMG_SUPPORTED_WIDTH[config.languageCode] + event.maxWidth + "px.")
         } else {
-            anError('Unknown error. Check developer console.');
+            anError(STRINGS.ERROR_UNKNOWN[config.languageCode]);
             throw event;
         }
     }
@@ -1872,12 +1880,12 @@ function processOptions(isPreview) {
                 break;
             
             case 'author':
-                infoDisplay.author.innerHTML = 'by ' + escapeHTML(config[key]);
+                infoDisplay.author.innerHTML = STRINGS.TEXT_BY[config.languageCode] + ' ' + escapeHTML(config[key]);
                 infoDisplay.container.style.display = 'inline';
                 break;
             
             case 'fallback':
-                infoDisplay.errorMsg.innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + encodeURI(config[key]) + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
+                infoDisplay.errorMsg.innerHTML = '<p>' + STRINGS.ERROR_NO_WEBGL[config.languageCode] + '<br><a href="' + encodeURI(config[key]) + '" target="_blank">' + STRINGS.TEXT_ALTERNATIVE_VIEWER[config.languageCode] + '</a></p>';
                 break;
             
             case 'hfov':
@@ -2050,7 +2058,7 @@ function constrainHfov(hfov) {
     }
     if (minHfov > config.maxHfov) {
         // Don't change view if bounds don't make sense
-        console.log('HFOV bounds do not make sense (minHfov > maxHfov).')
+        console.log(STRINGS.ERROR_HFOV_BOUNDS[config.languageCode]);
         return config.hfov;
     } if (hfov < minHfov) {
         return minHfov;
@@ -2666,7 +2674,7 @@ this.addHotSpot = function(hs, sceneId) {
             }
             initialConfig.scenes[id].hotSpots.push(hs); // Add hot spot to config
         } else {
-            throw 'Invalid scene ID!'
+            throw STRINGS.ERROR_INVALID_SCENE_ID[config.languageCode];
         }
     }
     if (sceneId === undefined || config.scene == sceneId) {
