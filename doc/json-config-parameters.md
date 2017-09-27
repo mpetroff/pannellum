@@ -23,6 +23,12 @@ If set, the value is displayed as the panorama's author. If no author is
 desired, don't set this parameter.
 
 
+### `strings` (dictionary)
+
+Allows user-facing strings to be changed / translated.
+See `defaultConfig.strings` definition in `pannellum.js` for more details.
+
+
 ### `basePath` (string)
 
 This specifies a base path to load the images from.
@@ -163,11 +169,6 @@ Specifies the title to be displayed while the load button is displayed.
 ### `previewAuthor` (string)
 
 Specifies the author to be displayed while the load button is displayed.
-
-
-### `loadButtonLabel` (string)
-
-Label to display on load button. Defaults to `Click to Load Panorama`.
 
 
 ### `horizonPitch` and `horizonRoll` (number)

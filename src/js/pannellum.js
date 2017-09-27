@@ -100,9 +100,32 @@ var defaultConfig = {
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
     animationTimingFunction: timingFunction,
-    loadButtonLabel: 'Click to\nLoad\nPanorama',
     draggable: true,
 };
+
+// Translatable / configurable strings
+// Some strings contain '%s', which is a placeholder for inserted values
+// When setting strings in external configuration, `\n` should be used instead of `<br>` to insert line breaks
+defaultConfig.strings = {
+    // Labels
+    loadButtonLabel: 'Click to<br>Load<br>Panorama',
+    loadingLabel: 'Loading...',
+    bylineLabel: 'by %s',    // One substitution: author
+
+    // Errors
+    noPanoramaError: 'No panorama image was specified.',
+    fileAccessError: 'The file %s could not be accessed.',  // One substitution: file URL
+    malformedURLError: 'There is something wrong with the panorama URL.',
+    iOS8WebGLError: "Due to iOS 8's broken WebGL implementation, only " +
+                    "progressive encoded JPEGs work for your device (this " +
+                    "panorama uses standard encoding).",
+    genericWebGLError: 'Your browser does not have the necessary WebGL support to display this panorama.',
+    textureSizeError: 'This panorama is too big for your device! It\'s ' +
+                '%spx wide, but your device only supports images up to ' +
+                '%spx wide. Try another device.' +
+                ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
+    unknownError: 'Unknown error. Check developer console.',
+}
 
 var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
 
@@ -154,7 +177,6 @@ uiContainer.appendChild(infoDisplay.container);
 infoDisplay.load = {};
 infoDisplay.load.box = document.createElement('div');
 infoDisplay.load.box.className = 'pnlm-load-box';
-infoDisplay.load.box.innerHTML = '<p>Loading...</p>';
 infoDisplay.load.lbox = document.createElement('div');
 infoDisplay.load.lbox.className = 'pnlm-lbox';
 infoDisplay.load.lbox.innerHTML = '<div class="pnlm-loading"></div>';
@@ -303,7 +325,7 @@ function init() {
             panoImage = config.panorama;
         } else {
             if (config.panorama === undefined) {
-                anError('No panorama image was specified.');
+                anError(config.strings.noPanoramaError);
                 return;
             }
             panoImage = new Image();
@@ -326,7 +348,7 @@ function init() {
             var a = document.createElement('a');
             a.href = e.target.src;
             a.innerHTML = a.href;
-            anError('The file ' + a.outerHTML + ' could not be accessed.');
+            anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
         };
         
         for (i = 0; i < panoImage.length; i++) {
@@ -362,7 +384,7 @@ function init() {
                     var a = document.createElement('a');
                     a.href = encodeURI(p);
                     a.innerHTML = a.href;
-                    anError('The file ' + a.outerHTML + ' could not be accessed.');
+                    anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 }
                 var img = this.response;
                 parseGPanoXMP(img);
@@ -398,7 +420,7 @@ function init() {
                 xhr.open('GET', p, true);
             } catch (e) {
                 // Malformed URL
-                anError('There is something wrong with the panorama URL.');
+                anError(config.strings.malformedURLError);
             }
             xhr.responseType = 'blob';
             xhr.setRequestHeader('Accept', 'image/*,*/*;q=0.9');
@@ -484,11 +506,8 @@ function parseGPanoXMP(image) {
         // with non-progressive encoded JPEGs.
         if (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/)) {
             var flagIndex = img.indexOf('\xff\xc2');
-            if (flagIndex < 0 || flagIndex > 65536) {
-                anError("Due to iOS 8's broken WebGL implementation, only " +
-                    "progressive encoded JPEGs work for your device (this " +
-                    "panorama uses standard encoding).");
-            }
+            if (flagIndex < 0 || flagIndex > 65536)
+                anError(config.strings.iOS8WebGLError);
         }
 
         var start = img.indexOf('<x:xmpmeta');
@@ -569,7 +588,7 @@ function parseGPanoXMP(image) {
  */
 function anError(errorMsg) {
     if (errorMsg === undefined)
-        errorMsg = 'Your browser does not have the necessary WebGL support to display this panorama.';
+        errorMsg = config.strings.genericWebGLError;
     infoDisplay.errorMsg.innerHTML = '<p>' + errorMsg + '</p>';
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'none';
@@ -1538,12 +1557,9 @@ function renderInit() {
         if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
         } else if (event.type == 'webgl size error') {
-            anError('This panorama is too big for your device! It\'s ' +
-                event.width + 'px wide, but your device only supports images up to ' +
-                event.maxWidth + 'px wide. Try another device.' +
-                ' (If you\'re the author, try scaling down the image.)');
+            anError(config.strings.textureSizeError.replace('%s', event.width).replace('%s', event.maxWidth));
         } else {
-            anError('Unknown error. Check developer console.');
+            anError(config.strings.unknownError);
             throw event;
         }
     }
@@ -1777,7 +1793,7 @@ function renderHotSpots() {
  */
 function mergeConfig(sceneId) {
     config = {};
-    var k;
+    var k, s;
     var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset', 'horizonPitch', 'horizonRoll'];
     specifiedPhotoSphereExcludes = [];
     
@@ -1791,9 +1807,17 @@ function mergeConfig(sceneId) {
     // Merge default scene config
     for (k in initialConfig.default) {
         if (initialConfig.default.hasOwnProperty(k)) {
-            config[k] = initialConfig.default[k];
-            if (photoSphereExcludes.indexOf(k) >= 0) {
-                specifiedPhotoSphereExcludes.push(k);
+            if (k == 'strings') {
+                for (s in initialConfig.default.strings) {
+                    if (initialConfig.default.strings.hasOwnProperty(s)) {
+                        config.strings[s] = escapeHTML(initialConfig.default.strings[s]);
+                    }
+                }
+            } else {
+                config[k] = initialConfig.default[k];
+                if (photoSphereExcludes.indexOf(k) >= 0) {
+                    specifiedPhotoSphereExcludes.push(k);
+                }
             }
         }
     }
@@ -1803,9 +1827,17 @@ function mergeConfig(sceneId) {
         var scene = initialConfig.scenes[sceneId];
         for (k in scene) {
             if (scene.hasOwnProperty(k)) {
-                config[k] = scene[k];
-                if (photoSphereExcludes.indexOf(k) >= 0) {
-                    specifiedPhotoSphereExcludes.push(k);
+                if (k == 'strings') {
+                    for (s in scene.strings) {
+                        if (scene.strings.hasOwnProperty(s)) {
+                            config.strings[s] = escapeHTML(scene.strings[s]);
+                        }
+                    }
+                } else {
+                    config[k] = scene[k];
+                    if (photoSphereExcludes.indexOf(k) >= 0) {
+                        specifiedPhotoSphereExcludes.push(k);
+                    }
                 }
             }
         }
@@ -1815,9 +1847,17 @@ function mergeConfig(sceneId) {
     // Merge initial config
     for (k in initialConfig) {
         if (initialConfig.hasOwnProperty(k)) {
-            config[k] = initialConfig[k];
-            if (photoSphereExcludes.indexOf(k) >= 0) {
-                specifiedPhotoSphereExcludes.push(k);
+            if (k == 'strings') {
+                for (s in initialConfig.strings) {
+                    if (initialConfig.strings.hasOwnProperty(s)) {
+                        config.strings[s] = escapeHTML(initialConfig.strings[s]);
+                    }
+                }
+            } else {
+                config[k] = initialConfig[k];
+                if (photoSphereExcludes.indexOf(k) >= 0) {
+                    specifiedPhotoSphereExcludes.push(k);
+                }
             }
         }
     }
@@ -1862,6 +1902,10 @@ function processOptions(isPreview) {
     if (!config.hasOwnProperty('title') && !config.hasOwnProperty('author'))
         infoDisplay.container.style.display = 'none';
 
+    // Fill in load button label and loading box text
+    controls.load.innerHTML = '<p>' + config.strings.loadButtonLabel + '</p>';
+    infoDisplay.load.box.innerHTML = '<p>' + config.strings.loadingLabel + '</p>';
+
     // Process other options
     for (var key in config) {
       if (config.hasOwnProperty(key)) {
@@ -1872,7 +1916,7 @@ function processOptions(isPreview) {
                 break;
             
             case 'author':
-                infoDisplay.author.innerHTML = 'by ' + escapeHTML(config[key]);
+                infoDisplay.author.innerHTML = config.strings.bylineLabel.replace('%s', escapeHTML(config[key]));
                 infoDisplay.container.style.display = 'inline';
                 break;
             
@@ -1939,10 +1983,6 @@ function processOptions(isPreview) {
                     else if (orientationSupport === true)
                         startOrientation();
                 }
-                break;
-
-            case 'loadButtonLabel':
-                controls.load.innerHTML = '<p>' + escapeHTML(config[key]) + '</p>';
                 break;
         }
       }
