@@ -1333,7 +1333,7 @@ function animate() {
     render();
     if (autoRotateStart)
         clearTimeout(autoRotateStart);
-    if (isUserInteracting || orientation) {
+    if (isUserInteracting || orientation === true) {
         requestAnimationFrame(animate);
     } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
         keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] ||
@@ -1527,9 +1527,22 @@ function computeQuaternion(alpha, beta, gamma) {
  */
 function orientationListener(e) {
     var q = computeQuaternion(e.alpha, e.beta, e.gamma).toEulerAngles();
-    config.pitch = q[0] / Math.PI * 180;
-    config.roll = -q[1] / Math.PI * 180;
-    config.yaw = -q[2] / Math.PI * 180 + config.northOffset + orientationYawOffset;
+    if (typeof(orientation) == 'number' && orientation < 10) {
+        // This kludge is necessary because iOS sometimes provides a few stale
+        // device orientation events when the listener is removed and then
+        // readded. Thus, we skip the first 10 events to prevent this from
+        // causing problems.
+        orientation += 1;
+    } else if (orientation === 10) {
+        // Record starting yaw to prevent jumping
+        orientationYawOffset = q[2] / Math.PI * 180 + config.yaw;
+        orientation = true;
+        requestAnimationFrame(animate);
+    } else {
+        config.pitch = q[0] / Math.PI * 180;
+        config.roll = -q[1] / Math.PI * 180;
+        config.yaw = -q[2] / Math.PI * 180 + orientationYawOffset;
+    }
 }
 
 /**
@@ -2226,11 +2239,9 @@ function stopOrientation() {
  * @private
  */
 function startOrientation() {
-    orientation = true;
-    orientationYawOffset = config.yaw;
+    orientation = 1;
     window.addEventListener('deviceorientation', orientationListener);
     controls.orientation.classList.add('pnlm-orientation-button-active');
-    requestAnimationFrame(animate);
 }
 
 /**
