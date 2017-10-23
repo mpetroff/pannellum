@@ -177,6 +177,8 @@ uiContainer.appendChild(infoDisplay.container);
 infoDisplay.load = {};
 infoDisplay.load.box = document.createElement('div');
 infoDisplay.load.box.className = 'pnlm-load-box';
+infoDisplay.load.boxp = document.createElement('p');
+infoDisplay.load.box.appendChild(infoDisplay.load.boxp);
 infoDisplay.load.lbox = document.createElement('div');
 infoDisplay.load.lbox.className = 'pnlm-lbox';
 infoDisplay.load.lbox.innerHTML = '<div class="pnlm-loading"></div>';
@@ -1917,7 +1919,7 @@ function processOptions(isPreview) {
 
     // Fill in load button label and loading box text
     controls.load.innerHTML = '<p>' + config.strings.loadButtonLabel + '</p>';
-    infoDisplay.load.box.innerHTML = '<p>' + config.strings.loadingLabel + '</p>';
+    infoDisplay.load.boxp.innerHTML = config.strings.loadingLabel;
 
     // Process other options
     for (var key in config) {
