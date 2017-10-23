@@ -98,6 +98,11 @@ viewer is fullscreen.
 If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
 
 
+### `disableKeyboardCtrl` (boolean)
+
+If set to `true`, keyboard controls are disabled. Defaults to `false`.
+
+
 ### `showFullscreenCtrl` (boolean)
 
 If set to `false`, the fullscreen control will not be displayed. Defaults to

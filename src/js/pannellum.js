@@ -101,6 +101,7 @@ var defaultConfig = {
     backgroundColor: [0, 0, 0],
     animationTimingFunction: timingFunction,
     draggable: true,
+    disableKeyboardCtrl: false,
 };
 
 // Translatable / configurable strings
@@ -472,9 +473,11 @@ function onImageLoad() {
         uiContainer.addEventListener('fullscreenchange', onFullScreenChange, false);
         window.addEventListener('resize', onDocumentResize, false);
         window.addEventListener('orientationchange', onDocumentResize, false);
-        container.addEventListener('keydown', onDocumentKeyPress, false);
-        container.addEventListener('keyup', onDocumentKeyUp, false);
-        container.addEventListener('blur', clearKeys, false);
+        if (!config.disableKeyboardCtrl) {
+            container.addEventListener('keydown', onDocumentKeyPress, false);
+            container.addEventListener('keyup', onDocumentKeyUp, false);
+            container.addEventListener('blur', clearKeys, false);
+        }
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
         dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
         dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
