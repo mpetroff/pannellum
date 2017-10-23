@@ -431,7 +431,8 @@ function init() {
         }
     }
     
-    uiContainer.classList.add('pnlm-grab');
+    if (config.draggable)
+        uiContainer.classList.add('pnlm-grab');
     uiContainer.classList.remove('pnlm-grabbing');
 }
 
