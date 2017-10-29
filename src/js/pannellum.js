@@ -1736,7 +1736,7 @@ function createHotSpots() {
 }
 
 /**
- * Destroys currently create hot spot elements.
+ * Destroys currently created hot spot elements.
  * @private
  */
 function destroyHotSpots() {
@@ -1750,7 +1750,7 @@ function destroyHotSpots() {
                 current = current.parentNode;
             }
             renderContainer.removeChild(current);
-            delete hs.div;
+            delete hs[i].div;
         }
     }
 }
