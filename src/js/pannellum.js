@@ -1712,6 +1712,24 @@ function createHotSpot(hs) {
         div.style.cursor = 'pointer';
         span.style.cursor = 'pointer';
     }
+    if(hs.draggable){
+	 var dragListener = function(e){
+		var coords = mouseEventToCoords(e);
+		hs.pitch = coords[0];
+		hs.yaw = coords[1];
+		renderHotSpot(hs);
+	}
+	div.addEventListener('mousedown', (e) => {
+        div.addEventListener('mouseleave', (e) => {
+            div.removeEventListener('mousemove', dragListener);
+        });
+        div.addEventListener('mouseup', (e) => {
+			div.removeEventListener('mousemove', dragListener);
+		});
+		div.addEventListener('mousemove', dragListener);
+	});
+    }
+    
     hs.div = div;
 };
 
