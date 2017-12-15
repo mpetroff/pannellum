@@ -325,7 +325,7 @@ function Renderer(container) {
 
             // Pass aspect ratio
             program.aspectRatio = gl.getUniformLocation(program, 'u_aspectRatio');
-            gl.uniform1f(program.aspectRatio, canvas.clientWidth / canvas.clientHeight);
+            gl.uniform1f(program.aspectRatio, gl.drawingBufferWidth / gl.drawingBufferHeight);
 
             // Locate psi, theta, focal length, horizontal extent, vertical extent, and vertical offset
             program.psi = gl.getUniformLocation(program, 'u_psi');
@@ -534,7 +534,7 @@ function Renderer(container) {
                 r: 'translate3d(' + s + 'px, -' + (s + 2) + 'px, -' + (s + 2) + 'px) rotateY(270deg)'
             };
             focal = 1 / Math.tan(hfov / 2);
-            var zoom = focal * canvas.clientWidth / 2 + 'px';
+            var zoom = focal * gl.drawingBufferWidth / 2 + 'px';
             var transform = 'perspective(' + zoom + ') translateZ(' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) ';
             
             // Apply face transforms
@@ -549,7 +549,7 @@ function Renderer(container) {
         
         if (imageType != 'multires') {
             // Calculate focal length from vertical field of view
-            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (canvas.clientWidth / canvas.clientHeight));
+            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
             focal = 1 / Math.tan(vfov * 0.5);
 
             // Pass psi, theta, roll, and focal length
@@ -571,7 +571,7 @@ function Renderer(container) {
         
         } else {
             // Create perspective matrix
-            var perspMatrix = makePersp(hfov, canvas.clientWidth / canvas.clientHeight, 0.1, 100.0);
+            var perspMatrix = makePersp(hfov, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
             
             // Find correct zoom level
             checkZoom(hfov);
@@ -984,7 +984,7 @@ function Renderer(container) {
      * @returns {number[]} Generated perspective matrix.
      */
     function makePersp(hfov, aspect, znear, zfar) {
-        var fovy = 2 * Math.atan(Math.tan(hfov/2) * canvas.clientHeight / canvas.clientWidth);
+        var fovy = 2 * Math.atan(Math.tan(hfov/2) * gl.drawingBufferHeight / gl.drawingBufferWidth);
         var f = 1 / Math.tan(fovy/2);
         return [
             f/aspect,   0,  0,  0,
@@ -1085,7 +1085,7 @@ function Renderer(container) {
         // Find optimal level
         var newLevel = 1;
         while ( newLevel < image.maxLevel &&
-            canvas.width > image.tileResolution *
+            gl.drawingBufferWidth > image.tileResolution *
             Math.pow(2, newLevel - 1) * Math.tan(hfov / 2) * 0.707 ) {
             newLevel++;
         }
