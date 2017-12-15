@@ -63,7 +63,7 @@ function Renderer(container) {
      */
     this.init = function(_image, _imageType, _dynamic, haov, vaov, voffset, callback, params) {
         // Default argument for image type
-        if (typeof _imageType === undefined)
+        if (_imageType === undefined)
             _imageType = 'equirectangular';
 
         if (_imageType != 'equirectangular' && _imageType != 'cubemap' &&
