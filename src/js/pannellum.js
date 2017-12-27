@@ -135,15 +135,17 @@ container = typeof container === 'string' ? document.getElementById(container) :
 container.classList.add('pnlm-container');
 container.tabIndex = 0;
 
+// Create container for renderer
+var renderContainer = document.createElement('div');
+renderContainer.className = 'pnlm-render-container';
+container.appendChild(renderContainer);
+
 // Create container for ui
 var uiContainer = document.createElement('div');
 uiContainer.className = 'pnlm-ui';
 container.appendChild(uiContainer);
 
-// Create container for renderer
-var renderContainer = document.createElement('div');
-renderContainer.className = 'pnlm-render-container';
-container.appendChild(renderContainer);
+// Create container to observe drag events
 var dragFix = document.createElement('div');
 dragFix.className = 'pnlm-dragfix';
 uiContainer.appendChild(dragFix);
