@@ -40,6 +40,7 @@ var _this = this;
 var config,
     renderer,
     preview,
+    draggingHotSpot,
     isUserInteracting = false,
     latestInteraction = Date.now(),
     onPointerDownPointerX = 0,
@@ -664,7 +665,7 @@ function onDocumentMouseDown(event) {
     container.focus();
     
     // Only do something if the panorama is loaded
-    if (!loaded || !config.draggable) {
+    if (!loaded || !config.draggable || config.draggingHotSpot) {
         return;
     }
     
@@ -749,7 +750,10 @@ function mouseEventToCoords(event) {
  * @param {MouseEvent} event - Document mouse move event.
  */
 function onDocumentMouseMove(event) {
-    if (isUserInteracting && loaded) {
+    if (draggingHotSpot) {
+        moveHotSpot(draggingHotSpot, event)
+    }
+    else if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         var canvas = renderer.getCanvas();
         var canvasWidth = canvas.clientWidth,
@@ -773,6 +777,7 @@ function onDocumentMouseMove(event) {
  * @private
  */
 function onDocumentMouseUp(event) {
+    draggingHotSpot = null;
     if (!isUserInteracting) {
         return;
     }
@@ -797,7 +802,7 @@ function onDocumentMouseUp(event) {
  */
 function onDocumentTouchStart(event) {
     // Only do something if the panorama is loaded
-    if (!loaded || !config.draggable) {
+    if (!loaded || !config.draggable || draggingHotSpot) {
         return;
     }
 
@@ -840,6 +845,11 @@ function onDocumentTouchStart(event) {
  * @param {TouchEvent} event - Document touch move event.
  */
 function onDocumentTouchMove(event) {
+    if (draggingHotSpot) {
+        moveHotSpot(draggingHotSpot, event.targetTouches[0])
+        return;
+    }
+
     if (!config.draggable) {
         return;
     }
@@ -888,6 +898,7 @@ function onDocumentTouchMove(event) {
  * @private
  */
 function onDocumentTouchEnd() {
+    draggingHotSpot = null;
     isUserInteracting = false;
     if (Date.now() - latestInteraction > 150) {
         speed.pitch = speed.yaw = 0;
@@ -941,6 +952,7 @@ function onDocumentPointerMove(event) {
  * @param {PointerEvent} event - Document pointer up event.
  */
 function onDocumentPointerUp(event) {
+        draggingHotSpot = null;
     if (event.pointerType == 'touch') {
         var defined = false;
         for (var i = 0; i < pointerIDs.length; i++) {
@@ -1715,24 +1727,29 @@ function createHotSpot(hs) {
         span.style.cursor = 'pointer';
     }
     if(hs.draggable){
-        var dragListener = function (e) {
-            var coords = mouseEventToCoords(e);
-            hs.pitch = coords[0];
-            hs.yaw = coords[1];
-            renderHotSpot(hs);
-        }
         div.addEventListener('mousedown', (e) => {
-            div.addEventListener('mouseleave', (e) => {
-                div.removeEventListener('mousemove', dragListener);
-            });
-            div.addEventListener('mouseup', (e) => {
-                div.removeEventListener('mousemove', dragListener);
-            });
-            div.addEventListener('mousemove', dragListener);
+            draggingHotSpot = hs;
         });
+        div.addEventListener('touchstart', (e) => {
+            draggingHotSpot = hs;
+        })
     }
     
     hs.div = div;
+};
+
+/**
+ *
+ * @param {hotspot} hs
+ * @param {MouseEvent} event
+ * @private
+ *
+ */
+function moveHotSpot(hs, event){
+    let coords = mouseEventToCoords(event);
+    hs.pitch = coords[0];
+    hs.yaw = coords[1];
+    renderHotSpot(hs);
 };
 
 /**
