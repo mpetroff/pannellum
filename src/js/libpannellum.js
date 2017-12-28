@@ -1291,6 +1291,76 @@ var fragEquirectangular = fragEquiCubeBase + [
 '}'
 ].join('\n');
 
+var fragEquirectangularMulti = function (rows, cols) {
+    return [
+        'precision mediump float;',
+
+        'uniform float u_aspectRatio;',
+        'uniform float u_psi;',
+        'uniform float u_theta;',
+        'uniform float u_f;',
+        'uniform float u_h;',
+        'uniform float u_v;',
+        'uniform float u_vo;',
+        'uniform float u_rot;',
+
+        'const float PI = 3.14159265358979323846264;',
+
+        // Texture
+        'uniform sampler2D u_images[' + rows*cols +'];',
+
+        // Coordinates passed in from vertex shader
+        'varying vec2 v_texCoord;',
+
+        // Background color (display for partial panoramas)
+        'uniform vec4 u_backgroundColor;',
+
+        'vec4 getSampleFromArray(int ndx, vec2 uv) {',
+        'vec4 color;',
+            // arrays must be accessed via constant index or loop index with constant bounds
+            `for (int i = 0; i < ${rows } * ${cols }; ++i){`, 
+                'if(i == ndx)',
+                    'color = texture2D(u_images[i], uv);',
+            '}',
+            'return color;',
+        '}',
+
+
+        'void main() {',
+        // Map canvas/camera to sphere
+        'float x = v_texCoord.x * u_aspectRatio;',
+        'float y = v_texCoord.y;',
+        'float sinrot = sin(u_rot);',
+        'float cosrot = cos(u_rot);',
+        'float rot_x = x * cosrot - y * sinrot;',
+        'float rot_y = x * sinrot + y * cosrot;',
+        'float sintheta = sin(u_theta);',
+        'float costheta = cos(u_theta);',
+        'float a = u_f * costheta - rot_y * sintheta;',
+        'float root = sqrt(rot_x * rot_x + a * a);',
+        'float lambda = atan(rot_x / root, a / root) + u_psi;',
+        'float phi = atan((rot_y * costheta + u_f * sintheta) / root);',
+        // Wrap image
+        'lambda = mod(lambda + PI, PI * 2.0) - PI;',
+
+        // Map texture to sphere
+        'vec2 coord = vec2(lambda / PI, phi / (PI / 2.0));',
+
+        // Look up color from texture
+        // Map from [-1,1] to [0,1] and flip y-axis
+        'if(coord.x < -u_h || coord.x > u_h || coord.y < -u_v + u_vo || coord.y > u_v + u_vo)',
+            'gl_FragColor = u_backgroundColor;',
+        'else{',
+        'vec2 tex_coord = vec2((coord.x + u_h) / (u_h * 2.0), (-coord.y + u_v + u_vo) / (u_v * 2.0));',
+        `int row = tex_coord.y /  u_v *  ${rows};`,
+        `int col = tex_coord.x /  u_h *  ${cols};`,
+        `vec2 tex_coord_rel = vec2(tex_coord.x - row / ${rows} * u_h, tex_coord.y - col / ${cols} * u_v);`,
+                `gl_FragColor = getSampleFromArray(row * ${rows} + col, tex_coord_rel);`,
+            '}',
+        '}'
+    ].join('\n');
+}
+
 // Fragment shader
 var fragMulti = [
 'varying mediump vec2 v_texCoord;',
