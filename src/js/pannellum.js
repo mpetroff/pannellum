@@ -1,6 +1,6 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
- * Copyright (c) 2011-2017 Matthew Petroff
+ * Copyright (c) 2011-2018 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,9 +100,34 @@ var defaultConfig = {
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
     animationTimingFunction: timingFunction,
-    loadButtonLabel: 'Click to\nLoad\nPanorama',
     draggable: true,
+    disableKeyboardCtrl: false,
+    crossOrigin: 'anonymous',
 };
+
+// Translatable / configurable strings
+// Some strings contain '%s', which is a placeholder for inserted values
+// When setting strings in external configuration, `\n` should be used instead of `<br>` to insert line breaks
+defaultConfig.strings = {
+    // Labels
+    loadButtonLabel: 'Click to<br>Load<br>Panorama',
+    loadingLabel: 'Loading...',
+    bylineLabel: 'by %s',    // One substitution: author
+
+    // Errors
+    noPanoramaError: 'No panorama image was specified.',
+    fileAccessError: 'The file %s could not be accessed.',  // One substitution: file URL
+    malformedURLError: 'There is something wrong with the panorama URL.',
+    iOS8WebGLError: "Due to iOS 8's broken WebGL implementation, only " +
+                    "progressive encoded JPEGs work for your device (this " +
+                    "panorama uses standard encoding).",
+    genericWebGLError: 'Your browser does not have the necessary WebGL support to display this panorama.',
+    textureSizeError: 'This panorama is too big for your device! It\'s ' +
+                '%spx wide, but your device only supports images up to ' +
+                '%spx wide. Try another device.' +
+                ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
+    unknownError: 'Unknown error. Check developer console.',
+}
 
 var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
 
@@ -154,7 +179,8 @@ uiContainer.appendChild(infoDisplay.container);
 infoDisplay.load = {};
 infoDisplay.load.box = document.createElement('div');
 infoDisplay.load.box.className = 'pnlm-load-box';
-infoDisplay.load.box.innerHTML = '<p>Loading...</p>';
+infoDisplay.load.boxp = document.createElement('p');
+infoDisplay.load.box.appendChild(infoDisplay.load.boxp);
 infoDisplay.load.lbox = document.createElement('div');
 infoDisplay.load.lbox.className = 'pnlm-lbox';
 infoDisplay.load.lbox.innerHTML = '<div class="pnlm-loading"></div>';
@@ -281,7 +307,7 @@ function init() {
         panoImage = [];
         for (i = 0; i < 6; i++) {
             panoImage.push(new Image());
-            panoImage[i].crossOrigin = 'anonymous';
+            panoImage[i].crossOrigin = config.crossOrigin;
         }
         infoDisplay.load.lbox.style.display = 'block';
         infoDisplay.load.lbar.style.display = 'none';
@@ -303,7 +329,7 @@ function init() {
             panoImage = config.panorama;
         } else {
             if (config.panorama === undefined) {
-                anError('No panorama image was specified.');
+                anError(config.strings.noPanoramaError);
                 return;
             }
             panoImage = new Image();
@@ -326,7 +352,7 @@ function init() {
             var a = document.createElement('a');
             a.href = e.target.src;
             a.innerHTML = a.href;
-            anError('The file ' + a.outerHTML + ' could not be accessed.');
+            anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
         };
         
         for (i = 0; i < panoImage.length; i++) {
@@ -362,7 +388,7 @@ function init() {
                     var a = document.createElement('a');
                     a.href = encodeURI(p);
                     a.innerHTML = a.href;
-                    anError('The file ' + a.outerHTML + ' could not be accessed.');
+                    anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 }
                 var img = this.response;
                 parseGPanoXMP(img);
@@ -398,15 +424,17 @@ function init() {
                 xhr.open('GET', p, true);
             } catch (e) {
                 // Malformed URL
-                anError('There is something wrong with the panorama URL.');
+                anError(config.strings.malformedURLError);
             }
             xhr.responseType = 'blob';
             xhr.setRequestHeader('Accept', 'image/*,*/*;q=0.9');
+            xhr.withCredentials = config.crossOrigin === 'use-credentials';
             xhr.send();
         }
     }
     
-    uiContainer.classList.add('pnlm-grab');
+    if (config.draggable)
+        uiContainer.classList.add('pnlm-grab');
     uiContainer.classList.remove('pnlm-grabbing');
 }
 
@@ -448,9 +476,11 @@ function onImageLoad() {
         uiContainer.addEventListener('fullscreenchange', onFullScreenChange, false);
         window.addEventListener('resize', onDocumentResize, false);
         window.addEventListener('orientationchange', onDocumentResize, false);
-        uiContainer.addEventListener('keydown', onDocumentKeyPress, false);
-        uiContainer.addEventListener('keyup', onDocumentKeyUp, false);
-        uiContainer.addEventListener('blur', clearKeys, false);
+        if (!config.disableKeyboardCtrl) {
+            container.addEventListener('keydown', onDocumentKeyPress, false);
+            container.addEventListener('keyup', onDocumentKeyUp, false);
+            container.addEventListener('blur', clearKeys, false);
+        }
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
         dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
         dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
@@ -484,11 +514,8 @@ function parseGPanoXMP(image) {
         // with non-progressive encoded JPEGs.
         if (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/)) {
             var flagIndex = img.indexOf('\xff\xc2');
-            if (flagIndex < 0 || flagIndex > 65536) {
-                anError("Due to iOS 8's broken WebGL implementation, only " +
-                    "progressive encoded JPEGs work for your device (this " +
-                    "panorama uses standard encoding).");
-            }
+            if (flagIndex < 0 || flagIndex > 65536)
+                anError(config.strings.iOS8WebGLError);
         }
 
         var start = img.indexOf('<x:xmpmeta');
@@ -569,7 +596,7 @@ function parseGPanoXMP(image) {
  */
 function anError(errorMsg) {
     if (errorMsg === undefined)
-        errorMsg = 'Your browser does not have the necessary WebGL support to display this panorama.';
+        errorMsg = config.strings.genericWebGLError;
     infoDisplay.errorMsg.innerHTML = '<p>' + errorMsg + '</p>';
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'none';
@@ -1314,7 +1341,7 @@ function animate() {
     render();
     if (autoRotateStart)
         clearTimeout(autoRotateStart);
-    if (isUserInteracting || orientation) {
+    if (isUserInteracting || orientation === true) {
         requestAnimationFrame(animate);
     } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] ||
         keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] ||
@@ -1508,9 +1535,22 @@ function computeQuaternion(alpha, beta, gamma) {
  */
 function orientationListener(e) {
     var q = computeQuaternion(e.alpha, e.beta, e.gamma).toEulerAngles();
-    config.pitch = q[0] / Math.PI * 180;
-    config.roll = -q[1] / Math.PI * 180;
-    config.yaw = -q[2] / Math.PI * 180 + config.northOffset + orientationYawOffset;
+    if (typeof(orientation) == 'number' && orientation < 10) {
+        // This kludge is necessary because iOS sometimes provides a few stale
+        // device orientation events when the listener is removed and then
+        // readded. Thus, we skip the first 10 events to prevent this from
+        // causing problems.
+        orientation += 1;
+    } else if (orientation === 10) {
+        // Record starting yaw to prevent jumping
+        orientationYawOffset = q[2] / Math.PI * 180 + config.yaw;
+        orientation = true;
+        requestAnimationFrame(animate);
+    } else {
+        config.pitch = q[0] / Math.PI * 180;
+        config.roll = -q[1] / Math.PI * 180;
+        config.yaw = -q[2] / Math.PI * 180 + orientationYawOffset;
+    }
 }
 
 /**
@@ -1538,12 +1578,9 @@ function renderInit() {
         if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
         } else if (event.type == 'webgl size error') {
-            anError('This panorama is too big for your device! It\'s ' +
-                event.width + 'px wide, but your device only supports images up to ' +
-                event.maxWidth + 'px wide. Try another device.' +
-                ' (If you\'re the author, try scaling down the image.)');
+            anError(config.strings.textureSizeError.replace('%s', event.width).replace('%s', event.maxWidth));
         } else {
-            anError('Unknown error. Check developer console.');
+            anError(config.strings.unknownError);
             throw event;
         }
     }
@@ -1701,7 +1738,7 @@ function createHotSpots() {
 }
 
 /**
- * Destroys currently create hot spot elements.
+ * Destroys currently created hot spot elements.
  * @private
  */
 function destroyHotSpots() {
@@ -1715,7 +1752,7 @@ function destroyHotSpots() {
                 current = current.parentNode;
             }
             renderContainer.removeChild(current);
-            delete hs.div;
+            delete hs[i].div;
         }
     }
 }
@@ -1777,7 +1814,7 @@ function renderHotSpots() {
  */
 function mergeConfig(sceneId) {
     config = {};
-    var k;
+    var k, s;
     var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset', 'horizonPitch', 'horizonRoll'];
     specifiedPhotoSphereExcludes = [];
     
@@ -1791,9 +1828,17 @@ function mergeConfig(sceneId) {
     // Merge default scene config
     for (k in initialConfig.default) {
         if (initialConfig.default.hasOwnProperty(k)) {
-            config[k] = initialConfig.default[k];
-            if (photoSphereExcludes.indexOf(k) >= 0) {
-                specifiedPhotoSphereExcludes.push(k);
+            if (k == 'strings') {
+                for (s in initialConfig.default.strings) {
+                    if (initialConfig.default.strings.hasOwnProperty(s)) {
+                        config.strings[s] = escapeHTML(initialConfig.default.strings[s]);
+                    }
+                }
+            } else {
+                config[k] = initialConfig.default[k];
+                if (photoSphereExcludes.indexOf(k) >= 0) {
+                    specifiedPhotoSphereExcludes.push(k);
+                }
             }
         }
     }
@@ -1803,9 +1848,17 @@ function mergeConfig(sceneId) {
         var scene = initialConfig.scenes[sceneId];
         for (k in scene) {
             if (scene.hasOwnProperty(k)) {
-                config[k] = scene[k];
-                if (photoSphereExcludes.indexOf(k) >= 0) {
-                    specifiedPhotoSphereExcludes.push(k);
+                if (k == 'strings') {
+                    for (s in scene.strings) {
+                        if (scene.strings.hasOwnProperty(s)) {
+                            config.strings[s] = escapeHTML(scene.strings[s]);
+                        }
+                    }
+                } else {
+                    config[k] = scene[k];
+                    if (photoSphereExcludes.indexOf(k) >= 0) {
+                        specifiedPhotoSphereExcludes.push(k);
+                    }
                 }
             }
         }
@@ -1815,9 +1868,17 @@ function mergeConfig(sceneId) {
     // Merge initial config
     for (k in initialConfig) {
         if (initialConfig.hasOwnProperty(k)) {
-            config[k] = initialConfig[k];
-            if (photoSphereExcludes.indexOf(k) >= 0) {
-                specifiedPhotoSphereExcludes.push(k);
+            if (k == 'strings') {
+                for (s in initialConfig.strings) {
+                    if (initialConfig.strings.hasOwnProperty(s)) {
+                        config.strings[s] = escapeHTML(initialConfig.strings[s]);
+                    }
+                }
+            } else {
+                config[k] = initialConfig[k];
+                if (photoSphereExcludes.indexOf(k) >= 0) {
+                    specifiedPhotoSphereExcludes.push(k);
+                }
             }
         }
     }
@@ -1862,6 +1923,10 @@ function processOptions(isPreview) {
     if (!config.hasOwnProperty('title') && !config.hasOwnProperty('author'))
         infoDisplay.container.style.display = 'none';
 
+    // Fill in load button label and loading box text
+    controls.load.innerHTML = '<p>' + config.strings.loadButtonLabel + '</p>';
+    infoDisplay.load.boxp.innerHTML = config.strings.loadingLabel;
+
     // Process other options
     for (var key in config) {
       if (config.hasOwnProperty(key)) {
@@ -1872,7 +1937,7 @@ function processOptions(isPreview) {
                 break;
             
             case 'author':
-                infoDisplay.author.innerHTML = 'by ' + escapeHTML(config[key]);
+                infoDisplay.author.innerHTML = config.strings.bylineLabel.replace('%s', escapeHTML(config[key]));
                 infoDisplay.container.style.display = 'inline';
                 break;
             
@@ -1939,10 +2004,6 @@ function processOptions(isPreview) {
                     else if (orientationSupport === true)
                         startOrientation();
                 }
-                break;
-
-            case 'loadButtonLabel':
-                controls.load.innerHTML = '<p>' + escapeHTML(config[key]) + '</p>';
                 break;
         }
       }
@@ -2186,11 +2247,9 @@ function stopOrientation() {
  * @private
  */
 function startOrientation() {
-    orientation = true;
-    orientationYawOffset = config.yaw;
+    orientation = 1;
     window.addEventListener('deviceorientation', orientationListener);
     controls.orientation.classList.add('pnlm-orientation-button-active');
-    requestAnimationFrame(animate);
 }
 
 /**
@@ -2304,7 +2363,14 @@ this.getYaw = function() {
  */
 this.setYaw = function(yaw, animated, callback, callbackArgs) {
     animated = animated == undefined ? 1000: Number(animated);
+    yaw = ((yaw + 180) % 360) - 180 // Keep in bounds
     if (animated) {
+        // Animate in shortest direction
+        if (config.yaw - yaw > 180)
+            yaw += 360
+        else if (yaw - config.yaw > 180)
+            yaw -= 360
+
         animatedMove.yaw = {
             'startTime': Date.now(),
             'startPosition': config.yaw,
@@ -2643,6 +2709,16 @@ this.getConfig = function() {
 }
 
 /**
+ * Get viewer's container element.
+ * @memberof Viewer
+ * @instance
+ * @returns {HTMLElement} Container `div` element
+ */
+this.getContainer = function() {
+    return container;
+}
+
+/**
  * Add a new hot spot.
  * @memberof Viewer
  * @instance
@@ -2722,6 +2798,45 @@ this.resize = function() {
  */
 this.isLoaded = function() {
     return loaded;
+}
+
+/**
+ * Check if device orientation control is supported.
+ * @memberof Viewer
+ * @instance
+ * @returns {boolean} True if supported, else false
+ */
+this.isOrientationSupported = function() {
+    return orientationSupport || false;
+}
+
+/**
+ * Stop using device orientation.
+ * @memberof Viewer
+ * @instance
+ */
+this.stopOrientation = function() {
+    stopOrientation();
+}
+
+/**
+ * Start using device orientation (does nothing if not supported).
+ * @memberof Viewer
+ * @instance
+ */
+this.startOrientation = function() {
+    if (orientationSupport)
+        startOrientation();
+}
+
+/**
+ * Check if device orientation control is currently activated.
+ * @memberof Viewer
+ * @instance
+ * @returns {boolean} True if active, else false
+ */
+this.isOrientationActive = function() {
+    return Boolean(orientation);
 }
 
 /**

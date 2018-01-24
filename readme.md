@@ -45,6 +45,10 @@ Since Pannellum is built with recent web standards, it requires a modern browser
 #### No support:
 Internet Explorer 10 and previous
 
+## Translations
+
+All user-facing strings can be changed using the `strings` configuration parameter. There exists a [third-party respository of user-contributed translations](https://github.com/DanielBiegler/pannellum-translation) that can be used with this configuration option.
+
 ## Building
 The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
 

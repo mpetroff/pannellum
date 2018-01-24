@@ -1,6 +1,6 @@
 /*
  * libpannellum - A WebGL and CSS 3D transform based Panorama Renderer
- * Copyright (c) 2012-2017 Matthew Petroff
+ * Copyright (c) 2012-2018 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@ function Renderer(container) {
     var pose;
     var image, imageType, dynamic;
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
+    var globalParams;
 
     /**
      * Initialize renderer.
@@ -63,7 +64,7 @@ function Renderer(container) {
      */
     this.init = function(_image, _imageType, _dynamic, haov, vaov, voffset, callback, params) {
         // Default argument for image type
-        if (typeof _imageType === undefined)
+        if (_imageType === undefined)
             _imageType = 'equirectangular';
 
         if (_imageType != 'equirectangular' && _imageType != 'cubemap' &&
@@ -75,6 +76,7 @@ function Renderer(container) {
         imageType = _imageType;
         image = _image;
         dynamic = _dynamic;
+        globalParams = params || {};
 
         // Clear old data
         if (program) {
@@ -213,7 +215,7 @@ function Renderer(container) {
             };
             for (s = 0; s < 6; s++) {
                 var faceImg = new Image();
-                faceImg.crossOrigin = 'anonymous';
+                faceImg.crossOrigin = globalParams.crossOrigin ? globalParams.crossOrigin : 'anonymous';
                 faceImg.side = s;
                 faceImg.onload = onLoad;
                 if (imageType == 'multires') {
@@ -325,7 +327,7 @@ function Renderer(container) {
 
             // Pass aspect ratio
             program.aspectRatio = gl.getUniformLocation(program, 'u_aspectRatio');
-            gl.uniform1f(program.aspectRatio, canvas.clientWidth / canvas.clientHeight);
+            gl.uniform1f(program.aspectRatio, gl.drawingBufferWidth / gl.drawingBufferHeight);
 
             // Locate psi, theta, focal length, horizontal extent, vertical extent, and vertical offset
             program.psi = gl.getUniformLocation(program, 'u_psi');
@@ -422,10 +424,10 @@ function Renderer(container) {
      */
     this.destroy = function() {
         if (container !== undefined) {
-            if (canvas !== undefined) {
+            if (canvas !== undefined && container.contains(canvas)) {
                 container.removeChild(canvas);
             }
-            if (world !== undefined) {
+            if (world !== undefined && container.contains(world)) {
                 container.removeChild(world);
             }
         }
@@ -534,7 +536,7 @@ function Renderer(container) {
                 r: 'translate3d(' + s + 'px, -' + (s + 2) + 'px, -' + (s + 2) + 'px) rotateY(270deg)'
             };
             focal = 1 / Math.tan(hfov / 2);
-            var zoom = focal * canvas.clientWidth / 2 + 'px';
+            var zoom = focal * gl.drawingBufferWidth / 2 + 'px';
             var transform = 'perspective(' + zoom + ') translateZ(' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) ';
             
             // Apply face transforms
@@ -549,7 +551,7 @@ function Renderer(container) {
         
         if (imageType != 'multires') {
             // Calculate focal length from vertical field of view
-            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (canvas.clientWidth / canvas.clientHeight));
+            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
             focal = 1 / Math.tan(vfov * 0.5);
 
             // Pass psi, theta, roll, and focal length
@@ -571,7 +573,7 @@ function Renderer(container) {
         
         } else {
             // Create perspective matrix
-            var perspMatrix = makePersp(hfov, canvas.clientWidth / canvas.clientHeight, 0.1, 100.0);
+            var perspMatrix = makePersp(hfov, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
             
             // Find correct zoom level
             checkZoom(hfov);
@@ -984,7 +986,7 @@ function Renderer(container) {
      * @returns {number[]} Generated perspective matrix.
      */
     function makePersp(hfov, aspect, znear, zfar) {
-        var fovy = 2 * Math.atan(Math.tan(hfov/2) * canvas.clientHeight / canvas.clientWidth);
+        var fovy = 2 * Math.atan(Math.tan(hfov/2) * gl.drawingBufferHeight / gl.drawingBufferWidth);
         var f = 1 / Math.tan(fovy/2);
         return [
             f/aspect,   0,  0,  0,
@@ -1015,12 +1017,13 @@ function Renderer(container) {
         var cacheTop = 4;   // Maximum number of concurrents loads
         var textureImageCache = {};
         var pendingTextureRequests = [];
+        var crossOrigin;
 
         function TextureImageLoader() {
             var self = this;
             this.texture = this.callback = null;
             this.image = new Image();
-            this.image.crossOrigin = 'anonymous';
+            this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
             this.image.addEventListener('load', function() {
                 processLoadedTexture(self.image, self.texture);
                 self.callback(self.texture);
@@ -1051,7 +1054,8 @@ function Renderer(container) {
         for (var i = 0; i < cacheTop; i++)
             textureImageCache[i] = new TextureImageLoader();
 
-        return function(src, callback) {
+        return function(src, callback, _crossOrigin) {
+            crossOrigin = _crossOrigin;
             var texture = gl.createTexture();
             if (cacheTop)
                 textureImageCache[--cacheTop].loadTexture(src, texture, callback);
@@ -1072,7 +1076,7 @@ function Renderer(container) {
             loadTexture(encodeURI(node.path + '.' + image.extension), function(texture) {
                 node.texture = texture;
                 node.textureLoaded = true;
-            });
+            }, globalParams.crossOrigin);
         }
     }
     
@@ -1085,7 +1089,7 @@ function Renderer(container) {
         // Find optimal level
         var newLevel = 1;
         while ( newLevel < image.maxLevel &&
-            canvas.width > image.tileResolution *
+            gl.drawingBufferWidth > image.tileResolution *
             Math.pow(2, newLevel - 1) * Math.tan(hfov / 2) * 0.707 ) {
             newLevel++;
         }

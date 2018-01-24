@@ -23,6 +23,12 @@ If set, the value is displayed as the panorama's author. If no author is
 desired, don't set this parameter.
 
 
+### `strings` (dictionary)
+
+Allows user-facing strings to be changed / translated.
+See `defaultConfig.strings` definition in `pannellum.js` for more details.
+
+
 ### `basePath` (string)
 
 This specifies a base path to load the images from.
@@ -90,6 +96,11 @@ viewer is fullscreen.
 ### `draggable` (boolean)
 
 If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
+
+
+### `disableKeyboardCtrl` (boolean)
+
+If set to `true`, keyboard controls are disabled. Defaults to `false`.
 
 
 ### `showFullscreenCtrl` (boolean)
@@ -165,11 +176,6 @@ Specifies the title to be displayed while the load button is displayed.
 Specifies the author to be displayed while the load button is displayed.
 
 
-### `loadButtonLabel` (string)
-
-Label to display on load button. Defaults to `Click to Load Panorama`.
-
-
 ### `horizonPitch` and `horizonRoll` (number)
 
 Specifies pitch / roll of image horizon, in degrees (for correcting
@@ -190,6 +196,12 @@ When true, HTML is escaped from configuration strings to help mitigate possible
 DOM XSS attacks. This is always `true` when using the standalone viewer since
 the configuration is provided via the URL; it defaults to `false` but can be
 set to `true` when using the API.
+
+
+### `crossOrigin` (string)
+
+This specifies the type of CORS request used and can be set to either
+`anonymous` or `use-credentials`. Defaults to `anonymous`.
 
 
 ### `hotSpots` (array)
