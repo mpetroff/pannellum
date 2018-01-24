@@ -2818,6 +2818,16 @@ this.startOrientation = function() {
 }
 
 /**
+ * Check if device orientation control is currently activated.
+ * @memberof Viewer
+ * @instance
+ * @returns {boolean} True if active, else false
+ */
+this.isOrientationActive = function() {
+    return Boolean(orientation);
+}
+
+/**
  * Subscribe listener to specified event.
  * @memberof Viewer
  * @instance
