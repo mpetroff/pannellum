@@ -42,6 +42,7 @@ function Renderer(container) {
     var pose;
     var image, imageType, dynamic;
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
+    var globalParams;
 
     /**
      * Initialize renderer.
@@ -75,6 +76,7 @@ function Renderer(container) {
         imageType = _imageType;
         image = _image;
         dynamic = _dynamic;
+        globalParams = params || {};
 
         // Clear old data
         if (program) {
@@ -213,7 +215,7 @@ function Renderer(container) {
             };
             for (s = 0; s < 6; s++) {
                 var faceImg = new Image();
-                faceImg.crossOrigin = 'anonymous';
+                faceImg.crossOrigin = globalParams.crossOrigin ? globalParams.crossOrigin : 'anonymous';
                 faceImg.side = s;
                 faceImg.onload = onLoad;
                 if (imageType == 'multires') {
@@ -1015,12 +1017,13 @@ function Renderer(container) {
         var cacheTop = 4;   // Maximum number of concurrents loads
         var textureImageCache = {};
         var pendingTextureRequests = [];
+        var crossOrigin;
 
         function TextureImageLoader() {
             var self = this;
             this.texture = this.callback = null;
             this.image = new Image();
-            this.image.crossOrigin = 'anonymous';
+            this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
             this.image.addEventListener('load', function() {
                 processLoadedTexture(self.image, self.texture);
                 self.callback(self.texture);
@@ -1051,7 +1054,8 @@ function Renderer(container) {
         for (var i = 0; i < cacheTop; i++)
             textureImageCache[i] = new TextureImageLoader();
 
-        return function(src, callback) {
+        return function(src, callback, _crossOrigin) {
+            crossOrigin = _crossOrigin;
             var texture = gl.createTexture();
             if (cacheTop)
                 textureImageCache[--cacheTop].loadTexture(src, texture, callback);
@@ -1072,7 +1076,7 @@ function Renderer(container) {
             loadTexture(encodeURI(node.path + '.' + image.extension), function(texture) {
                 node.texture = texture;
                 node.textureLoaded = true;
-            });
+            }, globalParams.crossOrigin);
         }
     }
     

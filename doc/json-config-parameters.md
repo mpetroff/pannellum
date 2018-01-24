@@ -198,6 +198,12 @@ the configuration is provided via the URL; it defaults to `false` but can be
 set to `true` when using the API.
 
 
+### `crossOrigin` (string)
+
+This specifies the type of CORS request used and can be set to either
+`anonymous` or `use-credentials`. Defaults to `anonymous`.
+
+
 ### `hotSpots` (array)
 
 This specifies an array of hot spots that can be links to other scenes,
