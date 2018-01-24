@@ -2709,6 +2709,16 @@ this.getConfig = function() {
 }
 
 /**
+ * Get viewer's container element.
+ * @memberof Viewer
+ * @instance
+ * @returns {HTMLElement} Container `div` element
+ */
+this.getContainer = function() {
+    return container;
+}
+
+/**
  * Add a new hot spot.
  * @memberof Viewer
  * @instance
