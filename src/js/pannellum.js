@@ -74,6 +74,8 @@ var defaultConfig = {
     hfov: 100,
     minHfov: 50,
     maxHfov: 120,
+    minVfov: undefined,
+    maxVfov: undefined,
     pitch: 0,
     minPitch: undefined,
     maxPitch: undefined,
@@ -461,8 +463,15 @@ function absoluteURL(url) {
  * @private
  */
 function onImageLoad() {
-    if (!renderer)
+    if (!renderer) {
         renderer = new libpannellum.renderer(renderContainer);
+
+        // compute missing hfov or vfov value
+        if(config.hfov)
+            setHfov(config.hfov);
+        else if (config.vfov)
+            setVfov(config.vfov);
+    }
 
     // Only add event listeners once
     if (!listenersAdded) {
@@ -770,7 +779,7 @@ function onDocumentMouseMove(event) {
         speed.yaw = (yaw - config.yaw) % 360 * 0.2;
         config.yaw = yaw;
         
-        var vfov = 2 * Math.atan(Math.tan(config.hfov/360*Math.PI) * canvasHeight / canvasWidth) * 180 / Math.PI;
+        var vfov = config.vfov;
         
         var pitch = ((Math.atan(pos.y / canvasHeight * 2 - 1) - Math.atan(onPointerDownPointerY / canvasHeight * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
         speed.pitch = (pitch - config.pitch) * 0.2;
@@ -1445,8 +1454,7 @@ function render() {
 
         // Ensure the calculated pitch is within min and max allowed
         var canvas = renderer.getCanvas();
-        var vfov = 2 * Math.atan(Math.tan(config.hfov / 180 * Math.PI * 0.5) /
-            (canvas.width / canvas.height)) / Math.PI * 180;
+        var vfov = config.vfov;
         var minPitch = config.minPitch + vfov / 2,
             maxPitch = config.maxPitch - vfov / 2;
         var pitchRange = config.maxPitch - config.minPitch;
@@ -2001,6 +2009,10 @@ function processOptions(isPreview) {
             case 'hfov':
                 setHfov(Number(config[key]));
                 break;
+
+            case 'vfov':
+                setVfov(Number(config[key]));
+                break;
             
             case 'autoLoad':
                 if (config[key] === true && renderer === undefined) {
@@ -2175,13 +2187,70 @@ function constrainHfov(hfov) {
     }
 }
 
+
+/**
+ * Clamps vertical field of view to viewer's limits.
+ * @private
+ * @param {number} vfov - Input vertical field of view (in degrees)
+ * @return {number} - Clamped vertical field of view (in degrees)
+ */
+function constrainVfov(vfov) {
+    // Keep field of view within bounds
+    var minVfov = config.minVfov;
+    if (config.type == 'multires' && renderer) {
+        minVfov = Math.min(minVfov, renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9));
+    }
+    if (config.maxVfov && minVfov > config.maxVfov) {
+        // Don't change view if bounds don't make sense
+        console.log('Vfov bounds do not make sense (minVfov > maxVfov).')
+        return config.vfov;
+    } if (vfov < minVfov) {
+        return minVfov;
+    } else if (config.maxVfov && vfov > config.maxVfov) {
+        return config.maxVfov;
+    } else {
+        return vfov;
+    }
+}
+
 /**
  * Sets viewer's horizontal field of view.
  * @private
  * @param {number} hfov - Desired horizontal field of view in degrees.
  */
 function setHfov(hfov) {
-    config.hfov = constrainHfov(hfov);
+    var hfov = constrainHfov(hfov);
+
+    if (renderer) {
+        var canvas = renderer.getCanvas();
+        var vfov = 2 * Math.atan(Math.tan(hfov / 180 * Math.PI * 0.5) /
+            (canvas.width / canvas.height)) / Math.PI * 180;
+
+        // In case the constraints for hfov and vfov conflict we prefer the later one
+        if (vfov !== constrainVfov(vfov)) {
+            hfov = 2 * Math.atan(Math.tan(constrainVfov(vfov) / 180 * Math.PI * 0.5) /
+                (canvas.height / canvas.width)) / Math.PI * 180;
+        }
+        config.vfov = vfov;
+    }
+
+    config.hfov = hfov;
+
+}
+
+/**
+ * Sets viewer's vertical field of view.
+ * @private
+ * @param {number} vfov - Desired vertical field of view in degrees.
+ */
+function setVfov(vfov) {
+    if (renderer) {
+        var canvas = renderer.getCanvas();
+        var hfov = 2 * Math.atan(Math.tan(vfov / 180 * Math.PI * 0.5) /
+            (canvas.height / canvas.width)) / Math.PI * 180;
+
+        setHfov(hfov);
+    }
 }
 
 /**
@@ -2279,7 +2348,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
         config.yaw = workingYaw;
     }
     if (workingHfov !== undefined) {
-        config.hfov = workingHfov;
+        setHfov(workingHfov);
     }
     fireEvent('scenechange', sceneId);
     load();
@@ -2501,6 +2570,34 @@ this.setHfov = function(hfov, animated, callback, callbackArgs) {
 };
 
 /**
+* Sets the horizontal field of view.
+* @memberof Viewer
+* @instance
+* @param {number} hfov - Horizontal field of view in degrees
+* @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+* @param {function} [callback] - Function to call when animation finishes
+* @param {object} [callbackArgs] - Arguments to pass to callback function
+* @returns {Viewer} `this`
+*/
+this.setVfov = function (vfov, animated, callback, callbackArgs) {
+    animated = animated == undefined ? 1000 : Number(animated);
+    if (animated) {
+        animatedMove.hfov = {
+            'startTime': Date.now(),
+            'startPosition': config.vfov,
+            'endPosition': constrainVfov(vfov),
+            'duration': animated,
+            'callback': callback,
+            'callbackArgs': callbackArgs
+        }
+    } else {
+        setVfov(vfov);
+    }
+    animateInit();
+    return this;
+};
+
+/**
  * Returns the minimum and maximum allowed horizontal fields of view
  * (in degrees).
  * @memberof Viewer
@@ -2509,6 +2606,17 @@ this.setHfov = function(hfov, animated, callback, callbackArgs) {
  */
 this.getHfovBounds = function() {
     return [config.minHfov, config.maxHfov];
+};
+
+/**
+* Returns the minimum and maximum allowed horizontal fields of view
+* (in degrees).
+* @memberof Viewer
+* @instance
+* @returns {number[]} [minimum hfov, maximum hfov]
+*/
+this.getVfovBounds = function () {
+    return [config.minVfov, config.maxVfov];
 };
 
 /**
@@ -2521,6 +2629,21 @@ this.getHfovBounds = function() {
 this.setHfovBounds = function(bounds) {
     config.minHfov = Math.max(0, bounds[0]);
     config.maxHfov = Math.max(0, bounds[1]);
+    setHfov(config.hfov);
+    return this;
+};
+
+/**
+* Set the minimum and maximum allowed horizontal fields of view (in degrees).
+* @memberof Viewer
+* @instance
+* @param {number[]} bounds - [minimum hfov, maximum hfov]
+* @returns {Viewer} `this`
+*/
+this.setVfovBounds = function (bounds) {
+    config.minVfov = Math.max(0, bounds[0]);
+    config.maxVfov = Math.max(0, bounds[1]);
+    setVfov(config.vfov); // check constraints
     return this;
 };
 
