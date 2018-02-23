@@ -49,7 +49,7 @@ var config,
     onPointerDownPitch = 0,
     keysDown = new Array(10),
     fullscreenActive = false,
-    loaded = false,
+    loaded,
     error = false,
     isTimedOut = false,
     listenersAdded = false,
@@ -2150,6 +2150,7 @@ function load() {
     // since it is a new scene and the error from previous maybe because of lacking
     // memory etc and not because of a lack of WebGL support etc
     clearError();
+    loaded = false;
 
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'inline';
@@ -2277,7 +2278,7 @@ function escapeHTML(s) {
  * @returns {boolean} `true` if a panorama is loaded, else `false`
  */
 this.isLoaded = function() {
-    return loaded;
+    return Boolean(loaded);
 };
 
 /**
@@ -2645,7 +2646,7 @@ this.mouseEventToCoords = function(event) {
  * @returns {Viewer} `this`
  */
 this.loadScene = function(sceneId, pitch, yaw, hfov) {
-    if (loaded)
+    if (loaded !== false)
         loadScene(sceneId, pitch, yaw, hfov);
     return this;
 }
