@@ -103,6 +103,7 @@ var defaultConfig = {
     draggable: true,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
+    usedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
 };
 
 // Translatable / configurable strings
@@ -128,8 +129,6 @@ defaultConfig.strings = {
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
 }
-
-var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
 
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
@@ -1013,7 +1012,7 @@ function onDocumentKeyPress(event) {
     var keynumber = event.which || event.keycode;
 
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
+    if (config.usedKeyNumbers.indexOf(keynumber) < 0)
         return
     event.preventDefault();
     
@@ -1049,7 +1048,7 @@ function onDocumentKeyUp(event) {
     var keynumber = event.which || event.keycode;
     
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
+    if (config.usedKeyNumbers.indexOf(keynumber) < 0)
         return
     event.preventDefault();
     
