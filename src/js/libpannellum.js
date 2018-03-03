@@ -317,6 +317,11 @@ function Renderer(container) {
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
 
+        // Set background color
+        program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
+        var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+        gl.uniform4fv(program.backgroundColor, color.concat([1]));
+
         if (imageType != 'multires') {
             // Provide texture coordinates for rectangle
             if (!texCoordBuffer)
@@ -342,13 +347,6 @@ function Renderer(container) {
             gl.uniform1f(program.h, haov / (Math.PI * 2.0));
             gl.uniform1f(program.v, vaov / Math.PI);
             gl.uniform1f(program.vo, voffset / Math.PI * 2);
-
-            // Set background color
-            if (imageType == 'equirectangular') {
-                program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
-                var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
-                gl.uniform4fv(program.backgroundColor, color.concat([1]));
-            }
 
             // Create texture
             program.texture = gl.createTexture();
@@ -1274,7 +1272,10 @@ var fragEquiCubeBase = [
 var fragCube = fragEquiCubeBase + [
     // Look up color from texture
     'float cosphi = cos(phi);',
-    'gl_FragColor = textureCube(u_imageCube, vec3(cosphi*sin(lambda), sin(phi), cosphi*cos(lambda)));',
+    'if(false)', // TODO: calculate if outside image
+        'gl_FragColor = u_backgroundColor;',
+    'else',
+        'gl_FragColor = textureCube(u_imageCube, vec3(cosphi*sin(lambda), sin(phi), cosphi*cos(lambda)));',
 '}'
 ].join('\n');
 
@@ -1297,16 +1298,24 @@ var fragEquirectangular = fragEquiCubeBase + [
 
 // Fragment shader
 var fragMulti = [
+'precision mediump float;',
+
 'varying mediump vec2 v_texCoord;',
 'uniform sampler2D u_sampler;',
 //'uniform mediump vec4 u_color;',
 
+// Background color (display for partial panoramas)
+'uniform vec4 u_backgroundColor;',
+
 'void main(void) {',
     // Look up color from texture
-    'gl_FragColor = texture2D(u_sampler, v_texCoord);',
+    'if(false)', // TODO: calculate if outside image
+        'gl_FragColor = u_backgroundColor;',
+    'else',
+        'gl_FragColor = texture2D(u_sampler, v_texCoord);',
 //    'gl_FragColor = u_color;',
 '}'
-].join('');
+].join('\n');
 
 return {
     renderer: function(container, image, imagetype, dynamic) {
