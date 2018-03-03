@@ -1264,7 +1264,7 @@ function keyRepeat() {
     }
     
     // Stop movement if opposite controls are pressed
-    if (keysDown[0] && keysDown[0]) {
+    if (keysDown[0] && keysDown[1]) {
         speed.hfov = 0;
     }
     if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {
@@ -2393,7 +2393,7 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
  * @instance
  * @returns {number[]} [yaw pitch, maximum yaw]
  */
-this.getYawBounds = function() {
+this.getYawBounds = function() { // unused
     return [config.minYaw, config.maxYaw];
 };
 
@@ -2404,7 +2404,7 @@ this.getYawBounds = function() {
  * @param {number[]} bounds - [minimum yaw, maximum yaw]
  * @returns {Viewer} `this`
  */
-this.setYawBounds = function(bounds) {
+this.setYawBounds = function(bounds) { // unused
     config.minYaw = Math.max(-180, Math.min(bounds[0], 180));
     config.maxYaw = Math.max(-180, Math.min(bounds[1], 180));
     return this;
