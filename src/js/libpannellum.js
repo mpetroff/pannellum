@@ -208,7 +208,7 @@ function Renderer(container) {
                 
                 incLoaded();
             };
-            const incLoaded = function() {
+            var incLoaded = function() {
                 if (this.width != 0) // support partial fallback/cubemap image
                     fallbackImgSize = this.width;
                 if (loaded == 5 && this.width == 0) // support partial fallback/cubemap image
@@ -1034,7 +1034,7 @@ function Renderer(container) {
             this.texture = this.callback = null;
             this.image = new Image();
             this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
-            const loadFn = (function() {
+            var loadFn = (function() {
                 if (self.image.width > 0 && self.image.height > 0) // ignore missing tile to supporting partial image
                     processLoadedTexture(self.image, self.texture);
                 self.callback(self.texture);
