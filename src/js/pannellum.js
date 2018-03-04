@@ -103,7 +103,7 @@ var defaultConfig = {
     draggable: true,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
-    usedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
+    capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
 };
 
 // Translatable / configurable strings
@@ -1012,8 +1012,8 @@ function onDocumentKeyPress(event) {
     var keynumber = event.which || event.keycode;
 
     // Override default action for keys that are used
-    if (config.usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // If escape key is pressed
@@ -1048,8 +1048,8 @@ function onDocumentKeyUp(event) {
     var keynumber = event.which || event.keycode;
     
     // Override default action for keys that are used
-    if (config.usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // Change key

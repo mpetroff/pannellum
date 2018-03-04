@@ -291,6 +291,11 @@ Specifies the fade duration, in milliseconds, when transitioning between
 scenes. Not defined by default. Only applicable for tours. Only works with
 WebGL renderer.
 
+### `capturedKeyNumbers` (array)
+
+Specifies the key numbers that are captured in key events. Defaults to the
+standard keys that are used by the viewer.
+
 
 
 ## `equirectangular` specific options
