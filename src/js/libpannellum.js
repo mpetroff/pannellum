@@ -206,6 +206,13 @@ function Renderer(container) {
                 // Draw image width duplicated edge pixels on canvas
                 faceContext.putImageData(imgData, 0, 0);
                 
+                incLoaded();
+            };
+            var incLoaded = function() {
+                if (this.width != 0) // support partial fallback/cubemap image
+                    fallbackImgSize = this.width;
+                if (loaded == 5 && this.width == 0) // support partial fallback/cubemap image
+                    this.width = fallbackImgSize;
                 loaded++;
                 if (loaded == 6) {
                     fallbackImgSize = this.width;
@@ -218,6 +225,7 @@ function Renderer(container) {
                 faceImg.crossOrigin = globalParams.crossOrigin ? globalParams.crossOrigin : 'anonymous';
                 faceImg.side = s;
                 faceImg.onload = onLoad;
+                faceImg.onerror = incLoaded; // ignore missing face file to support partial fallback/cubemap image
                 if (imageType == 'multires') {
                     faceImg.src = encodeURI(path.replace('%s', sides[s]) + '.' + image.extension);
                 } else {
@@ -542,9 +550,11 @@ function Renderer(container) {
             // Apply face transforms
             var faces = Object.keys(transforms);
             for (i = 0; i < 6; i++) {
-                var face = world.querySelector('.pnlm-' + faces[i] + 'face').style;
-                face.webkitTransform = transform + transforms[faces[i]];
-                face.transform = transform + transforms[faces[i]];
+                var face = world.querySelector('.pnlm-' + faces[i] + 'face');
+                if (!face)
+                    continue; // ignore missing face to support partial fallback/cubemap image
+                face.style.webkitTransform = transform + transforms[faces[i]];
+                face.style.transform = transform + transforms[faces[i]];
             }
             return;
         }
@@ -1024,11 +1034,14 @@ function Renderer(container) {
             this.texture = this.callback = null;
             this.image = new Image();
             this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
-            this.image.addEventListener('load', function() {
-                processLoadedTexture(self.image, self.texture);
+            var loadFn = (function() {
+                if (self.image.width > 0 && self.image.height > 0) // ignore missing tile to supporting partial image
+                    processLoadedTexture(self.image, self.texture);
                 self.callback(self.texture);
                 releaseTextureImageLoader(self);
             });
+            this.image.addEventListener('load', loadFn);
+            this.image.addEventListener('error', loadFn); // ignore missing tile file to support partial image, otherwise retry loop causes high CPU load
         };
 
         TextureImageLoader.prototype.loadTexture = function(src, texture, callback) {
