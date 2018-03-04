@@ -103,7 +103,8 @@ var defaultConfig = {
     draggable: true,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
-    touchmovePanSpeedCoeffFactor: 1
+    touchmovePanSpeedCoeffFactor: 1,
+    capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
 };
 
 // Translatable / configurable strings
@@ -129,8 +130,6 @@ defaultConfig.strings = {
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
 }
-
-var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
 
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
@@ -483,13 +482,17 @@ function onImageLoad() {
             container.addEventListener('blur', clearKeys, false);
         }
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
-        dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
-        dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
-        dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
-        dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
-        dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
-        dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
-        dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
+            dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
+            dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
+            dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        } else {
+            dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
+            dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
+            dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+        }
 
         // Deal with MS pointer events
         if (window.navigator.pointerEnabled)
@@ -929,7 +932,7 @@ function onDocumentPointerMove(event) {
                 pointerCoordinates[i].clientY = event.clientY;
                 event.targetTouches = pointerCoordinates;
                 onDocumentTouchMove(event);
-                //event.preventDefault();
+                event.preventDefault();
                 return;
             }
         }
@@ -1010,8 +1013,8 @@ function onDocumentKeyPress(event) {
     var keynumber = event.which || event.keycode;
 
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // If escape key is pressed
@@ -1046,8 +1049,8 @@ function onDocumentKeyUp(event) {
     var keynumber = event.which || event.keycode;
     
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // Change key
@@ -1265,7 +1268,7 @@ function keyRepeat() {
     }
     
     // Stop movement if opposite controls are pressed
-    if (keysDown[0] && keysDown[0]) {
+    if (keysDown[0] && keysDown[1]) {
         speed.hfov = 0;
     }
     if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {

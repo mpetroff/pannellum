@@ -257,7 +257,9 @@ maintain the same direction with regard to north.
 
 #### `targetHfov` (number)
 
-Specifies the HFOV of the target scene, in degrees.
+Specifies the HFOV of the target scene, in degrees. Can also be set to `same`,
+which uses the current HFOV of the current scene as the initial HFOV of the
+target scene.
 
 #### `id`
 
@@ -290,6 +292,11 @@ the mouse button is clicked. Defaults to `false`.
 Specifies the fade duration, in milliseconds, when transitioning between
 scenes. Not defined by default. Only applicable for tours. Only works with
 WebGL renderer.
+
+### `capturedKeyNumbers` (array)
+
+Specifies the key numbers that are captured in key events. Defaults to the
+standard keys that are used by the viewer.
 
 
 
