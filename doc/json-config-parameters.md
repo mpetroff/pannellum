@@ -303,6 +303,12 @@ WebGL renderer.
 Specifies the key numbers that are captured in key events. Defaults to the
 standard keys that are used by the viewer.
 
+### `backgroundColor` ([number, number, number])
+
+Specifies an array containing RGB values [0, 1] that sets the background color
+shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
+Does not work for `cubemap` panoramas.
+
 
 
 ## `equirectangular` specific options
@@ -335,11 +341,6 @@ and the equirectangular image is not cropped symmetrically.
 
 If set to `true`, any embedded Photo Sphere XMP data will be ignored; else,
 said data will override any existing settings. Defaults to `false`.
-
-### `backgroundColor` ([number, number, number])
-
-Specifies an array containing RGB values [0, 1] that sets the background color
-shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
 
 
 
