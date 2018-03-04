@@ -115,6 +115,11 @@ the fullscreen API.
 If set to `false`, no controls are displayed. Defaults to `true`.
 
 
+### `touchPanSpeedCoeffFactor` (number)
+
+Adjusts panning speed from touch inputs. Defaults to `1`.
+
+
 ### `yaw` (number)
 
 Sets the panorama's starting yaw position in degrees. Defaults to `0`.
