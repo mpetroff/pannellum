@@ -2393,7 +2393,7 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
  * @instance
  * @returns {number[]} [yaw pitch, maximum yaw]
  */
-this.getYawBounds = function() { // unused
+this.getYawBounds = function() {
     return [config.minYaw, config.maxYaw];
 };
 
@@ -2404,7 +2404,7 @@ this.getYawBounds = function() { // unused
  * @param {number[]} bounds - [minimum yaw, maximum yaw]
  * @returns {Viewer} `this`
  */
-this.setYawBounds = function(bounds) { // unused
+this.setYawBounds = function(bounds) {
     config.minYaw = Math.max(-180, Math.min(bounds[0], 180));
     config.maxYaw = Math.max(-180, Math.min(bounds[1], 180));
     return this;
