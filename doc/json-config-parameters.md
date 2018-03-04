@@ -115,6 +115,11 @@ the fullscreen API.
 If set to `false`, no controls are displayed. Defaults to `true`.
 
 
+### `touchPanSpeedCoeffFactor` (number)
+
+Adjusts panning speed from touch inputs. Defaults to `1`.
+
+
 ### `yaw` (number)
 
 Sets the panorama's starting yaw position in degrees. Defaults to `0`.
@@ -198,6 +203,12 @@ the configuration is provided via the URL; it defaults to `false` but can be
 set to `true` when using the API.
 
 
+### `crossOrigin` (string)
+
+This specifies the type of CORS request used and can be set to either
+`anonymous` or `use-credentials`. Defaults to `anonymous`.
+
+
 ### `hotSpots` (array)
 
 This specifies an array of hot spots that can be links to other scenes,
@@ -251,7 +262,9 @@ maintain the same direction with regard to north.
 
 #### `targetHfov` (number)
 
-Specifies the HFOV of the target scene, in degrees.
+Specifies the HFOV of the target scene, in degrees. Can also be set to `same`,
+which uses the current HFOV of the current scene as the initial HFOV of the
+target scene.
 
 #### `id`
 
@@ -284,6 +297,11 @@ the mouse button is clicked. Defaults to `false`.
 Specifies the fade duration, in milliseconds, when transitioning between
 scenes. Not defined by default. Only applicable for tours. Only works with
 WebGL renderer.
+
+### `capturedKeyNumbers` (array)
+
+Specifies the key numbers that are captured in key events. Defaults to the
+standard keys that are used by the viewer.
 
 
 

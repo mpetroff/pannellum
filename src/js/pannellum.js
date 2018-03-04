@@ -1,6 +1,6 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
- * Copyright (c) 2011-2017 Matthew Petroff
+ * Copyright (c) 2011-2018 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ var config,
     onPointerDownPitch = 0,
     keysDown = new Array(10),
     fullscreenActive = false,
-    loaded = false,
+    loaded,
     error = false,
     isTimedOut = false,
     listenersAdded = false,
@@ -105,6 +105,9 @@ var defaultConfig = {
     animationTimingFunction: timingFunction,
     draggable: true,
     disableKeyboardCtrl: false,
+    crossOrigin: 'anonymous',
+    touchPanSpeedCoeffFactor: 1,
+    capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
 };
 
 // Translatable / configurable strings
@@ -130,8 +133,6 @@ defaultConfig.strings = {
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
 }
-
-var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
 
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
@@ -311,7 +312,7 @@ function init() {
         panoImage = [];
         for (i = 0; i < 6; i++) {
             panoImage.push(new Image());
-            panoImage[i].crossOrigin = 'anonymous';
+            panoImage[i].crossOrigin = config.crossOrigin;
         }
         infoDisplay.load.lbox.style.display = 'block';
         infoDisplay.load.lbar.style.display = 'none';
@@ -438,6 +439,7 @@ function init() {
             }
             xhr.responseType = 'blob';
             xhr.setRequestHeader('Accept', 'image/*,*/*;q=0.9');
+            xhr.withCredentials = config.crossOrigin === 'use-credentials';
             xhr.send();
         }
     }
@@ -498,13 +500,17 @@ function onImageLoad() {
             container.addEventListener('blur', clearKeys, false);
         }
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
-        dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
-        dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
-        dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
-        dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
-        dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
-        dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
-        dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
+            dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
+            dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
+            dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        } else {
+            dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
+            dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
+            dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+        }
 
         // Deal with MS pointer events
         if (window.navigator.pointerEnabled)
@@ -899,7 +905,7 @@ function onDocumentTouchMove(event) {
         //
         // Currently this seems to *roughly* keep initial drag/pan start position close to
         // the user's finger while panning regardless of zoom level / config.hfov value.
-        var touchmovePanSpeedCoeff = config.hfov / 360;
+        var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
         var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
         speed.yaw = (yaw - config.yaw) % 360 * 0.2;
@@ -960,7 +966,7 @@ function onDocumentPointerMove(event) {
                 pointerCoordinates[i].clientY = event.clientY;
                 event.targetTouches = pointerCoordinates;
                 onDocumentTouchMove(event);
-                //event.preventDefault();
+                event.preventDefault();
                 return;
             }
         }
@@ -1045,8 +1051,8 @@ function onDocumentKeyPress(event) {
     var keynumber = event.which || event.keycode;
 
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // If escape key is pressed
@@ -1081,8 +1087,8 @@ function onDocumentKeyUp(event) {
     var keynumber = event.which || event.keycode;
     
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // Change key
@@ -1300,7 +1306,7 @@ function keyRepeat() {
     }
     
     // Stop movement if opposite controls are pressed
-    if (keysDown[0] && keysDown[0]) {
+    if (keysDown[0] && keysDown[1]) {
         speed.hfov = 0;
     }
     if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {
@@ -2272,6 +2278,7 @@ function load() {
     // since it is a new scene and the error from previous maybe because of lacking
     // memory etc and not because of a lack of WebGL support etc
     clearError();
+    loaded = false;
 
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'inline';
@@ -2399,7 +2406,7 @@ function escapeHTML(s) {
  * @returns {boolean} `true` if a panorama is loaded, else `false`
  */
 this.isLoaded = function() {
-    return loaded;
+    return Boolean(loaded);
 };
 
 /**
@@ -2821,7 +2828,7 @@ this.mouseEventToCoords = function(event) {
  * @returns {Viewer} `this`
  */
 this.loadScene = function(sceneId, pitch, yaw, hfov) {
-    if (loaded)
+    if (loaded !== false)
         loadScene(sceneId, pitch, yaw, hfov);
     return this;
 }
@@ -2882,6 +2889,16 @@ this.toggleFullscreen = function() {
  */
 this.getConfig = function() {
     return config;
+}
+
+/**
+ * Get viewer's container element.
+ * @memberof Viewer
+ * @instance
+ * @returns {HTMLElement} Container `div` element
+ */
+this.getContainer = function() {
+    return container;
 }
 
 /**
@@ -2993,6 +3010,16 @@ this.stopOrientation = function() {
 this.startOrientation = function() {
     if (orientationSupport)
         startOrientation();
+}
+
+/**
+ * Check if device orientation control is currently activated.
+ * @memberof Viewer
+ * @instance
+ * @returns {boolean} True if active, else false
+ */
+this.isOrientationActive = function() {
+    return Boolean(orientation);
 }
 
 /**

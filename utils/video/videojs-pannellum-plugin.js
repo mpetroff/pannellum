@@ -1,6 +1,6 @@
 /*
  * Video.js plugin for Pannellum
- * Copyright (c) 2015-2017 Matthew Petroff
+ * Copyright (c) 2015-2018 Matthew Petroff
  * MIT License
  */
 

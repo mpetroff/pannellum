@@ -17,6 +17,7 @@
     outline: 0;
     line-height: 1.4;
     contain: content;
+    touch-action: none;
 }
 
 .pnlm-container * {
