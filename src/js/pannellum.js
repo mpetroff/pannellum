@@ -103,7 +103,7 @@ var defaultConfig = {
     draggable: true,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
-    touchmovePanSpeedCoeffFactor: 1,
+    touchPanSpeedCoeffFactor: 1,
     capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
 };
 
@@ -875,7 +875,7 @@ function onDocumentTouchMove(event) {
         //
         // Currently this seems to *roughly* keep initial drag/pan start position close to
         // the user's finger while panning regardless of zoom level / config.hfov value.
-        var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchmovePanSpeedCoeffFactor;
+        var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
         var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
         speed.yaw = (yaw - config.yaw) % 360 * 0.2;
