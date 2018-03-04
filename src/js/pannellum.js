@@ -482,13 +482,17 @@ function onImageLoad() {
             container.addEventListener('blur', clearKeys, false);
         }
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
-        dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
-        dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
-        dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
-        dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
-        dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
-        dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
-        dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
+            dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
+            dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
+            dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        } else {
+            dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
+            dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
+            dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+        }
 
         // Deal with MS pointer events
         if (window.navigator.pointerEnabled)
@@ -928,7 +932,7 @@ function onDocumentPointerMove(event) {
                 pointerCoordinates[i].clientY = event.clientY;
                 event.targetTouches = pointerCoordinates;
                 onDocumentTouchMove(event);
-                //event.preventDefault();
+                event.preventDefault();
                 return;
             }
         }
