@@ -99,6 +99,7 @@ var defaultConfig = {
     orientationOnByDefault: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
+    avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
     disableKeyboardCtrl: false,
@@ -1401,21 +1402,21 @@ function render() {
         // Keep a tmp value of yaw for autoRotate comparison later
         tmpyaw = config.yaw;
 
-        // prevent showing background (empty space) on left or right by adapting min/max yaw
-        var canvas = renderer.getCanvas(),
-            canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-            canvasHeight = canvas.height / (window.devicePixelRatio || 1),
-            hfov2 = config.hfov / 2,
-            vfov2 = Math.atan2(Math.tan(hfov2 / 180 * Math.PI), (canvasWidth / canvasHeight)) * 180 / Math.PI,
-            transposed = config.vaov > config.haov,
-            hoffcut = 0,
+        // Optionally avoid showing background (empty space) on left or right by adapting min/max yaw
+        var hoffcut = 0,
             voffcut = 0;
-        if (transposed) {
-          voffcut = vfov2 * (1 - Math.min(Math.cos((config.pitch - hfov2) / 180 * Math.PI),
-                                          Math.cos((config.pitch + hfov2) / 180 * Math.PI)));
-        } else {
-          hoffcut = hfov2 * (1 - Math.min(Math.cos((config.pitch - vfov2) / 180 * Math.PI),
-                                          Math.cos((config.pitch + vfov2) / 180 * Math.PI)));
+        if (config.avoidShowingBackground) {
+            var canvas = renderer.getCanvas(),
+                hfov2 = config.hfov / 2,
+                vfov2 = Math.atan2(Math.tan(hfov2 / 180 * Math.PI), (canvas.width / canvas.height)) * 180 / Math.PI,
+                transposed = config.vaov > config.haov;
+            if (transposed) {
+                voffcut = vfov2 * (1 - Math.min(Math.cos((config.pitch - hfov2) / 180 * Math.PI),
+                                                Math.cos((config.pitch + hfov2) / 180 * Math.PI)));
+            } else {
+                hoffcut = hfov2 * (1 - Math.min(Math.cos((config.pitch - vfov2) / 180 * Math.PI),
+                                                Math.cos((config.pitch + vfov2) / 180 * Math.PI)));
+            }
         }
 
         // Ensure the yaw is within min and max allowed
@@ -2141,15 +2142,16 @@ function constrainHfov(hfov) {
     if (hfov < minHfov) {
         newHfov = minHfov;
     } else if (hfov > config.maxHfov) {
-        nwHfov = config.maxHfov;
+        newHfov = config.maxHfov;
     } else {
         newHfov = hfov;
     }
-    if (renderer) {
-        // prevent showing background (empty space) on top or bottom by adapting newHfov
+    // Optionally avoid showing background (empty space) on top or bottom by adapting newHfov
+    if (config.avoidShowingBackground && renderer) {
+        var canvas = renderer.getCanvas();
         newHfov = Math.min(newHfov,
                            Math.atan(Math.tan((config.maxPitch - config.minPitch) / 360 * Math.PI) /
-                                     renderer.getCanvas().height * renderer.getCanvas().width)
+                                     canvas.height * canvas.width)
                                * 360 / Math.PI);
     }
     return newHfov;
