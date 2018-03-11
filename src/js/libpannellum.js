@@ -101,6 +101,37 @@ function Renderer(container) {
         pose = undefined;
 
         var s;
+        var faceMissing = false;
+        var cubeImgWidth = undefined;
+        if (imageType == 'cubemap') {
+            for (s = 0; s < 6; s++) {
+                if (image[s].width > 0) {
+                    if (cubeImgWidth == undefined)
+                        cubeImgWidth = image[s].width;
+                    if (cubeImgWidth != image[s].width)
+                        console.log('Cube faces have inconsistent widths: ' + cubeImgWidth + ' vs. ' + image[s].width);
+                } else
+                    faceMissing = true;
+            }
+        }
+        function fillMissingFaces(imgSize) {
+            if (faceMissing) { // fill any missing fallback/cubemap faces with background
+                var nbytes = imgSize * imgSize * 4; /* RGB, plus non-functional alpha */
+                var imageArray = new Uint8ClampedArray(nbytes);
+                var [r,g,b] = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+                r *= 255; g *= 255; b *= 255;
+                var i;
+                // maybe filling could be done faster, see e.g. https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
+                for (i = 0; i < nbytes; i++) {
+                    imageArray[i++] = r; imageArray[i++] = g; imageArray[i++] = b;
+                }
+                var backgroundSquare = new ImageData(imageArray, imgSize, imgSize);
+                for (s = 0; s < 6; s++) {
+                    if (image[s].width == 0)
+                        image[s] = backgroundSquare;
+                }
+            }
+        }
         
         // This awful browser specific test exists because iOS 8/9 and IE 11
         // don't display non-power-of-two cubemap textures but also don't
@@ -110,7 +141,7 @@ function Renderer(container) {
         // NPOT cubemaps, and the CSS 3D transform fallback renderer is used
         // instead.
         if (!(imageType == 'cubemap' &&
-            (image[0].width & (image[0].width - 1)) !== 0 &&
+            (cubeImgWidth & (cubeImgWidth - 1)) !== 0 &&
             (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/) ||
             navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 9_/) ||
             navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 10_/) ||
@@ -123,6 +154,7 @@ function Renderer(container) {
         }
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
+        // This will discard the image loaded so far and load the fallback image.
         // While browser specific tests are usually frowned upon, the
         // fallback viewer only really works with WebKit/Blink and IE 10/11
         // (it doesn't work properly in Firefox).
@@ -206,13 +238,16 @@ function Renderer(container) {
                 // Draw image width duplicated edge pixels on canvas
                 faceContext.putImageData(imgData, 0, 0);
                 
-                incLoaded();
+                incLoaded.call(this);
             };
             var incLoaded = function() {
-                if (this.width != 0) // support partial fallback/cubemap image
-                    fallbackImgSize = this.width;
-                if (loaded == 5 && this.width == 0) // support partial fallback/cubemap image
-                    this.width = fallbackImgSize;
+                if (this.width > 0) {
+                    if (fallbackImgSize == undefined)
+                        fallbackImgSize = this.width;
+                    if (fallbackImgSize != this.width)
+                        console.log('Fallback faces have inconsistent widths: ' + fallbackImgSize + ' vs. ' + this.width);
+                } else
+                    faceMissing = true;
                 loaded++;
                 if (loaded == 6) {
                     fallbackImgSize = this.width;
@@ -220,24 +255,27 @@ function Renderer(container) {
                     callback();
                 }
             };
+            faceMissing = false;
             for (s = 0; s < 6; s++) {
                 var faceImg = new Image();
                 faceImg.crossOrigin = globalParams.crossOrigin ? globalParams.crossOrigin : 'anonymous';
                 faceImg.side = s;
                 faceImg.onload = onLoad;
-                faceImg.onerror = incLoaded; // ignore missing face file to support partial fallback/cubemap image
+                faceImg.onerror = incLoaded; // ignore missing face to support partial fallback image
                 if (imageType == 'multires') {
                     faceImg.src = encodeURI(path.replace('%s', sides[s]) + '.' + image.extension);
                 } else {
                     faceImg.src = encodeURI(image[s].src);
                 }
             }
-            
+            fillMissingFaces(fallbackImgSize);
             return;
         } else if (!gl) {
             console.log('Error: no WebGL support detected!');
             throw {type: 'no webgl'};
         }
+        if (imageType == 'cubemap')
+            fillMissingFaces(cubeImgWidth);
         if (image.basePath) {
             image.fullpath = image.basePath + image.path;
         } else {
@@ -253,21 +291,18 @@ function Renderer(container) {
         }
         
         // Make sure image isn't too big
-        var width, maxWidth;
+        var width = 0, maxWidth = 0;
         if (imageType == 'equirectangular') {
             width = Math.max(image.width, image.height);
             maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-            if (width > maxWidth) {
-                console.log('Error: The image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
-                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
-            }
         } else if (imageType == 'cubemap') {
-            width = image[0].width;
+            width = cubeImgWidth;
             maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
-            if (width > maxWidth) {
-                console.log('Error: The cube face image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
-                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
-            }
+        }
+        if (width > maxWidth) {
+            console.log('Error: The image is too big; it\'s ' + width + 'px wide, '+
+                        'but this device\'s maximum supported size is ' + maxWidth + 'px.');
+            throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
         }
 
         // Store horizon pitch and roll if applicable
@@ -321,7 +356,7 @@ function Renderer(container) {
 
         program.drawInProgress = false;
 
-        // Set background clear color
+        // Set background clear color (does not apply to cubemap/fallback image)
         var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
         gl.clearColor(color[0], color[1], color[2], 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -556,7 +591,7 @@ function Renderer(container) {
             for (i = 0; i < 6; i++) {
                 var face = world.querySelector('.pnlm-' + faces[i] + 'face');
                 if (!face)
-                    continue; // ignore missing face to support partial fallback/cubemap image
+                    continue; // ignore missing face to support partial cubemap/fallback image
                 face.style.webkitTransform = transform + transforms[faces[i]];
                 face.style.transform = transform + transforms[faces[i]];
             }
