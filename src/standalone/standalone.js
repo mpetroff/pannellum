@@ -99,7 +99,7 @@ function parseURLParameters() {
 }
 
 // Display error if opened from local file
-if (window.location.protocol == 'file:') {
+if (false && window.location.protocol == 'file:') {
     anError('Due to browser security restrictions, Pannellum can\'t be run ' +
         'from the local filesystem; some sort of web server must be used.');
 } else {
