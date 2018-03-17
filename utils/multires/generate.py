@@ -50,9 +50,9 @@ parser.add_argument('inputFile', metavar='INPUT',
 parser.add_argument('-C', '--cylindrical', action='store_true',
                     help='input projection is cylindrical (default is equirectangular)')
 parser.add_argument('-H', '--haov', dest='haov', default=-1, type=float,
-                    help='horizonal angle of view (defaults to 360.0 for full panorama)')
+                    help='horizontal angle of view (defaults to 360.0 for full panorama)')
 parser.add_argument('-F', '--hfov', dest='hfov', default=100.0, type=float,
-                    help='starting horizonal field of view (defaults to 100.0)')
+                    help='starting horizontal field of view (defaults to 100.0)')
 parser.add_argument('-V', '--vaov', dest='vaov', default=-1, type=float,
                     help='vertical angle of view (defaults to 180.0 for full panorama)') 
 parser.add_argument('-O', '--voffset', dest='vOffset', default=0.0, type=float,
@@ -70,7 +70,7 @@ parser.add_argument('-c', '--cubesize', dest='cubeSize', default=0, type=int,
 parser.add_argument('-b', '--backgroundcolor', dest='backgroundColor', default="[0.0, 0.0, 0.0]", type=str,
                     help='RGB triple of values [0, 1] defining background color shown past the edges of a partial panorama (defaults to "[0.0, 0.0, 0.0]")')
 parser.add_argument('-B', '--avoidbackground', action='store_true',
-                    help='viewer should limit view to avoid showning background, so using --backgroundcolor is not needed')
+                    help='viewer should limit view to avoid showing background, so using --backgroundcolor is not needed')
 parser.add_argument('-a', '--autoload', action='store_true',
                     help='automatically load panorama in viewer')
 parser.add_argument('-q', '--quality', dest='quality', default=75, type=int,
