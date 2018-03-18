@@ -32,6 +32,7 @@ from PIL import Image
 import os
 import sys
 import math
+import ast
 from distutils.spawn import find_executable
 import subprocess
 
@@ -123,7 +124,7 @@ origFilename = os.path.join(os.getcwd(), args.inputFile)
 extension = '.jpg'
 if args.png:
     extension = '.png'
-colorList = eval(args.backgroundColor)
+colorList = ast.literal_eval(args.backgroundColor)
 colorTuple = (int(colorList[0]*255), int(colorList[1]*255), int(colorList[2]*255))
 
 if args.debug:
