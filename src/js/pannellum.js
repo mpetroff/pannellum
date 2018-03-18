@@ -350,11 +350,6 @@ function init() {
         };
         
         var onError = function(e) {
-            if (1) { // support partial cubemap image, i.e., missing faces
-                console.log(config.strings.fileAccessError.replace('%s', e.target.src)+'; will use background instead');
-                onLoad();
-                return;
-            }
             var a = document.createElement('a');
             a.href = e.target.src;
             a.innerHTML = a.href;
@@ -362,13 +357,18 @@ function init() {
         };
         
         for (i = 0; i < panoImage.length; i++) {
-            panoImage[i].onload = onLoad;
-            panoImage[i].onerror = onError;
             p = config.cubeMap[i];
-            if (config.basePath && !absoluteURL(p)) {
-                p = config.basePath + p;
+            if (p == "null") { // support partial cubemap image with explicitly empty faces
+                console.log('Will use background instead of missing cubemap face ' + i);
+                onLoad();
+            } else {
+                if (config.basePath && !absoluteURL(p)) {
+                    p = config.basePath + p;
+                }
+                panoImage[i].onload = onLoad;
+                panoImage[i].onerror = onError;
+                panoImage[i].src = encodeURI(p);
             }
-            panoImage[i].src = encodeURI(p);
         }
     } else if (config.type == 'multires') {
         onImageLoad();

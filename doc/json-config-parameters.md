@@ -361,8 +361,7 @@ said data will override any existing settings. Defaults to `false`.
 This is an array of URLs for the six cube faces in the order front, right,
 back, left, up, down. These are relative to `basePath` if it is set, else they
 are relative to the location of `pannellum.htm`. Absolute URLs can also be
-used.
-
+used. Partial cubemap images may be specified by giving `null` instead of a URL.
 
 
 ## `multires` specific options
