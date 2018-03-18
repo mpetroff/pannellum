@@ -102,11 +102,11 @@ function Renderer(container) {
 
         var s;
         var faceMissing = false;
-        var cubeImgWidth = undefined;
+        var cubeImgWidth;
         if (imageType == 'cubemap') {
             for (s = 0; s < 6; s++) {
                 if (image[s].width > 0) {
-                    if (cubeImgWidth == undefined)
+                    if (cubeImgWidth === undefined)
                         cubeImgWidth = image[s].width;
                     if (cubeImgWidth != image[s].width)
                         console.log('Cube faces have inconsistent widths: ' + cubeImgWidth + ' vs. ' + image[s].width);
@@ -242,7 +242,7 @@ function Renderer(container) {
             };
             var incLoaded = function() {
                 if (this.width > 0) {
-                    if (fallbackImgSize == undefined)
+                    if (fallbackImgSize === undefined)
                         fallbackImgSize = this.width;
                     if (fallbackImgSize != this.width)
                         console.log('Fallback faces have inconsistent widths: ' + fallbackImgSize + ' vs. ' + this.width);
