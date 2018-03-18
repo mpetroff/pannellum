@@ -86,6 +86,12 @@ parser.add_argument('-d', '--debug', action='store_true',
                     help='debug mode (print status info and keep intermediate files)')
 args = parser.parse_args()
 
+# Create output directory
+if os.path.exists(args.output):
+    print('Output directory "' + args.output + '" already exists')
+    sys.exit(1)
+os.makedirs(args.output)
+
 # Process input image information
 print('Processing input image information...')
 origWidth, origHeight = Image.open(args.inputFile).size
@@ -124,10 +130,6 @@ if args.debug:
     print('maxLevel: '+ str(levels))
     print('tileResolution: '+ str(tileSize))
     print('cubeResolution: '+ str(cubeSize))
-
-# Create output directory
-if not os.path.exists(args.output):
-    os.makedirs(args.output)
 
 # Generate PTO file for nona to generate cube faces
 # Face order: front, back, up, down, left, right
