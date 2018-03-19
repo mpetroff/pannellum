@@ -90,8 +90,10 @@ args = parser.parse_args()
 # Create output directory
 if os.path.exists(args.output):
     print('Output directory "' + args.output + '" already exists')
-    sys.exit(1)
-os.makedirs(args.output)
+    if not args.debug:
+        sys.exit(1)
+else:
+    os.makedirs(args.output)
 
 # Process input image information
 print('Processing input image information...')
