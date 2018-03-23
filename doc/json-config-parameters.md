@@ -306,8 +306,10 @@ standard keys that are used by the viewer.
 ### `backgroundColor` ([number, number, number])
 
 Specifies an array containing RGB values [0, 1] that sets the background color
-shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
-Does not work for `cubemap` panoramas.
+for areas where no image data is available. Defaults to `[0, 0, 0]` (black).
+For partial `equirectangular` panoramas this applies to areas past the edges of
+the defined rectangle. For `multires` and `cubemap` (including fallback) panoramas
+this applies to areas corresponding to missing tiles or faces.
 
 ### `avoidShowingBackground` (boolean)
 
@@ -359,8 +361,7 @@ said data will override any existing settings. Defaults to `false`.
 This is an array of URLs for the six cube faces in the order front, right,
 back, left, up, down. These are relative to `basePath` if it is set, else they
 are relative to the location of `pannellum.htm`. Absolute URLs can also be
-used.
-
+used. Partial cubemap images may be specified by giving `null` instead of a URL.
 
 
 ## `multires` specific options
