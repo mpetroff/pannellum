@@ -583,7 +583,7 @@ function Renderer(container) {
                 r: 'translate3d(' + s + 'px, -' + (s + 2) + 'px, -' + (s + 2) + 'px) rotateY(270deg)'
             };
             focal = 1 / Math.tan(hfov / 2);
-            var zoom = focal * gl.drawingBufferWidth / 2 + 'px';
+            var zoom = focal * canvas.clientWidth / 2 + 'px';
             var transform = 'perspective(' + zoom + ') translateZ(' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) ';
             
             // Apply face transforms
