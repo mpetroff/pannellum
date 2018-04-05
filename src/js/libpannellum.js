@@ -115,15 +115,18 @@ function Renderer(container) {
             }
         }
         function fillMissingFaces(imgSize) {
-            if (faceMissing) { // fill any missing fallback/cubemap faces with background
-                var nbytes = imgSize * imgSize * 4; /* RGB, plus non-functional alpha */
+            if (faceMissing) { // Fill any missing fallback/cubemap faces with background
+                var nbytes = imgSize * imgSize * 4; // RGB, plus non-functional alpha
                 var imageArray = new Uint8ClampedArray(nbytes);
-                var [r,g,b] = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
-                r *= 255; g *= 255; b *= 255;
-                var i;
-                // maybe filling could be done faster, see e.g. https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
-                for (i = 0; i < nbytes; i++) {
-                    imageArray[i++] = r; imageArray[i++] = g; imageArray[i++] = b;
+                var rgb = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+                rgb[0] *= 255;
+                rgb[1] *= 255;
+                rgb[2] *= 255;
+                // Maybe filling could be done faster, see e.g. https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
+                for (var i = 0; i < nbytes; i++) {
+                    imageArray[i++] = rgb[0];
+                    imageArray[i++] = rgb[1];
+                    imageArray[i++] = rgb[2];
                 }
                 var backgroundSquare = new ImageData(imageArray, imgSize, imgSize);
                 for (s = 0; s < 6; s++) {
