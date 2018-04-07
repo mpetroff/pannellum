@@ -53,7 +53,7 @@ function parseURLParameters() {
         // Get JSON configuration file
         request = new XMLHttpRequest();
         request.onload = function() {
-            if (request.status != 200) {
+            if (request.status != 200 && request.status != 0) {
                 // Display error if JSON can't be loaded
                 var a = document.createElement('a');
                 a.href = configFromURL.config;
