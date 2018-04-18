@@ -321,6 +321,11 @@ function Renderer(container) {
 
         program.drawInProgress = false;
 
+        // Set background clear color
+        var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+        gl.clearColor(color[0], color[1], color[2], 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
         // Look up texture coordinates location
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
@@ -354,7 +359,6 @@ function Renderer(container) {
             // Set background color
             if (imageType == 'equirectangular') {
                 program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
-                var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
                 gl.uniform4fv(program.backgroundColor, color.concat([1]));
             }
 
@@ -707,8 +711,9 @@ function Renderer(container) {
     function multiresDraw() {
         if (!program.drawInProgress) {
             program.drawInProgress = true;
+            gl.clear(gl.COLOR_BUFFER_BIT);
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
-                if (program.currentNodes[i].textureLoaded) {
+                if (program.currentNodes[i].textureLoaded > 1) {
                     //var color = program.currentNodes[i].color;
                     //gl.uniform4f(program.colorUniform, color[0], color[1], color[2], 1.0);
                     
@@ -1035,9 +1040,12 @@ function Renderer(container) {
             this.image = new Image();
             this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
             var loadFn = (function() {
-                if (self.image.width > 0 && self.image.height > 0) // ignore missing tile to supporting partial image
+                if (self.image.width > 0 && self.image.height > 0) { // ignore missing tile to supporting partial image
                     processLoadedTexture(self.image, self.texture);
-                self.callback(self.texture);
+                    self.callback(self.texture, true);
+                } else {
+                    self.callback(self.texture, false);
+                }
                 releaseTextureImageLoader(self);
             });
             this.image.addEventListener('load', loadFn);
@@ -1086,9 +1094,9 @@ function Renderer(container) {
     function processNextTile(node) {
         if (!node.textureLoad) {
             node.textureLoad = true;
-            loadTexture(encodeURI(node.path + '.' + image.extension), function(texture) {
+            loadTexture(encodeURI(node.path + '.' + image.extension), function(texture, loaded) {
                 node.texture = texture;
-                node.textureLoaded = true;
+                node.textureLoaded = loaded ? 2 : 1;
             }, globalParams.crossOrigin);
         }
     }
