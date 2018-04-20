@@ -102,7 +102,6 @@ var defaultConfig = {
     orientationOnByDefault: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
-    avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
     disableKeyboardCtrl: false,
@@ -519,7 +518,6 @@ function onImageLoad() {
     }
 
     renderInit();
-    setHfov(config.hfov); // possibly adapt hfov after configuration and canvas is complete; prevents empty space on top or bottom by zomming out too much
     setTimeout(function(){isTimedOut = true;}, 500);
 }
 
@@ -1440,41 +1438,23 @@ function render() {
         // Keep a tmp value of yaw for autoRotate comparison later
         tmpyaw = config.yaw;
 
-        // Optionally avoid showing background (empty space) on left or right by adapting min/max yaw
-        var hoffcut = 0,
-            voffcut = 0;
-        if (config.avoidShowingBackground) {
-            var canvas = renderer.getCanvas(),
-                hfov2 = config.hfov / 2,
-                vfov2 = Math.atan2(Math.tan(hfov2 / 180 * Math.PI), (canvas.width / canvas.height)) * 180 / Math.PI,
-                transposed = config.vaov > config.haov;
-            if (transposed) {
-                voffcut = vfov2 * (1 - Math.min(Math.cos((config.pitch - hfov2) / 180 * Math.PI),
-                                                Math.cos((config.pitch + hfov2) / 180 * Math.PI)));
-            } else {
-                hoffcut = hfov2 * (1 - Math.min(Math.cos((config.pitch - vfov2) / 180 * Math.PI),
-                                                Math.cos((config.pitch + vfov2) / 180 * Math.PI)));
-            }
-        }
-
         // Ensure the yaw is within min and max allowed
         var yawRange = config.maxYaw - config.minYaw,
             minYaw = -180,
             maxYaw = 180;
         if (yawRange < 360) {
-            minYaw = config.minYaw + config.hfov / 2 + hoffcut;
-            maxYaw = config.maxYaw - config.hfov / 2 - hoffcut;
+            minYaw = config.minYaw + config.hfov / 2;
+            maxYaw = config.maxYaw - config.hfov / 2;
             if (yawRange < config.hfov) {
                 // Lock yaw to average of min and max yaw when both can be seen at once
                 minYaw = maxYaw = (minYaw + maxYaw) / 2;
             }
-            config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         }
+        config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         
         // Check if we autoRotate in a limited by min and max yaw
         // If so reverse direction
-        if (config.autoRotate !== false && tmpyaw != config.yaw &&
-            prevTime !== undefined) { // this condition prevents changing the direction initially
+        if (config.autoRotate !== false && tmpyaw != config.yaw) {
             config.autoRotate *= -1;
         }
 
@@ -2204,24 +2184,13 @@ function constrainHfov(hfov) {
         // Don't change view if bounds don't make sense
         console.log('HFOV bounds do not make sense (minHfov > maxHfov).')
         return config.hfov;
-    }
-    var newHfov = config.hfov;
-    if (hfov < minHfov) {
-        newHfov = minHfov;
+    } if (hfov < minHfov) {
+        return minHfov;
     } else if (hfov > config.maxHfov) {
-        newHfov = config.maxHfov;
+        return config.maxHfov;
     } else {
-        newHfov = hfov;
+        return hfov;
     }
-    // Optionally avoid showing background (empty space) on top or bottom by adapting newHfov
-    if (config.avoidShowingBackground && renderer) {
-        var canvas = renderer.getCanvas();
-        newHfov = Math.min(newHfov,
-                           Math.atan(Math.tan((config.maxPitch - config.minPitch) / 360 * Math.PI) /
-                                     canvas.height * canvas.width)
-                               * 360 / Math.PI);
-    }
-    return newHfov;
 }
 
 

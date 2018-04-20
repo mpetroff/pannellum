@@ -303,20 +303,6 @@ WebGL renderer.
 Specifies the key numbers that are captured in key events. Defaults to the
 standard keys that are used by the viewer.
 
-### `backgroundColor` ([number, number, number])
-
-Specifies an array containing RGB values [0, 1] that sets the background color
-shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
-Does not work for `cubemap` panoramas.
-
-### `avoidShowingBackground` (boolean)
-
-If set to `true`, prevent displaying out-of-range areas of a partial panorama
-by constraining the yaw and the field-of-view. Even at the corners and edges
-of the canvas only areas actually belonging to the image
-(i.e., within [`minYaw`, `maxYaw`] and [`minPitch`, `maxPitch`]) are shown,
-thus setting the `backgroundColor` option is not needed if this option is set.
-Defaults to `false`.
 
 
 ## `equirectangular` specific options
@@ -349,6 +335,11 @@ and the equirectangular image is not cropped symmetrically.
 
 If set to `true`, any embedded Photo Sphere XMP data will be ignored; else,
 said data will override any existing settings. Defaults to `false`.
+
+### `backgroundColor` ([number, number, number])
+
+Specifies an array containing RGB values [0, 1] that sets the background color
+shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
 
 
 
