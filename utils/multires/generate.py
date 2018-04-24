@@ -130,6 +130,7 @@ origFilename = os.path.join(os.getcwd(), args.inputFile)
 extension = '.jpg'
 if args.png:
     extension = '.png'
+partialPano = True if args.haov != -1 and args.vaov != -1 else False
 colorList = ast.literal_eval(args.backgroundColor)
 colorTuple = (int(colorList[0]*255), int(colorList[1]*255), int(colorList[2]*255))
 
@@ -185,15 +186,16 @@ for f in range(0, 6):
                     lower = min(i * args.tileSize + args.tileSize, size) # min(...) not really needed
                     tile = face.crop([left, upper, right, lower])
                     if args.debug:
-                        print('level: '+ str(level) + ' tiles: '+ str(tiles) + ' tileSize: '+ str(tileSize) + 'size: '+ str(size))
+                        print('level: '+ str(level) + ' tiles: '+ str(tiles) + ' tileSize: ' + str(tileSize) + ' size: '+ str(size))
                         print('left: '+ str(left) + ' upper: '+ str(upper) + ' right: '+ str(right) + ' lower: '+ str(lower))
-                    if (tile.getcolors(1) == None): # more than just one color (the background), i.e., non-empty tile
-                        tile.load()
+                    colors = tile.getcolors(1)
+                    if not partialPano or colors == None or colors[0][1] != colorTuple:
+                        # More than just one color (the background), i.e., non-empty tile
                         if tile.mode in ('RGBA', 'LA'):
                             background = Image.new(tile.mode[:-1], tile.size, colorTuple)
                             background.paste(tile, tile.split()[-1])
                             tile = background
-                        tile.save(os.path.join(args.output, str(level), faceLetters[f] + str(i) + '_' + str(j) + extension), quality = args.quality)
+                        tile.save(os.path.join(args.output, str(level), faceLetters[f] + str(i) + '_' + str(j) + extension), quality=args.quality)
             size = int(size / 2)
 
 # Generate fallback tiles
