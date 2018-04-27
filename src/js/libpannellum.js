@@ -660,12 +660,29 @@ function Renderer(container) {
                 var ntmp = new MultiresNode(vtmps[s], sides[s], 1, 0, 0, image.fullpath);
                 testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
+            
             program.currentNodes.sort(multiresNodeRenderSort);
-            // Only process one tile per frame to improve responsiveness
-            for (i = 0; i < program.currentNodes.length; i++) {
-                if (!program.currentNodes[i].texture) {
-                    setTimeout(processNextTile, 0, program.currentNodes[i]);
-                    break;
+            
+            // Unqueue any pending requests for nodes that are no longer visible
+            for (i = pendingTextureRequests.length - 1; i >= 0; i--) {
+                if (program.currentNodes.indexOf(pendingTextureRequests[i].node) === -1) {
+                    pendingTextureRequests[i].node.textureLoad = false;
+                    pendingTextureRequests.splice(i, 1);
+                }
+            }
+            
+            // Allow one request to be pending, so that we can create a texture buffer for that in advance of loading actually beginning
+            if (pendingTextureRequests.length === 0) {
+                for (i = 0; i < program.currentNodes.length; i++) {
+                    var node = program.currentNodes[i];
+                    if (!node.texture && !node.textureLoad) {
+                        node.textureLoad = true;
+            
+                        setTimeout(processNextTile, 0, node);
+                        
+                        // Only process one tile per frame to improve responsiveness
+                        break;
+                    }
                 }
             }
             
@@ -1064,12 +1081,13 @@ function Renderer(container) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
+    
+    var pendingTextureRequests = [];
 
     // Based on http://blog.tojicode.com/2012/03/javascript-memory-optimization-and.html
     var loadTexture = (function() {
         var cacheTop = 4;   // Maximum number of concurrents loads
         var textureImageCache = {};
-        var pendingTextureRequests = [];
         var crossOrigin;
 
         function TextureImageLoader() {
@@ -1096,7 +1114,8 @@ function Renderer(container) {
             this.image.src = src;
         };
 
-        function PendingTextureRequest(src, texture, callback) {
+        function PendingTextureRequest(node, src, texture, callback) {
+            this.node = node;
             this.src = src;
             this.texture = texture;
             this.callback = callback;
@@ -1113,13 +1132,13 @@ function Renderer(container) {
         for (var i = 0; i < cacheTop; i++)
             textureImageCache[i] = new TextureImageLoader();
 
-        return function(src, callback, _crossOrigin) {
+        return function(node, src, callback, _crossOrigin) {
             crossOrigin = _crossOrigin;
             var texture = gl.createTexture();
             if (cacheTop)
                 textureImageCache[--cacheTop].loadTexture(src, texture, callback);
             else
-                pendingTextureRequests.push(new PendingTextureRequest(src, texture, callback));
+                pendingTextureRequests.push(new PendingTextureRequest(node, src, texture, callback));
             return texture;
         };
     })();
@@ -1130,13 +1149,10 @@ function Renderer(container) {
      * @param {MultiresNode} node - Input node.
      */
     function processNextTile(node) {
-        if (!node.textureLoad) {
-            node.textureLoad = true;
-            loadTexture(encodeURI(node.path + '.' + image.extension), function(texture, loaded) {
-                node.texture = texture;
-                node.textureLoaded = loaded ? 2 : 1;
-            }, globalParams.crossOrigin);
-        }
+        loadTexture(node, encodeURI(node.path + '.' + image.extension), function(texture, loaded) {
+            node.texture = texture;
+            node.textureLoaded = loaded ? 2 : 1;
+        }, globalParams.crossOrigin);
     }
     
     /**
