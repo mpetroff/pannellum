@@ -2800,26 +2800,43 @@ this.addHotSpot = function(hs, sceneId) {
  * @memberof Viewer
  * @instance
  * @param {string} hotSpotId - The ID of the hot spot
+ * @param {string} [sceneId] - Removes hot spot from specified scene if provided, else from current scene
  * @returns {boolean} True if deletion is successful, else false
  */
-this.removeHotSpot = function(hotSpotId) {
-    if (!config.hotSpots)
-        return false;
-    for (var i = 0; i < config.hotSpots.length; i++) {
-        if (config.hotSpots[i].hasOwnProperty('id') &&
-            config.hotSpots[i].id === hotSpotId) {
-            // Delete hot spot DOM elements
-            var current = config.hotSpots[i].div;
-            while (current.parentNode != renderContainer)
-                current = current.parentNode;
-            renderContainer.removeChild(current);
-            delete config.hotSpots[i].div;
-            // Remove hot spot from configuration
-            config.hotSpots.splice(i, 1);
-            return true;
+this.removeHotSpot = function(hotSpotId, sceneId) {
+    if (sceneId === undefined || config.scene == sceneId) {
+        if (!config.hotSpots)
+            return false;
+        for (var i = 0; i < config.hotSpots.length; i++) {
+            if (config.hotSpots[i].hasOwnProperty('id') &&
+                config.hotSpots[i].id === hotSpotId) {
+                // Delete hot spot DOM elements
+                var current = config.hotSpots[i].div;
+                while (current.parentNode != renderContainer)
+                    current = current.parentNode;
+                renderContainer.removeChild(current);
+                delete config.hotSpots[i].div;
+                // Remove hot spot from configuration
+                config.hotSpots.splice(i, 1);
+                return true;
+            }
+        }
+    } else {
+        if (initialConfig.scenes.hasOwnProperty(sceneId)) {
+            if (!initialConfig.scenes[sceneId].hasOwnProperty('hotSpots'))
+                return false;
+            for (var i = 0; i < initialConfig.scenes[sceneId].hotSpots.length; i++) {
+                if (initialConfig.scenes[sceneId].hotSpots[i].hasOwnProperty('id') &&
+                    initialConfig.scenes[sceneId].hotSpots[i].id === hotSpotId) {
+                    // Remove hot spot from configuration
+                    initialConfig.scenes[sceneId].hotSpots.splice(i, 1);
+                    return true;
+                }
+            }
+        } else {
+            return false;
         }
     }
-    return false;
 }
 
 /**
