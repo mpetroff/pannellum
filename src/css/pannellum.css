@@ -438,3 +438,7 @@ div.pnlm-tooltip:hover span:after {
     top: 0;
     left: 0;
 }
+
+.pnlm-pointer {
+    cursor: pointer;
+}

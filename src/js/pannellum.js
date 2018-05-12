@@ -362,13 +362,18 @@ function init() {
         };
         
         for (i = 0; i < panoImage.length; i++) {
-            panoImage[i].onload = onLoad;
-            panoImage[i].onerror = onError;
             p = config.cubeMap[i];
-            if (config.basePath && !absoluteURL(p)) {
-                p = config.basePath + p;
+            if (p == "null") { // support partial cubemap image with explicitly empty faces
+                console.log('Will use background instead of missing cubemap face ' + i);
+                onLoad();
+            } else {
+                if (config.basePath && !absoluteURL(p)) {
+                    p = config.basePath + p;
+                }
+                panoImage[i].onload = onLoad;
+                panoImage[i].onerror = onError;
+                panoImage[i].src = encodeURI(p);
             }
-            panoImage[i].src = encodeURI(p);
         }
     } else if (config.type == 'multires') {
         onImageLoad();
@@ -1741,8 +1746,8 @@ function createHotSpot(hs) {
         a.href = encodeURI(hs.URL);
         a.target = '_blank';
         renderContainer.appendChild(a);
-        div.style.cursor = 'pointer';
-        span.style.cursor = 'pointer';
+        div.className += ' pnlm-pointer';
+        span.className += ' pnlm-pointer';
         a.appendChild(div);
     } else {
         if (hs.sceneId) {
@@ -1753,8 +1758,8 @@ function createHotSpot(hs) {
                 }
                 return false;
             };
-            div.style.cursor = 'pointer';
-            span.style.cursor = 'pointer';
+            div.className += ' pnlm-pointer';
+            span.className += ' pnlm-pointer';
         }
         renderContainer.appendChild(div);
     }
@@ -1772,8 +1777,8 @@ function createHotSpot(hs) {
         div.addEventListener('click', function(e) {
             hs.clickHandlerFunc(e, hs.clickHandlerArgs);
         }, 'false');
-        div.style.cursor = 'pointer';
-        span.style.cursor = 'pointer';
+        div.className += ' pnlm-pointer';
+        span.className += ' pnlm-pointer';
     }
     if(hs.draggable){
         div.addEventListener('mousedown', (e) => {
@@ -2973,26 +2978,43 @@ this.addHotSpot = function(hs, sceneId) {
  * @memberof Viewer
  * @instance
  * @param {string} hotSpotId - The ID of the hot spot
+ * @param {string} [sceneId] - Removes hot spot from specified scene if provided, else from current scene
  * @returns {boolean} True if deletion is successful, else false
  */
-this.removeHotSpot = function(hotSpotId) {
-    if (!config.hotSpots)
-        return false;
-    for (var i = 0; i < config.hotSpots.length; i++) {
-        if (config.hotSpots[i].hasOwnProperty('id') &&
-            config.hotSpots[i].id === hotSpotId) {
-            // Delete hot spot DOM elements
-            var current = config.hotSpots[i].div;
-            while (current.parentNode != renderContainer)
-                current = current.parentNode;
-            renderContainer.removeChild(current);
-            delete config.hotSpots[i].div;
-            // Remove hot spot from configuration
-            config.hotSpots.splice(i, 1);
-            return true;
+this.removeHotSpot = function(hotSpotId, sceneId) {
+    if (sceneId === undefined || config.scene == sceneId) {
+        if (!config.hotSpots)
+            return false;
+        for (var i = 0; i < config.hotSpots.length; i++) {
+            if (config.hotSpots[i].hasOwnProperty('id') &&
+                config.hotSpots[i].id === hotSpotId) {
+                // Delete hot spot DOM elements
+                var current = config.hotSpots[i].div;
+                while (current.parentNode != renderContainer)
+                    current = current.parentNode;
+                renderContainer.removeChild(current);
+                delete config.hotSpots[i].div;
+                // Remove hot spot from configuration
+                config.hotSpots.splice(i, 1);
+                return true;
+            }
+        }
+    } else {
+        if (initialConfig.scenes.hasOwnProperty(sceneId)) {
+            if (!initialConfig.scenes[sceneId].hasOwnProperty('hotSpots'))
+                return false;
+            for (var i = 0; i < initialConfig.scenes[sceneId].hotSpots.length; i++) {
+                if (initialConfig.scenes[sceneId].hotSpots[i].hasOwnProperty('id') &&
+                    initialConfig.scenes[sceneId].hotSpots[i].id === hotSpotId) {
+                    // Remove hot spot from configuration
+                    initialConfig.scenes[sceneId].hotSpots.splice(i, 1);
+                    return true;
+                }
+            }
+        } else {
+            return false;
         }
     }
-    return false;
 }
 
 /**
