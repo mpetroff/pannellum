@@ -10,17 +10,16 @@ function parseURLParameters() {
     var URL;
     if (window.location.hash.length > 0) {
         // Prefered method since parameters aren't sent to server
-        URL = [window.location.hash.slice(1)];
+        URL = window.location.hash.slice(1);
     } else {
-        URL = decodeURI(window.location.href).split('?');
-        URL.shift();
+        URL = window.location.search.slice(1);
     }
-    if (URL.length < 1) {
+    if (!URL) {
         // Display error if no configuration parameters are specified
         anError('No configuration options were specified.');
         return;
     }
-    URL = URL[0].split('&');
+    URL = URL.split('&');
     var configFromURL = {};
     for (var i = 0; i < URL.length; i++) {
         var option = URL[i].split('=')[0];
