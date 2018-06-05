@@ -1,7 +1,9 @@
 function anError(error) {
     var errorMsg = document.createElement('div');
     errorMsg.className = 'pnlm-info-box';
-    errorMsg.innerHTML = '<p>' + error + '</p>';
+    var p = document.createElement('p');
+    p.textContent = error;
+    errorMsg.appendChild(p);
     document.getElementById('container').appendChild(errorMsg);
 }
 
@@ -56,7 +58,7 @@ function parseURLParameters() {
                 // Display error if JSON can't be loaded
                 var a = document.createElement('a');
                 a.href = configFromURL.config;
-                a.innerHTML = a.href;
+                a.textContent = a.href;
                 anError('The file ' + a.outerHTML + ' could not be accessed.');
                 return;
             }
