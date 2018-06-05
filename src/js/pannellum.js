@@ -352,7 +352,7 @@ function init() {
         var onError = function(e) {
             var a = document.createElement('a');
             a.href = e.target.src;
-            a.innerHTML = a.href;
+            a.textContent = a.href;
             anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
         };
         
@@ -367,7 +367,7 @@ function init() {
                 }
                 panoImage[i].onload = onLoad;
                 panoImage[i].onerror = onError;
-                panoImage[i].src = encodeURI(p);
+                panoImage[i].src = sanitizeURL(p);
             }
         }
     } else if (config.type == 'multires') {
@@ -392,8 +392,8 @@ function init() {
                 if (xhr.status != 200) {
                     // Display error if image can't be loaded
                     var a = document.createElement('a');
-                    a.href = encodeURI(p);
-                    a.innerHTML = a.href;
+                    a.href = p;
+                    a.textContent = a.href;
                     anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 }
                 var img = this.response;
@@ -1684,7 +1684,7 @@ function createHotSpot(hs) {
             p = hs.video;
         if (config.basePath && !absoluteURL(p))
             p = config.basePath + p;
-        video.src = encodeURI(p);
+        video.src = sanitizeURL(p);
         video.controls = true;
         video.style.width = hs.width + 'px';
         renderContainer.appendChild(div);
@@ -1694,11 +1694,11 @@ function createHotSpot(hs) {
         if (config.basePath && !absoluteURL(p))
             p = config.basePath + p;
         a = document.createElement('a');
-        a.href = encodeURI(hs.URL ? hs.URL : p);
+        a.href = sanitizeURL(hs.URL ? hs.URL : p);
         a.target = '_blank';
         span.appendChild(a);
         var image = document.createElement('img');
-        image.src = encodeURI(p);
+        image.src = sanitizeURL(p);
         image.style.width = hs.width + 'px';
         image.style.paddingTop = '5px';
         renderContainer.appendChild(div);
@@ -1706,7 +1706,7 @@ function createHotSpot(hs) {
         span.style.maxWidth = 'initial';
     } else if (hs.URL) {
         a = document.createElement('a');
-        a.href = encodeURI(hs.URL);
+        a.href = sanitizeURL(hs.URL);
         a.target = '_blank';
         renderContainer.appendChild(a);
         div.className += ' pnlm-pointer';
@@ -1930,7 +1930,7 @@ function processOptions(isPreview) {
             p = config.basePath + p;
         preview = document.createElement('div');
         preview.className = 'pnlm-preview-img';
-        preview.style.backgroundImage = "url('" + encodeURI(p) + "')";
+        preview.style.backgroundImage = "url('" + sanitizeURLForCss(p) + "')";
         renderContainer.appendChild(preview);
     }
 
@@ -1971,7 +1971,16 @@ function processOptions(isPreview) {
                 break;
             
             case 'fallback':
-                infoDisplay.errorMsg.innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + encodeURI(config[key]) + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
+                var link = document.createElement('a');
+                link.href = sanitizeURL(config[key]);
+                link.target = '_blank';
+                link.textContent = 'Click here to view this panorama in an alternative viewer.';
+                var message = document.createElement('p');
+                message.textContent = 'Your browser does not support WebGL.'
+                message.appendChild(document.createElement('br'));
+                message.appendChild(link);
+                infoDisplay.errorMsg.innerHTML = ''; // Removes all children nodes
+                infoDisplay.errorMsg.appendChild(message);
                 break;
             
             case 'hfov':
@@ -2309,6 +2318,34 @@ function escapeHTML(s) {
         .split('>').join('&gt;')
         .split('/').join('&#x2f;')
         .split('\n').join('<br>');  // Allow line breaks
+}
+
+/**
+ * Removes possibility of XSS attacks with URLs.
+ * The URL cannot be of protocol 'javascript'.
+ * @private
+ * @param {string} url - URL to sanitize
+ * @returns {string} Sanitized URL
+ */
+function sanitizeURL(url) {
+    if (url.trim().toLowerCase().indexOf('javascript:') === 0) {
+        return 'about:blank';
+    }
+    return url;
+}
+
+/**
+ * Removes possibility of XSS atacks with URLs for CSS.
+ * The URL will be sanitized with `sanitizeURL()` and single quotes
+ * and double quotes escaped.
+ * @private
+ * @param {string} url - URL to sanitize
+ * @returns {string} Sanitized URL
+ */
+function sanitizeURLForCss(url) {
+    return sanitizeURL(url)
+        .replace(/"/g, '%22')
+        .replace(/'/g, '%27');
 }
 
 /**
