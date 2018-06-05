@@ -6,3 +6,6 @@
 
 # Ignore generated docs
 utils/doc/generated_docs
+
+# Ignore IntelliJ Files
+.idea

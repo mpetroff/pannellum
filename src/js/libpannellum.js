@@ -101,6 +101,40 @@ function Renderer(container) {
         pose = undefined;
 
         var s;
+        var faceMissing = false;
+        var cubeImgWidth;
+        if (imageType == 'cubemap') {
+            for (s = 0; s < 6; s++) {
+                if (image[s].width > 0) {
+                    if (cubeImgWidth === undefined)
+                        cubeImgWidth = image[s].width;
+                    if (cubeImgWidth != image[s].width)
+                        console.log('Cube faces have inconsistent widths: ' + cubeImgWidth + ' vs. ' + image[s].width);
+                } else
+                    faceMissing = true;
+            }
+        }
+        function fillMissingFaces(imgSize) {
+            if (faceMissing) { // Fill any missing fallback/cubemap faces with background
+                var nbytes = imgSize * imgSize * 4; // RGB, plus non-functional alpha
+                var imageArray = new Uint8ClampedArray(nbytes);
+                var rgb = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+                rgb[0] *= 255;
+                rgb[1] *= 255;
+                rgb[2] *= 255;
+                // Maybe filling could be done faster, see e.g. https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
+                for (var i = 0; i < nbytes; i++) {
+                    imageArray[i++] = rgb[0];
+                    imageArray[i++] = rgb[1];
+                    imageArray[i++] = rgb[2];
+                }
+                var backgroundSquare = new ImageData(imageArray, imgSize, imgSize);
+                for (s = 0; s < 6; s++) {
+                    if (image[s].width == 0)
+                        image[s] = backgroundSquare;
+                }
+            }
+        }
         
         // This awful browser specific test exists because iOS 8/9 and IE 11
         // don't display non-power-of-two cubemap textures but also don't
@@ -110,7 +144,7 @@ function Renderer(container) {
         // NPOT cubemaps, and the CSS 3D transform fallback renderer is used
         // instead.
         if (!(imageType == 'cubemap' &&
-            (image[0].width & (image[0].width - 1)) !== 0 &&
+            (cubeImgWidth & (cubeImgWidth - 1)) !== 0 &&
             (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/) ||
             navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 9_/) ||
             navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 10_/) ||
@@ -123,6 +157,7 @@ function Renderer(container) {
         }
         
         // If there is no WebGL, fall back to CSS 3D transform renderer.
+        // This will discard the image loaded so far and load the fallback image.
         // While browser specific tests are usually frowned upon, the
         // fallback viewer only really works with WebKit/Blink and IE 10/11
         // (it doesn't work properly in Firefox).
@@ -206,6 +241,16 @@ function Renderer(container) {
                 // Draw image width duplicated edge pixels on canvas
                 faceContext.putImageData(imgData, 0, 0);
                 
+                incLoaded.call(this);
+            };
+            var incLoaded = function() {
+                if (this.width > 0) {
+                    if (fallbackImgSize === undefined)
+                        fallbackImgSize = this.width;
+                    if (fallbackImgSize != this.width)
+                        console.log('Fallback faces have inconsistent widths: ' + fallbackImgSize + ' vs. ' + this.width);
+                } else
+                    faceMissing = true;
                 loaded++;
                 if (loaded == 6) {
                     fallbackImgSize = this.width;
@@ -213,23 +258,27 @@ function Renderer(container) {
                     callback();
                 }
             };
+            faceMissing = false;
             for (s = 0; s < 6; s++) {
                 var faceImg = new Image();
                 faceImg.crossOrigin = globalParams.crossOrigin ? globalParams.crossOrigin : 'anonymous';
                 faceImg.side = s;
                 faceImg.onload = onLoad;
+                faceImg.onerror = incLoaded; // ignore missing face to support partial fallback image
                 if (imageType == 'multires') {
                     faceImg.src = encodeURI(path.replace('%s', sides[s]) + '.' + image.extension);
                 } else {
                     faceImg.src = encodeURI(image[s].src);
                 }
             }
-            
+            fillMissingFaces(fallbackImgSize);
             return;
         } else if (!gl) {
             console.log('Error: no WebGL support detected!');
             throw {type: 'no webgl'};
         }
+        if (imageType == 'cubemap')
+            fillMissingFaces(cubeImgWidth);
         if (image.basePath) {
             image.fullpath = image.basePath + image.path;
         } else {
@@ -245,21 +294,18 @@ function Renderer(container) {
         }
         
         // Make sure image isn't too big
-        var width, maxWidth;
+        var width = 0, maxWidth = 0;
         if (imageType == 'equirectangular') {
             width = Math.max(image.width, image.height);
             maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-            if (width > maxWidth) {
-                console.log('Error: The image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
-                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
-            }
         } else if (imageType == 'cubemap') {
-            width = image[0].width;
+            width = cubeImgWidth;
             maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
-            if (width > maxWidth) {
-                console.log('Error: The cube face image is too big; it\'s ' + width + 'px wide, but this device\'s maximum supported width is ' + maxWidth + 'px.');
-                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
-            }
+        }
+        if (width > maxWidth) {
+            console.log('Error: The image is too big; it\'s ' + width + 'px wide, '+
+                        'but this device\'s maximum supported size is ' + maxWidth + 'px.');
+            throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
         }
 
         // Store horizon pitch and roll if applicable
@@ -313,6 +359,11 @@ function Renderer(container) {
 
         program.drawInProgress = false;
 
+        // Set background clear color (does not apply to cubemap/fallback image)
+        var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+        gl.clearColor(color[0], color[1], color[2], 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
         // Look up texture coordinates location
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
@@ -346,7 +397,6 @@ function Renderer(container) {
             // Set background color
             if (imageType == 'equirectangular') {
                 program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
-                var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
                 gl.uniform4fv(program.backgroundColor, color.concat([1]));
             }
 
@@ -536,15 +586,17 @@ function Renderer(container) {
                 r: 'translate3d(' + s + 'px, -' + (s + 2) + 'px, -' + (s + 2) + 'px) rotateY(270deg)'
             };
             focal = 1 / Math.tan(hfov / 2);
-            var zoom = focal * gl.drawingBufferWidth / 2 + 'px';
+            var zoom = focal * canvas.clientWidth / 2 + 'px';
             var transform = 'perspective(' + zoom + ') translateZ(' + zoom + ') rotateX(' + pitch + 'rad) rotateY(' + yaw + 'rad) ';
             
             // Apply face transforms
             var faces = Object.keys(transforms);
             for (i = 0; i < 6; i++) {
-                var face = world.querySelector('.pnlm-' + faces[i] + 'face').style;
-                face.webkitTransform = transform + transforms[faces[i]];
-                face.transform = transform + transforms[faces[i]];
+                var face = world.querySelector('.pnlm-' + faces[i] + 'face');
+                if (!face)
+                    continue; // ignore missing face to support partial cubemap/fallback image
+                face.style.webkitTransform = transform + transforms[faces[i]];
+                face.style.transform = transform + transforms[faces[i]];
             }
             return;
         }
@@ -608,12 +660,29 @@ function Renderer(container) {
                 var ntmp = new MultiresNode(vtmps[s], sides[s], 1, 0, 0, image.fullpath);
                 testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
+            
             program.currentNodes.sort(multiresNodeRenderSort);
-            // Only process one tile per frame to improve responsiveness
-            for (i = 0; i < program.currentNodes.length; i++) {
-                if (!program.currentNodes[i].texture) {
-                    setTimeout(processNextTile, 0, program.currentNodes[i]);
-                    break;
+            
+            // Unqueue any pending requests for nodes that are no longer visible
+            for (i = pendingTextureRequests.length - 1; i >= 0; i--) {
+                if (program.currentNodes.indexOf(pendingTextureRequests[i].node) === -1) {
+                    pendingTextureRequests[i].node.textureLoad = false;
+                    pendingTextureRequests.splice(i, 1);
+                }
+            }
+            
+            // Allow one request to be pending, so that we can create a texture buffer for that in advance of loading actually beginning
+            if (pendingTextureRequests.length === 0) {
+                for (i = 0; i < program.currentNodes.length; i++) {
+                    var node = program.currentNodes[i];
+                    if (!node.texture && !node.textureLoad) {
+                        node.textureLoad = true;
+            
+                        setTimeout(processNextTile, 0, node);
+                        
+                        // Only process one tile per frame to improve responsiveness
+                        break;
+                    }
                 }
             }
             
@@ -697,8 +766,9 @@ function Renderer(container) {
     function multiresDraw() {
         if (!program.drawInProgress) {
             program.drawInProgress = true;
+            gl.clear(gl.COLOR_BUFFER_BIT);
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
-                if (program.currentNodes[i].textureLoaded) {
+                if (program.currentNodes[i].textureLoaded > 1) {
                     //var color = program.currentNodes[i].color;
                     //gl.uniform4f(program.colorUniform, color[0], color[1], color[2], 1.0);
                     
@@ -1011,12 +1081,13 @@ function Renderer(container) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
+    
+    var pendingTextureRequests = [];
 
     // Based on http://blog.tojicode.com/2012/03/javascript-memory-optimization-and.html
     var loadTexture = (function() {
         var cacheTop = 4;   // Maximum number of concurrents loads
         var textureImageCache = {};
-        var pendingTextureRequests = [];
         var crossOrigin;
 
         function TextureImageLoader() {
@@ -1024,11 +1095,17 @@ function Renderer(container) {
             this.texture = this.callback = null;
             this.image = new Image();
             this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
-            this.image.addEventListener('load', function() {
-                processLoadedTexture(self.image, self.texture);
-                self.callback(self.texture);
+            var loadFn = (function() {
+                if (self.image.width > 0 && self.image.height > 0) { // ignore missing tile to supporting partial image
+                    processLoadedTexture(self.image, self.texture);
+                    self.callback(self.texture, true);
+                } else {
+                    self.callback(self.texture, false);
+                }
                 releaseTextureImageLoader(self);
             });
+            this.image.addEventListener('load', loadFn);
+            this.image.addEventListener('error', loadFn); // ignore missing tile file to support partial image, otherwise retry loop causes high CPU load
         };
 
         TextureImageLoader.prototype.loadTexture = function(src, texture, callback) {
@@ -1037,7 +1114,8 @@ function Renderer(container) {
             this.image.src = src;
         };
 
-        function PendingTextureRequest(src, texture, callback) {
+        function PendingTextureRequest(node, src, texture, callback) {
+            this.node = node;
             this.src = src;
             this.texture = texture;
             this.callback = callback;
@@ -1054,13 +1132,13 @@ function Renderer(container) {
         for (var i = 0; i < cacheTop; i++)
             textureImageCache[i] = new TextureImageLoader();
 
-        return function(src, callback, _crossOrigin) {
+        return function(node, src, callback, _crossOrigin) {
             crossOrigin = _crossOrigin;
             var texture = gl.createTexture();
             if (cacheTop)
                 textureImageCache[--cacheTop].loadTexture(src, texture, callback);
             else
-                pendingTextureRequests.push(new PendingTextureRequest(src, texture, callback));
+                pendingTextureRequests.push(new PendingTextureRequest(node, src, texture, callback));
             return texture;
         };
     })();
@@ -1071,13 +1149,10 @@ function Renderer(container) {
      * @param {MultiresNode} node - Input node.
      */
     function processNextTile(node) {
-        if (!node.textureLoad) {
-            node.textureLoad = true;
-            loadTexture(encodeURI(node.path + '.' + image.extension), function(texture) {
-                node.texture = texture;
-                node.textureLoaded = true;
-            }, globalParams.crossOrigin);
-        }
+        loadTexture(node, encodeURI(node.path + '.' + image.extension), function(texture, loaded) {
+            node.texture = texture;
+            node.textureLoaded = loaded ? 2 : 1;
+        }, globalParams.crossOrigin);
     }
     
     /**

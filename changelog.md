@@ -2,6 +2,15 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.4.1
+--------------------------
+
+Bugfixes:
+
+ - Fix touch input issue in Chrome
+ - The API's `loadScene` method now works when no scenes have been loaded yet
+
+
 Changes in Pannellum 2.4.0
 --------------------------
 

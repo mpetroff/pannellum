@@ -49,7 +49,7 @@ var config,
     onPointerDownPitch = 0,
     keysDown = new Array(10),
     fullscreenActive = false,
-    loaded = false,
+    loaded,
     error = false,
     isTimedOut = false,
     listenersAdded = false,
@@ -99,10 +99,13 @@ var defaultConfig = {
     orientationOnByDefault: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
+    avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
+    touchPanSpeedCoeffFactor: 1,
+    capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
 };
 
 // Translatable / configurable strings
@@ -128,8 +131,6 @@ defaultConfig.strings = {
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
 }
-
-var usedKeyNumbers = [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189];
 
 // Initialize container
 container = typeof container === 'string' ? document.getElementById(container) : container;
@@ -356,13 +357,18 @@ function init() {
         };
         
         for (i = 0; i < panoImage.length; i++) {
-            panoImage[i].onload = onLoad;
-            panoImage[i].onerror = onError;
             p = config.cubeMap[i];
-            if (config.basePath && !absoluteURL(p)) {
-                p = config.basePath + p;
+            if (p == "null") { // support partial cubemap image with explicitly empty faces
+                console.log('Will use background instead of missing cubemap face ' + i);
+                onLoad();
+            } else {
+                if (config.basePath && !absoluteURL(p)) {
+                    p = config.basePath + p;
+                }
+                panoImage[i].onload = onLoad;
+                panoImage[i].onerror = onError;
+                panoImage[i].src = encodeURI(p);
             }
-            panoImage[i].src = encodeURI(p);
         }
     } else if (config.type == 'multires') {
         onImageLoad();
@@ -482,13 +488,17 @@ function onImageLoad() {
             container.addEventListener('blur', clearKeys, false);
         }
         document.addEventListener('mouseleave', onDocumentMouseUp, false);
-        dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
-        dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
-        dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
-        dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
-        dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
-        dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
-        dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
+            dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
+            dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
+            dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+        } else {
+            dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
+            dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
+            dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+        }
 
         // Deal with MS pointer events
         if (window.navigator.pointerEnabled)
@@ -496,6 +506,7 @@ function onImageLoad() {
     }
 
     renderInit();
+    setHfov(config.hfov); // possibly adapt hfov after configuration and canvas is complete; prevents empty space on top or bottom by zomming out too much
     setTimeout(function(){isTimedOut = true;}, 500);
 }
 
@@ -871,7 +882,7 @@ function onDocumentTouchMove(event) {
         //
         // Currently this seems to *roughly* keep initial drag/pan start position close to
         // the user's finger while panning regardless of zoom level / config.hfov value.
-        var touchmovePanSpeedCoeff = config.hfov / 360;
+        var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
         var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
         speed.yaw = (yaw - config.yaw) % 360 * 0.2;
@@ -928,7 +939,7 @@ function onDocumentPointerMove(event) {
                 pointerCoordinates[i].clientY = event.clientY;
                 event.targetTouches = pointerCoordinates;
                 onDocumentTouchMove(event);
-                //event.preventDefault();
+                event.preventDefault();
                 return;
             }
         }
@@ -1009,8 +1020,8 @@ function onDocumentKeyPress(event) {
     var keynumber = event.which || event.keycode;
 
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // If escape key is pressed
@@ -1045,8 +1056,8 @@ function onDocumentKeyUp(event) {
     var keynumber = event.which || event.keycode;
     
     // Override default action for keys that are used
-    if (usedKeyNumbers.indexOf(keynumber) < 0)
-        return
+    if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
     event.preventDefault();
     
     // Change key
@@ -1264,7 +1275,7 @@ function keyRepeat() {
     }
     
     // Stop movement if opposite controls are pressed
-    if (keysDown[0] && keysDown[0]) {
+    if (keysDown[0] && keysDown[1]) {
         speed.hfov = 0;
     }
     if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {
@@ -1396,23 +1407,41 @@ function render() {
         // Keep a tmp value of yaw for autoRotate comparison later
         tmpyaw = config.yaw;
 
+        // Optionally avoid showing background (empty space) on left or right by adapting min/max yaw
+        var hoffcut = 0,
+            voffcut = 0;
+        if (config.avoidShowingBackground) {
+            var canvas = renderer.getCanvas(),
+                hfov2 = config.hfov / 2,
+                vfov2 = Math.atan2(Math.tan(hfov2 / 180 * Math.PI), (canvas.width / canvas.height)) * 180 / Math.PI,
+                transposed = config.vaov > config.haov;
+            if (transposed) {
+                voffcut = vfov2 * (1 - Math.min(Math.cos((config.pitch - hfov2) / 180 * Math.PI),
+                                                Math.cos((config.pitch + hfov2) / 180 * Math.PI)));
+            } else {
+                hoffcut = hfov2 * (1 - Math.min(Math.cos((config.pitch - vfov2) / 180 * Math.PI),
+                                                Math.cos((config.pitch + vfov2) / 180 * Math.PI)));
+            }
+        }
+
         // Ensure the yaw is within min and max allowed
         var yawRange = config.maxYaw - config.minYaw,
             minYaw = -180,
             maxYaw = 180;
         if (yawRange < 360) {
-            minYaw = config.minYaw + config.hfov / 2;
-            maxYaw = config.maxYaw - config.hfov / 2;
+            minYaw = config.minYaw + config.hfov / 2 + hoffcut;
+            maxYaw = config.maxYaw - config.hfov / 2 - hoffcut;
             if (yawRange < config.hfov) {
                 // Lock yaw to average of min and max yaw when both can be seen at once
                 minYaw = maxYaw = (minYaw + maxYaw) / 2;
             }
+            config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         }
-        config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         
         // Check if we autoRotate in a limited by min and max yaw
         // If so reverse direction
-        if (config.autoRotate !== false && tmpyaw != config.yaw) {
+        if (config.autoRotate !== false && tmpyaw != config.yaw &&
+            prevTime !== undefined) { // this condition prevents changing the direction initially
             config.autoRotate *= -1;
         }
 
@@ -1680,8 +1709,8 @@ function createHotSpot(hs) {
         a.href = encodeURI(hs.URL);
         a.target = '_blank';
         renderContainer.appendChild(a);
-        div.style.cursor = 'pointer';
-        span.style.cursor = 'pointer';
+        div.className += ' pnlm-pointer';
+        span.className += ' pnlm-pointer';
         a.appendChild(div);
     } else {
         if (hs.sceneId) {
@@ -1692,8 +1721,8 @@ function createHotSpot(hs) {
                 }
                 return false;
             };
-            div.style.cursor = 'pointer';
-            span.style.cursor = 'pointer';
+            div.className += ' pnlm-pointer';
+            span.className += ' pnlm-pointer';
         }
         renderContainer.appendChild(div);
     }
@@ -1711,8 +1740,8 @@ function createHotSpot(hs) {
         div.addEventListener('click', function(e) {
             hs.clickHandlerFunc(e, hs.clickHandlerArgs);
         }, 'false');
-        div.style.cursor = 'pointer';
-        span.style.cursor = 'pointer';
+        div.className += ' pnlm-pointer';
+        span.className += ' pnlm-pointer';
     }
     hs.div = div;
 };
@@ -2113,13 +2142,24 @@ function constrainHfov(hfov) {
         // Don't change view if bounds don't make sense
         console.log('HFOV bounds do not make sense (minHfov > maxHfov).')
         return config.hfov;
-    } if (hfov < minHfov) {
-        return minHfov;
-    } else if (hfov > config.maxHfov) {
-        return config.maxHfov;
-    } else {
-        return hfov;
     }
+    var newHfov = config.hfov;
+    if (hfov < minHfov) {
+        newHfov = minHfov;
+    } else if (hfov > config.maxHfov) {
+        newHfov = config.maxHfov;
+    } else {
+        newHfov = hfov;
+    }
+    // Optionally avoid showing background (empty space) on top or bottom by adapting newHfov
+    if (config.avoidShowingBackground && renderer) {
+        var canvas = renderer.getCanvas();
+        newHfov = Math.min(newHfov,
+                           Math.atan(Math.tan((config.maxPitch - config.minPitch) / 360 * Math.PI) /
+                                     canvas.height * canvas.width)
+                               * 360 / Math.PI);
+    }
+    return newHfov;
 }
 
 /**
@@ -2150,6 +2190,7 @@ function load() {
     // since it is a new scene and the error from previous maybe because of lacking
     // memory etc and not because of a lack of WebGL support etc
     clearError();
+    loaded = false;
 
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'inline';
@@ -2277,7 +2318,7 @@ function escapeHTML(s) {
  * @returns {boolean} `true` if a panorama is loaded, else `false`
  */
 this.isLoaded = function() {
-    return loaded;
+    return Boolean(loaded);
 };
 
 /**
@@ -2645,7 +2686,7 @@ this.mouseEventToCoords = function(event) {
  * @returns {Viewer} `this`
  */
 this.loadScene = function(sceneId, pitch, yaw, hfov) {
-    if (loaded)
+    if (loaded !== false)
         loadScene(sceneId, pitch, yaw, hfov);
     return this;
 }
@@ -2759,26 +2800,43 @@ this.addHotSpot = function(hs, sceneId) {
  * @memberof Viewer
  * @instance
  * @param {string} hotSpotId - The ID of the hot spot
+ * @param {string} [sceneId] - Removes hot spot from specified scene if provided, else from current scene
  * @returns {boolean} True if deletion is successful, else false
  */
-this.removeHotSpot = function(hotSpotId) {
-    if (!config.hotSpots)
-        return false;
-    for (var i = 0; i < config.hotSpots.length; i++) {
-        if (config.hotSpots[i].hasOwnProperty('id') &&
-            config.hotSpots[i].id === hotSpotId) {
-            // Delete hot spot DOM elements
-            var current = config.hotSpots[i].div;
-            while (current.parentNode != renderContainer)
-                current = current.parentNode;
-            renderContainer.removeChild(current);
-            delete config.hotSpots[i].div;
-            // Remove hot spot from configuration
-            config.hotSpots.splice(i, 1);
-            return true;
+this.removeHotSpot = function(hotSpotId, sceneId) {
+    if (sceneId === undefined || config.scene == sceneId) {
+        if (!config.hotSpots)
+            return false;
+        for (var i = 0; i < config.hotSpots.length; i++) {
+            if (config.hotSpots[i].hasOwnProperty('id') &&
+                config.hotSpots[i].id === hotSpotId) {
+                // Delete hot spot DOM elements
+                var current = config.hotSpots[i].div;
+                while (current.parentNode != renderContainer)
+                    current = current.parentNode;
+                renderContainer.removeChild(current);
+                delete config.hotSpots[i].div;
+                // Remove hot spot from configuration
+                config.hotSpots.splice(i, 1);
+                return true;
+            }
+        }
+    } else {
+        if (initialConfig.scenes.hasOwnProperty(sceneId)) {
+            if (!initialConfig.scenes[sceneId].hasOwnProperty('hotSpots'))
+                return false;
+            for (var i = 0; i < initialConfig.scenes[sceneId].hotSpots.length; i++) {
+                if (initialConfig.scenes[sceneId].hotSpots[i].hasOwnProperty('id') &&
+                    initialConfig.scenes[sceneId].hotSpots[i].id === hotSpotId) {
+                    // Remove hot spot from configuration
+                    initialConfig.scenes[sceneId].hotSpots.splice(i, 1);
+                    return true;
+                }
+            }
+        } else {
+            return false;
         }
     }
-    return false;
 }
 
 /**
