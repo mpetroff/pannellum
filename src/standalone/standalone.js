@@ -1,7 +1,9 @@
 function anError(error) {
     var errorMsg = document.createElement('div');
     errorMsg.className = 'pnlm-info-box';
-    errorMsg.innerHTML = '<p>' + error + '</p>';
+    var p = document.createElement('p');
+    p.textContent = error;
+    errorMsg.appendChild(p);
     document.getElementById('container').appendChild(errorMsg);
 }
 
@@ -10,17 +12,16 @@ function parseURLParameters() {
     var URL;
     if (window.location.hash.length > 0) {
         // Prefered method since parameters aren't sent to server
-        URL = [window.location.hash.slice(1)];
+        URL = window.location.hash.slice(1);
     } else {
-        URL = decodeURI(window.location.href).split('?');
-        URL.shift();
+        URL = window.location.search.slice(1);
     }
-    if (URL.length < 1) {
+    if (!URL) {
         // Display error if no configuration parameters are specified
         anError('No configuration options were specified.');
         return;
     }
-    URL = URL[0].split('&');
+    URL = URL.split('&');
     var configFromURL = {};
     for (var i = 0; i < URL.length; i++) {
         var option = URL[i].split('=')[0];
@@ -57,7 +58,7 @@ function parseURLParameters() {
                 // Display error if JSON can't be loaded
                 var a = document.createElement('a');
                 a.href = configFromURL.config;
-                a.innerHTML = a.href;
+                a.textContent = a.href;
                 anError('The file ' + a.outerHTML + ' could not be accessed.');
                 return;
             }
