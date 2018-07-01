@@ -45,6 +45,10 @@ Since Pannellum is built with recent web standards, it requires a modern browser
 #### No support:
 Internet Explorer 10 and previous
 
+#### Not officially supported:
+
+Mobile / app frameworks are not officially supported. They may work, but they're not tested and are not the targeted platform.
+
 ## Translations
 
 All user-facing strings can be changed using the `strings` configuration parameter. There exists a [third-party respository of user-contributed translations](https://github.com/DanielBiegler/pannellum-translation) that can be used with this configuration option.
