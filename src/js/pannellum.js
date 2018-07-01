@@ -518,6 +518,10 @@ function onImageLoad() {
  */
 function parseGPanoXMP(image) {
     var reader = new FileReader();
+    // Fix cordova-plugin-file compatibility
+    if (window.cordova && reader._realReader) {
+        reader = reader._realReader;
+    }
     reader.addEventListener('loadend', function() {
         var img = reader.result;
 
