@@ -121,7 +121,7 @@ if vaov == -1:
 if args.cubeSize != 0:
     cubeSize = args.cubeSize
 else:
-    cubeSize = 8 * int(origWidth / math.pi / 8)
+    cubeSize = 8 * int((360 / haov) * origWidth / math.pi / 8)
 tileSize = min(args.tileSize, cubeSize)
 levels = int(math.ceil(math.log(float(cubeSize) / tileSize, 2))) + 1
 origHeight = str(origHeight)
