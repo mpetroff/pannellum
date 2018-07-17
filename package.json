@@ -1,7 +1,7 @@
 {
   "name": "pannellum",
-  "description": "Pannellum for npm",
-  "version": "2.3.1",
+  "description": "Pannellum is a lightweight, free, and open source panorama viewer for the web.",
+  "version": "2.4.1",
   "bugs": {
     "url": "https://github.com/mpetroff/pannellum/issues"
   },
@@ -19,12 +19,9 @@
   },
   "license": "MIT",
   "homepage": "https://pannellum.org/",
-  "main": "build/index.js",
+  "main": "build/pannellum.js",
   "keywords": [
     "panorama",
     "viewer"
-  ],
-  "devDependencies": {
-    "babel-cli": "^6.7.5"
-  }
+  ]
 }

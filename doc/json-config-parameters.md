@@ -23,6 +23,12 @@ If set, the value is displayed as the panorama's author. If no author is
 desired, don't set this parameter.
 
 
+### `strings` (dictionary)
+
+Allows user-facing strings to be changed / translated.
+See `defaultConfig.strings` definition in `pannellum.js` for more details.
+
+
 ### `basePath` (string)
 
 This specifies a base path to load the images from.
@@ -80,9 +86,21 @@ If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
 If set to `false`, zooming with keyboard will be disabled. Defaults to `true`.
 
 
-### `mouseZoom` (boolean)
+### `mouseZoom` (boolean or string)
 
 If set to `false`, zooming with mouse wheel will be disabled. Defaults to `true`.
+Can also be set to `fullscreenonly`, in which case it is only enabled when the
+viewer is fullscreen.
+
+
+### `draggable` (boolean)
+
+If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
+
+
+### `disableKeyboardCtrl` (boolean)
+
+If set to `true`, keyboard controls are disabled. Defaults to `false`.
 
 
 ### `showFullscreenCtrl` (boolean)
@@ -95,6 +113,11 @@ the fullscreen API.
 ### `showControls` (boolean)
 
 If set to `false`, no controls are displayed. Defaults to `true`.
+
+
+### `touchPanSpeedCoeffFactor` (number)
+
+Adjusts panning speed from touch inputs. Defaults to `1`.
 
 
 ### `yaw` (number)
@@ -148,10 +171,42 @@ affects the compass, it only has an effect if `compass` is set to `true`.
 Specifies a URL for a preview image to display before the panorama is loaded.
 
 
+### `previewTitle` (string)
+
+Specifies the title to be displayed while the load button is displayed.
+
+
+### `previewAuthor` (string)
+
+Specifies the author to be displayed while the load button is displayed.
+
+
 ### `horizonPitch` and `horizonRoll` (number)
 
 Specifies pitch / roll of image horizon, in degrees (for correcting
 non-leveled panoramas).
+
+
+### `animationTimingFunction` (function) [API only]
+
+This specifies a timing function to be used for animating movements such as
+when the `lookAt` method is called. The default timing function is
+`easeInOutQuad`. If a custom function is specified, it should take a number
+[0, 1] as its only argument and return a number [0, 1].
+
+
+### `escapeHTML` (boolean)
+
+When true, HTML is escaped from configuration strings to help mitigate possible
+DOM XSS attacks. This is always `true` when using the standalone viewer since
+the configuration is provided via the URL; it defaults to `false` but can be
+set to `true` when using the API.
+
+
+### `crossOrigin` (string)
+
+This specifies the type of CORS request used and can be set to either
+`anonymous` or `use-credentials`. Defaults to `anonymous`.
 
 
 ### `hotSpots` (array)
@@ -207,7 +262,13 @@ maintain the same direction with regard to north.
 
 #### `targetHfov` (number)
 
-Specifies the HFOV of the target scene, in degrees.
+Specifies the HFOV of the target scene, in degrees. Can also be set to `same`,
+which uses the current HFOV of the current scene as the initial HFOV of the
+target scene.
+
+#### `id`
+
+Specifies hot spot ID, for use with API's `removeHotSpot` function.
 
 #### `cssClass` (string)
 
@@ -237,6 +298,27 @@ Specifies the fade duration, in milliseconds, when transitioning between
 scenes. Not defined by default. Only applicable for tours. Only works with
 WebGL renderer.
 
+### `capturedKeyNumbers` (array)
+
+Specifies the key numbers that are captured in key events. Defaults to the
+standard keys that are used by the viewer.
+
+### `backgroundColor` ([number, number, number])
+
+Specifies an array containing RGB values [0, 1] that sets the background color
+for areas where no image data is available. Defaults to `[0, 0, 0]` (black).
+For partial `equirectangular` panoramas this applies to areas past the edges of
+the defined rectangle. For `multires` and `cubemap` (including fallback) panoramas
+this applies to areas corresponding to missing tiles or faces.
+
+### `avoidShowingBackground` (boolean)
+
+If set to `true`, prevent displaying out-of-range areas of a partial panorama
+by constraining the yaw and the field-of-view. Even at the corners and edges
+of the canvas only areas actually belonging to the image
+(i.e., within [`minYaw`, `maxYaw`] and [`minPitch`, `maxPitch`]) are shown,
+thus setting the `backgroundColor` option is not needed if this option is set.
+Defaults to `false`.
 
 
 ## `equirectangular` specific options
@@ -270,11 +352,6 @@ and the equirectangular image is not cropped symmetrically.
 If set to `true`, any embedded Photo Sphere XMP data will be ignored; else,
 said data will override any existing settings. Defaults to `false`.
 
-### `backgroundColor` ([number, number, number])
-
-Specifies an array containing RGB values [0, 1] that sets the background color
-shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
-
 
 
 ## `cubemap` specific options
@@ -284,8 +361,7 @@ shown past the edges of a partial panorama. Defaults to `[0, 0, 0]` (black).
 This is an array of URLs for the six cube faces in the order front, right,
 back, left, up, down. These are relative to `basePath` if it is set, else they
 are relative to the location of `pannellum.htm`. Absolute URLs can also be
-used.
-
+used. Partial cubemap images may be specified by giving `null` instead of a URL.
 
 
 ## `multires` specific options

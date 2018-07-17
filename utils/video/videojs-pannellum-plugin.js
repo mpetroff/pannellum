@@ -1,6 +1,6 @@
 /*
  * Video.js plugin for Pannellum
- * Copyright (c) 2015-2016 Matthew Petroff
+ * Copyright (c) 2015-2018 Matthew Petroff
  * MIT License
  */
 
@@ -21,32 +21,32 @@ videojs.plugin('pannellum', function(config) {
     config.autoLoad = true;
     config.panorama = vid;
     pnlmContainer.style.visibility = 'hidden';
-    var pnlm = pannellum.viewer(pnlmContainer, config);
+    player.pnlmViewer = pannellum.viewer(pnlmContainer, config);
     container.insertBefore(pnlmContainer, container.firstChild);
     vid.style.display = 'none';
 
     // Handle update settings
     player.on('play', function() {
         if (vid.readyState > 1)
-            pnlm.setUpdate(true);
+            player.pnlmViewer.setUpdate(true);
     });
     player.on('canplay', function() {
         if (!player.paused())
-            pnlm.setUpdate(true);
+            player.pnlmViewer.setUpdate(true);
     });
     player.on('pause', function() {
-        pnlm.setUpdate(false);
+        player.pnlmViewer.setUpdate(false);
     });
     player.on('loadeddata', function() {
         pnlmContainer.style.visibility = 'visible';
     });
     player.on('seeking', function() {
         if (player.paused())
-            pnlm.setUpdate(true);
+            player.pnlmViewer.setUpdate(true);
     });
     player.on('seeked', function() {
         if (player.paused())
-            pnlm.setUpdate(false);
+            player.pnlmViewer.setUpdate(false);
     });
 });
 

@@ -1,17 +1,17 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
- * Copyright (c) 2011-2016 Matthew Petroff
- * 
+ * Copyright (c) 2011-2018 Matthew Petroff
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -50,7 +50,7 @@ window.pannellum = function (window, document, undefined) {
             onPointerDownPitch = 0,
             keysDown = new Array(10),
             fullscreenActive = false,
-            loaded = false,
+            loaded,
             error = false,
             isTimedOut = false,
             listenersAdded = false,
@@ -59,6 +59,7 @@ window.pannellum = function (window, document, undefined) {
             speed = { 'yaw': 0, 'pitch': 0, 'hfov': 0 },
             animating = false,
             orientation = false,
+            orientationYawOffset = 0,
             autoRotateStart,
             autoRotateSpeed = 0,
             origHfov,
@@ -91,6 +92,7 @@ window.pannellum = function (window, document, undefined) {
             northOffset: 0,
             showFullscreenCtrl: true,
             dynamic: false,
+            doubleClickZoom: true,
             keyboardZoom: true,
             mouseZoom: true,
             showZoomCtrl: true,
@@ -98,13 +100,43 @@ window.pannellum = function (window, document, undefined) {
             showControls: true,
             orientationOnByDefault: false,
             hotSpotDebug: false,
-            backgroundColor: [0, 0, 0]
+            backgroundColor: [0, 0, 0],
+            avoidShowingBackground: false,
+            animationTimingFunction: timingFunction,
+            draggable: true,
+            disableKeyboardCtrl: false,
+            crossOrigin: 'anonymous',
+            touchPanSpeedCoeffFactor: 1,
+            capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189]
         };
 
-        // Initialize container
-        container = typeof container === 'string' ? document.getElementById(container) : container;
+        // Translatable / configurable strings
+        // Some strings contain '%s', which is a placeholder for inserted values
+        // When setting strings in external configuration, `\n` should be used instead of `<br>` to insert line breaks
+        defaultConfig.strings = {
+            // Labels
+            loadButtonLabel: 'Click to<br>Load<br>Panorama',
+            loadingLabel: 'Loading...',
+            bylineLabel: 'by %s', // One substitution: author
+
+            // Errors
+            noPanoramaError: 'No panorama image was specified.',
+            fileAccessError: 'The file %s could not be accessed.', // One substitution: file URL
+            malformedURLError: 'There is something wrong with the panorama URL.',
+            iOS8WebGLError: "Due to iOS 8's broken WebGL implementation, only " + "progressive encoded JPEGs work for your device (this " + "panorama uses standard encoding).",
+            genericWebGLError: 'Your browser does not have the necessary WebGL support to display this panorama.',
+            textureSizeError: 'This panorama is too big for your device! It\'s ' + '%spx wide, but your device only supports images up to ' + '%spx wide. Try another device.' + ' (If you\'re the author, try scaling down the image.)', // Two substitutions: image width, max image width
+            unknownError: 'Unknown error. Check developer console.'
+
+            // Initialize container
+        };container = typeof container === 'string' ? document.getElementById(container) : container;
         container.classList.add('pnlm-container');
         container.tabIndex = 0;
+
+        // Create container for ui
+        var uiContainer = document.createElement('div');
+        uiContainer.className = 'pnlm-ui';
+        container.appendChild(uiContainer);
 
         // Create container for renderer
         var renderContainer = document.createElement('div');
@@ -112,13 +144,13 @@ window.pannellum = function (window, document, undefined) {
         container.appendChild(renderContainer);
         var dragFix = document.createElement('div');
         dragFix.className = 'pnlm-dragfix';
-        container.appendChild(dragFix);
+        uiContainer.appendChild(dragFix);
 
         // Display about information on right click
         var aboutMsg = document.createElement('span');
         aboutMsg.className = 'pnlm-about-msg';
         aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
-        container.appendChild(aboutMsg);
+        uiContainer.appendChild(aboutMsg);
         dragFix.addEventListener('contextmenu', aboutMessage);
 
         // Create info display
@@ -127,7 +159,7 @@ window.pannellum = function (window, document, undefined) {
         // Hot spot debug indicator
         var hotSpotDebugIndicator = document.createElement('div');
         hotSpotDebugIndicator.className = 'pnlm-sprite pnlm-hot-spot-debug-indicator';
-        container.appendChild(hotSpotDebugIndicator);
+        uiContainer.appendChild(hotSpotDebugIndicator);
 
         // Panorama info
         infoDisplay.container = document.createElement('div');
@@ -138,13 +170,14 @@ window.pannellum = function (window, document, undefined) {
         infoDisplay.author = document.createElement('div');
         infoDisplay.author.className = 'pnlm-author-box';
         infoDisplay.container.appendChild(infoDisplay.author);
-        container.appendChild(infoDisplay.container);
+        uiContainer.appendChild(infoDisplay.container);
 
         // Load box
         infoDisplay.load = {};
         infoDisplay.load.box = document.createElement('div');
         infoDisplay.load.box.className = 'pnlm-load-box';
-        infoDisplay.load.box.innerHTML = '<p>Loading...</p>';
+        infoDisplay.load.boxp = document.createElement('p');
+        infoDisplay.load.box.appendChild(infoDisplay.load.boxp);
         infoDisplay.load.lbox = document.createElement('div');
         infoDisplay.load.lbox.className = 'pnlm-lbox';
         infoDisplay.load.lbox.innerHTML = '<div class="pnlm-loading"></div>';
@@ -158,25 +191,27 @@ window.pannellum = function (window, document, undefined) {
         infoDisplay.load.msg = document.createElement('p');
         infoDisplay.load.msg.className = 'pnlm-lmsg';
         infoDisplay.load.box.appendChild(infoDisplay.load.msg);
-        container.appendChild(infoDisplay.load.box);
+        uiContainer.appendChild(infoDisplay.load.box);
 
         // Error message
         infoDisplay.errorMsg = document.createElement('div');
         infoDisplay.errorMsg.className = 'pnlm-error-msg pnlm-info-box';
-        container.appendChild(infoDisplay.errorMsg);
+        uiContainer.appendChild(infoDisplay.errorMsg);
 
         // Create controls
         var controls = {};
         controls.container = document.createElement('div');
         controls.container.className = 'pnlm-controls-container';
-        container.appendChild(controls.container);
+        uiContainer.appendChild(controls.container);
 
         // Load button
         controls.load = document.createElement('div');
         controls.load.className = 'pnlm-load-button';
-        controls.load.innerHTML = '<p>Click to<br>Load<br>Panorama<p>';
-        controls.load.addEventListener('click', load);
-        container.appendChild(controls.load);
+        controls.load.addEventListener('click', function () {
+            processOptions();
+            load();
+        });
+        uiContainer.appendChild(controls.load);
 
         // Zoom controls
         controls.zoom = document.createElement('div');
@@ -212,17 +247,28 @@ window.pannellum = function (window, document, undefined) {
             e.stopPropagation();
         });
         controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
+        var orientationSupport,
+            startOrientationIfSupported = false;
+        function deviceOrientationTest(e) {
+            window.removeEventListener('deviceorientation', deviceOrientationTest);
+            if (e && e.alpha !== null && e.beta !== null && e.gamma !== null) {
+                controls.container.appendChild(controls.orientation);
+                orientationSupport = true;
+                if (startOrientationIfSupported) startOrientation();
+            } else {
+                orientationSupport = false;
+            }
+        }
         if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', function (e) {
-                window.removeEventListener('deviceorientation', this);
-                if (e && e.alpha !== null && e.beta !== null && e.gamma !== null) controls.container.appendChild(controls.orientation);
-            });
+            window.addEventListener('deviceorientation', deviceOrientationTest);
+        } else {
+            orientationSupport = false;
         }
 
         // Compass
         var compass = document.createElement('div');
         compass.className = 'pnlm-compass pnlm-controls pnlm-control';
-        container.appendChild(compass);
+        uiContainer.appendChild(compass);
 
         // Load and process configuration
         if (initialConfig.firstScene) {
@@ -234,7 +280,7 @@ window.pannellum = function (window, document, undefined) {
         } else {
             mergeConfig(null);
         }
-        processOptions();
+        processOptions(true);
 
         /**
          * Initializes viewer.
@@ -260,7 +306,7 @@ window.pannellum = function (window, document, undefined) {
                 panoImage = [];
                 for (i = 0; i < 6; i++) {
                     panoImage.push(new Image());
-                    panoImage[i].crossOrigin = 'anonymous';
+                    panoImage[i].crossOrigin = config.crossOrigin;
                 }
                 infoDisplay.load.lbox.style.display = 'block';
                 infoDisplay.load.lbar.style.display = 'none';
@@ -281,7 +327,7 @@ window.pannellum = function (window, document, undefined) {
                     panoImage = config.panorama;
                 } else {
                     if (config.panorama === undefined) {
-                        anError('No panorama image was specified.');
+                        anError(config.strings.noPanoramaError);
                         return;
                     }
                     panoImage = new Image();
@@ -303,18 +349,24 @@ window.pannellum = function (window, document, undefined) {
                 var onError = function (e) {
                     var a = document.createElement('a');
                     a.href = e.target.src;
-                    a.innerHTML = a.href;
-                    anError('The file ' + a.outerHTML + ' could not be accessed.');
+                    a.textContent = a.href;
+                    anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 };
 
                 for (i = 0; i < panoImage.length; i++) {
-                    panoImage[i].onload = onLoad;
-                    panoImage[i].onerror = onError;
                     p = config.cubeMap[i];
-                    if (config.basePath && !absoluteURL(p)) {
-                        p = config.basePath + p;
+                    if (p == "null") {
+                        // support partial cubemap image with explicitly empty faces
+                        console.log('Will use background instead of missing cubemap face ' + i);
+                        onLoad();
+                    } else {
+                        if (config.basePath && !absoluteURL(p)) {
+                            p = config.basePath + p;
+                        }
+                        panoImage[i].onload = onLoad;
+                        panoImage[i].onerror = onError;
+                        panoImage[i].src = sanitizeURL(p);
                     }
-                    panoImage[i].src = encodeURI(p);
                 }
             } else if (config.type == 'multires') {
                 onImageLoad();
@@ -338,9 +390,9 @@ window.pannellum = function (window, document, undefined) {
                         if (xhr.status != 200) {
                             // Display error if image can't be loaded
                             var a = document.createElement('a');
-                            a.href = encodeURI(p);
-                            a.innerHTML = a.href;
-                            anError('The file ' + a.outerHTML + ' could not be accessed.');
+                            a.href = p;
+                            a.textContent = a.href;
+                            anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                         }
                         var img = this.response;
                         parseGPanoXMP(img);
@@ -376,16 +428,17 @@ window.pannellum = function (window, document, undefined) {
                         xhr.open('GET', p, true);
                     } catch (e) {
                         // Malformed URL
-                        anError('There is something wrong with the panorama URL.');
+                        anError(config.strings.malformedURLError);
                     }
                     xhr.responseType = 'blob';
                     xhr.setRequestHeader('Accept', 'image/*,*/*;q=0.9');
+                    xhr.withCredentials = config.crossOrigin === 'use-credentials';
                     xhr.send();
                 }
             }
 
-            container.classList.add('pnlm-grab');
-            container.classList.remove('pnlm-grabbing');
+            if (config.draggable) uiContainer.classList.add('pnlm-grab');
+            uiContainer.classList.remove('pnlm-grabbing');
         }
 
         /**
@@ -413,32 +466,41 @@ window.pannellum = function (window, document, undefined) {
                 document.addEventListener('mousemove', onDocumentMouseMove, false);
                 document.addEventListener('mouseup', onDocumentMouseUp, false);
                 if (config.mouseZoom) {
-                    container.addEventListener('mousewheel', onDocumentMouseWheel, false);
-                    container.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
+                    uiContainer.addEventListener('mousewheel', onDocumentMouseWheel, false);
+                    uiContainer.addEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
                 }
-                container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-                container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-                container.addEventListener('msfullscreenchange', onFullScreenChange, false);
-                container.addEventListener('fullscreenchange', onFullScreenChange, false);
+                if (config.doubleClickZoom) {
+                    dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
+                }
+                uiContainer.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+                uiContainer.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+                uiContainer.addEventListener('msfullscreenchange', onFullScreenChange, false);
+                uiContainer.addEventListener('fullscreenchange', onFullScreenChange, false);
                 window.addEventListener('resize', onDocumentResize, false);
                 window.addEventListener('orientationchange', onDocumentResize, false);
-                container.addEventListener('keydown', onDocumentKeyPress, false);
-                container.addEventListener('keyup', onDocumentKeyUp, false);
-                container.addEventListener('blur', clearKeys, false);
+                if (!config.disableKeyboardCtrl) {
+                    container.addEventListener('keydown', onDocumentKeyPress, false);
+                    container.addEventListener('keyup', onDocumentKeyUp, false);
+                    container.addEventListener('blur', clearKeys, false);
+                }
                 document.addEventListener('mouseleave', onDocumentMouseUp, false);
-                dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
-                dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
-                dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
-                dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
-                dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
-                dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
-                dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+                if (document.documentElement.style.pointerAction === '' && document.documentElement.style.touchAction === '') {
+                    dragFix.addEventListener('pointerdown', onDocumentPointerDown, false);
+                    dragFix.addEventListener('pointermove', onDocumentPointerMove, false);
+                    dragFix.addEventListener('pointerup', onDocumentPointerUp, false);
+                    dragFix.addEventListener('pointerleave', onDocumentPointerUp, false);
+                } else {
+                    dragFix.addEventListener('touchstart', onDocumentTouchStart, false);
+                    dragFix.addEventListener('touchmove', onDocumentTouchMove, false);
+                    dragFix.addEventListener('touchend', onDocumentTouchEnd, false);
+                }
 
                 // Deal with MS pointer events
                 if (window.navigator.pointerEnabled) container.style.touchAction = 'none';
             }
 
             renderInit();
+            setHfov(config.hfov); // possibly adapt hfov after configuration and canvas is complete; prevents empty space on top or bottom by zomming out too much
             setTimeout(function () {
                 isTimedOut = true;
             }, 500);
@@ -459,9 +521,7 @@ window.pannellum = function (window, document, undefined) {
                 // with non-progressive encoded JPEGs.
                 if (navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 8_/)) {
                     var flagIndex = img.indexOf('\xff\xc2');
-                    if (flagIndex < 0 || flagIndex > 65536) {
-                        anError("Due to iOS 8's broken WebGL implementation, only " + "progressive encoded JPEGs work for your device (this " + "panorama uses standard encoding).");
-                    }
+                    if (flagIndex < 0 || flagIndex > 65536) anError(config.strings.iOS8WebGLError);
                 }
 
                 var start = img.indexOf('<x:xmpmeta');
@@ -531,7 +591,7 @@ window.pannellum = function (window, document, undefined) {
          *      generic WebGL error is displayed.
          */
         function anError(errorMsg) {
-            if (errorMsg === undefined) errorMsg = 'Your browser does not have the necessary WebGL support to display this panorama.';
+            if (errorMsg === undefined) errorMsg = config.strings.genericWebGLError;
             infoDisplay.errorMsg.innerHTML = '<p>' + errorMsg + '</p>';
             controls.load.style.display = 'none';
             infoDisplay.load.box.style.display = 'none';
@@ -603,7 +663,7 @@ window.pannellum = function (window, document, undefined) {
             container.focus();
 
             // Only do something if the panorama is loaded
-            if (!loaded) {
+            if (!loaded || !config.draggable) {
                 return;
             }
 
@@ -633,11 +693,25 @@ window.pannellum = function (window, document, undefined) {
             onPointerDownYaw = config.yaw;
             onPointerDownPitch = config.pitch;
 
-            container.classList.add('pnlm-grabbing');
-            container.classList.remove('pnlm-grab');
+            uiContainer.classList.add('pnlm-grabbing');
+            uiContainer.classList.remove('pnlm-grab');
 
             fireEvent('mousedown', event);
             animateInit();
+        }
+
+        /**
+         * Event handler for double clicks. Zooms in at clicked location
+         * @private
+         * @param {MouseEvent} event - Document mouse down event.
+         */
+        function onDocumentDoubleClick(event) {
+            if (config.minHfov === config.hfov) {
+                _this.setHfov(origHfov, 1000);
+            } else {
+                var coords = mouseEventToCoords(event);
+                _this.lookAt(coords[0], coords[1], config.minHfov, 1000);
+            }
         }
 
         /**
@@ -649,8 +723,8 @@ window.pannellum = function (window, document, undefined) {
         function mouseEventToCoords(event) {
             var pos = mousePosition(event);
             var canvas = renderer.getCanvas();
-            var canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-                canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+            var canvasWidth = canvas.clientWidth,
+                canvasHeight = canvas.clientHeight;
             var x = pos.x / canvasWidth * 2 - 1;
             var y = (1 - pos.y / canvasHeight * 2) * canvasHeight / canvasWidth;
             var focal = 1 / Math.tan(config.hfov * Math.PI / 360);
@@ -660,6 +734,8 @@ window.pannellum = function (window, document, undefined) {
             var root = Math.sqrt(x * x + a * a);
             var pitch = Math.atan((y * c + focal * s) / root) * 180 / Math.PI;
             var yaw = Math.atan2(x / root, a / root) * 180 / Math.PI + config.yaw;
+            if (yaw < -180) yaw += 360;
+            if (yaw > 180) yaw -= 360;
             return [pitch, yaw];
         }
 
@@ -672,8 +748,8 @@ window.pannellum = function (window, document, undefined) {
             if (isUserInteracting && loaded) {
                 latestInteraction = Date.now();
                 var canvas = renderer.getCanvas();
-                var canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-                    canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+                var canvasWidth = canvas.clientWidth,
+                    canvasHeight = canvas.clientHeight;
                 var pos = mousePosition(event);
                 //TODO: This still isn't quite right
                 var yaw = (Math.atan(onPointerDownPointerX / canvasWidth * 2 - 1) - Math.atan(pos.x / canvasWidth * 2 - 1)) * 180 / Math.PI * config.hfov / 90 + onPointerDownYaw;
@@ -702,8 +778,8 @@ window.pannellum = function (window, document, undefined) {
                 // releases the mouse button
                 speed.pitch = speed.yaw = 0;
             }
-            container.classList.add('pnlm-grab');
-            container.classList.remove('pnlm-grabbing');
+            uiContainer.classList.add('pnlm-grab');
+            uiContainer.classList.remove('pnlm-grabbing');
             latestInteraction = Date.now();
 
             fireEvent('mouseup', event);
@@ -717,7 +793,7 @@ window.pannellum = function (window, document, undefined) {
          */
         function onDocumentTouchStart(event) {
             // Only do something if the panorama is loaded
-            if (!loaded) {
+            if (!loaded || !config.draggable) {
                 return;
             }
 
@@ -748,6 +824,7 @@ window.pannellum = function (window, document, undefined) {
             onPointerDownYaw = config.yaw;
             onPointerDownPitch = config.pitch;
 
+            fireEvent('touchstart', event);
             animateInit();
         }
 
@@ -758,6 +835,10 @@ window.pannellum = function (window, document, undefined) {
          * @param {TouchEvent} event - Document touch move event.
          */
         function onDocumentTouchMove(event) {
+            if (!config.draggable) {
+                return;
+            }
+
             // Override default action
             event.preventDefault();
             if (loaded) {
@@ -784,7 +865,7 @@ window.pannellum = function (window, document, undefined) {
                 //
                 // Currently this seems to *roughly* keep initial drag/pan start position close to
                 // the user's finger while panning regardless of zoom level / config.hfov value.
-                var touchmovePanSpeedCoeff = config.hfov / 360;
+                var touchmovePanSpeedCoeff = config.hfov / 360 * config.touchPanSpeedCoeffFactor;
 
                 var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
                 speed.yaw = (yaw - config.yaw) % 360 * 0.2;
@@ -807,6 +888,8 @@ window.pannellum = function (window, document, undefined) {
             }
             onPointerDownPointerDist = -1;
             latestInteraction = Date.now();
+
+            fireEvent('touchend', event);
         }
 
         var pointerIDs = [],
@@ -835,10 +918,11 @@ window.pannellum = function (window, document, undefined) {
             if (event.pointerType == 'touch') {
                 for (var i = 0; i < pointerIDs.length; i++) {
                     if (event.pointerId == pointerIDs[i]) {
-                        pointerCoordinates[i] = { clientX: event.clientX, clientY: event.clientY };
+                        pointerCoordinates[i].clientX = event.clientX;
+                        pointerCoordinates[i].clientY = event.clientY;
                         event.targetTouches = pointerCoordinates;
                         onDocumentTouchMove(event);
-                        //event.preventDefault();
+                        event.preventDefault();
                         return;
                     }
                 }
@@ -872,12 +956,12 @@ window.pannellum = function (window, document, undefined) {
          * @param {WheelEvent} event - Document mouse wheel event.
          */
         function onDocumentMouseWheel(event) {
-            event.preventDefault();
-
-            // Only do something if the panorama is loaded
-            if (!loaded) {
+            // Only do something if the panorama is loaded and mouse wheel zoom is enabled
+            if (!loaded || config.mouseZoom == 'fullscreenonly' && !fullscreenActive) {
                 return;
             }
+
+            event.preventDefault();
 
             // Turn off auto-rotation if enabled
             stopAnimation();
@@ -906,9 +990,6 @@ window.pannellum = function (window, document, undefined) {
          * @param {KeyboardEvent} event - Document key press event.
          */
         function onDocumentKeyPress(event) {
-            // Override default action
-            event.preventDefault();
-
             // Turn off auto-rotation if enabled
             stopAnimation();
             latestInteraction = Date.now();
@@ -917,10 +998,11 @@ window.pannellum = function (window, document, undefined) {
             config.roll = 0;
 
             // Record key pressed
-            var keynumber = event.keycode;
-            if (event.which) {
-                keynumber = event.which;
-            }
+            var keynumber = event.which || event.keycode;
+
+            // Override default action for keys that are used
+            if (config.capturedKeyNumbers.indexOf(keynumber) < 0) return;
+            event.preventDefault();
 
             // If escape key is pressed
             if (keynumber == 27) {
@@ -950,14 +1032,12 @@ window.pannellum = function (window, document, undefined) {
          * @param {KeyboardEvent} event - Document key up event.
          */
         function onDocumentKeyUp(event) {
-            // Override default action
-            event.preventDefault();
+            // Record key pressed
+            var keynumber = event.which || event.keycode;
 
-            // Record key released
-            var keynumber = event.keycode;
-            if (event.which) {
-                keynumber = event.which;
-            }
+            // Override default action for keys that are used
+            if (config.capturedKeyNumbers.indexOf(keynumber) < 0) return;
+            event.preventDefault();
 
             // Change key
             changeKey(keynumber, false);
@@ -973,14 +1053,14 @@ window.pannellum = function (window, document, undefined) {
             var keyChanged = false;
             switch (keynumber) {
                 // If minus key is released
-                case 109:case 189:case 17:
+                case 109:case 189:case 17:case 173:
                     if (keysDown[0] != value) {
                         keyChanged = true;
                     }
                     keysDown[0] = value;break;
 
                 // If plus key is released
-                case 107:case 187:case 16:
+                case 107:case 187:case 16:case 61:
                     if (keysDown[1] != value) {
                         keyChanged = true;
                     }
@@ -1193,7 +1273,7 @@ window.pannellum = function (window, document, undefined) {
             }
 
             // Stop movement if opposite controls are pressed
-            if (keysDown[0] && keysDown[0]) {
+            if (keysDown[0] && keysDown[1]) {
                 speed.hfov = 0;
             }
             if ((keysDown[2] || keysDown[6]) && (keysDown[3] || keysDown[7])) {
@@ -1212,11 +1292,14 @@ window.pannellum = function (window, document, undefined) {
         function animateMove(axis) {
             var t = animatedMove[axis];
             var normTime = Math.min(1, Math.max((Date.now() - t.startTime) / 1000 / (t.duration / 1000), 0));
-            var result = t.startPosition + timingFunction(normTime) * (t.endPosition - t.startPosition);
-            if (t.endPosition > t.startPosition && result >= t.endPosition || t.endPosition < t.startPosition && result <= t.endPosition) {
+            var result = t.startPosition + config.animationTimingFunction(normTime) * (t.endPosition - t.startPosition);
+            if (t.endPosition > t.startPosition && result >= t.endPosition || t.endPosition < t.startPosition && result <= t.endPosition || t.endPosition === t.startPosition) {
                 result = t.endPosition;
                 speed[axis] = 0;
+                var callback = animatedMove[axis].callback,
+                    callbackArgs = animatedMove[axis].callbackArgs;
                 delete animatedMove[axis];
+                if (typeof callback == 'function') callback(callbackArgs);
             }
             config[axis] = result;
         }
@@ -1263,7 +1346,7 @@ window.pannellum = function (window, document, undefined) {
         function animate() {
             render();
             if (autoRotateStart) clearTimeout(autoRotateStart);
-            if (isUserInteracting || orientation) {
+            if (isUserInteracting || orientation === true) {
                 requestAnimationFrame(animate);
             } else if (keysDown[0] || keysDown[1] || keysDown[2] || keysDown[3] || keysDown[4] || keysDown[5] || keysDown[6] || keysDown[7] || keysDown[8] || keysDown[9] || config.autoRotate || animatedMove.pitch || animatedMove.yaw || animatedMove.hfov || Math.abs(speed.yaw) > 0.01 || Math.abs(speed.pitch) > 0.01 || Math.abs(speed.hfov) > 0.01) {
 
@@ -1310,23 +1393,39 @@ window.pannellum = function (window, document, undefined) {
                 // Keep a tmp value of yaw for autoRotate comparison later
                 tmpyaw = config.yaw;
 
+                // Optionally avoid showing background (empty space) on left or right by adapting min/max yaw
+                var hoffcut = 0,
+                    voffcut = 0;
+                if (config.avoidShowingBackground) {
+                    var canvas = renderer.getCanvas(),
+                        hfov2 = config.hfov / 2,
+                        vfov2 = Math.atan2(Math.tan(hfov2 / 180 * Math.PI), canvas.width / canvas.height) * 180 / Math.PI,
+                        transposed = config.vaov > config.haov;
+                    if (transposed) {
+                        voffcut = vfov2 * (1 - Math.min(Math.cos((config.pitch - hfov2) / 180 * Math.PI), Math.cos((config.pitch + hfov2) / 180 * Math.PI)));
+                    } else {
+                        hoffcut = hfov2 * (1 - Math.min(Math.cos((config.pitch - vfov2) / 180 * Math.PI), Math.cos((config.pitch + vfov2) / 180 * Math.PI)));
+                    }
+                }
+
                 // Ensure the yaw is within min and max allowed
                 var yawRange = config.maxYaw - config.minYaw,
                     minYaw = -180,
                     maxYaw = 180;
                 if (yawRange < 360) {
-                    minYaw = config.minYaw + config.hfov / 2;
-                    maxYaw = config.maxYaw - config.hfov / 2;
+                    minYaw = config.minYaw + config.hfov / 2 + hoffcut;
+                    maxYaw = config.maxYaw - config.hfov / 2 - hoffcut;
                     if (yawRange < config.hfov) {
                         // Lock yaw to average of min and max yaw when both can be seen at once
                         minYaw = maxYaw = (minYaw + maxYaw) / 2;
                     }
+                    config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
                 }
-                config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
 
                 // Check if we autoRotate in a limited by min and max yaw
                 // If so reverse direction
-                if (config.autoRotate !== false && tmpyaw != config.yaw) {
+                if (config.autoRotate !== false && tmpyaw != config.yaw && prevTime !== undefined) {
+                    // this condition prevents changing the direction initially
                     config.autoRotate *= -1;
                 }
 
@@ -1436,9 +1535,22 @@ window.pannellum = function (window, document, undefined) {
          */
         function orientationListener(e) {
             var q = computeQuaternion(e.alpha, e.beta, e.gamma).toEulerAngles();
-            config.pitch = q[0] / Math.PI * 180;
-            config.roll = -q[1] / Math.PI * 180;
-            config.yaw = -q[2] / Math.PI * 180 + config.northOffset;
+            if (typeof orientation == 'number' && orientation < 10) {
+                // This kludge is necessary because iOS sometimes provides a few stale
+                // device orientation events when the listener is removed and then
+                // readded. Thus, we skip the first 10 events to prevent this from
+                // causing problems.
+                orientation += 1;
+            } else if (orientation === 10) {
+                // Record starting yaw to prevent jumping
+                orientationYawOffset = q[2] / Math.PI * 180 + config.yaw;
+                orientation = true;
+                requestAnimationFrame(animate);
+            } else {
+                config.pitch = q[0] / Math.PI * 180;
+                config.roll = -q[1] / Math.PI * 180;
+                config.yaw = -q[2] / Math.PI * 180 + orientationYawOffset;
+            }
         }
 
         /**
@@ -1463,9 +1575,9 @@ window.pannellum = function (window, document, undefined) {
                 if (event.type == 'webgl error' || event.type == 'no webgl') {
                     anError();
                 } else if (event.type == 'webgl size error') {
-                    anError('This panorama is too big for your device! It\'s ' + event.width + 'px wide, but your device only supports images up to ' + event.maxWidth + 'px wide. Try another device.' + ' (If you\'re the author, try scaling down the image.)');
+                    anError(config.strings.textureSizeError.replace('%s', event.width).replace('%s', event.maxWidth));
                 } else {
-                    anError('Unknown error. Check developer console.');
+                    anError(config.strings.unknownError);
                     throw event;
                 }
             }
@@ -1486,6 +1598,7 @@ window.pannellum = function (window, document, undefined) {
                 delete renderer.fadeImg;
                 setTimeout(function () {
                     renderContainer.removeChild(fadeImg);
+                    fireEvent('scenechangefadedone');
                 }, config.sceneFadeDuration);
             }
 
@@ -1534,7 +1647,7 @@ window.pannellum = function (window, document, undefined) {
                 var video = document.createElement('video'),
                     p = hs.video;
                 if (config.basePath && !absoluteURL(p)) p = config.basePath + p;
-                video.src = encodeURI(p);
+                video.src = sanitizeURL(p);
                 video.controls = true;
                 video.style.width = hs.width + 'px';
                 renderContainer.appendChild(div);
@@ -1543,11 +1656,11 @@ window.pannellum = function (window, document, undefined) {
                 var p = hs.image;
                 if (config.basePath && !absoluteURL(p)) p = config.basePath + p;
                 a = document.createElement('a');
-                a.href = encodeURI(hs.URL ? hs.URL : p);
+                a.href = sanitizeURL(hs.URL ? hs.URL : p);
                 a.target = '_blank';
                 span.appendChild(a);
                 var image = document.createElement('img');
-                image.src = encodeURI(p);
+                image.src = sanitizeURL(p);
                 image.style.width = hs.width + 'px';
                 image.style.paddingTop = '5px';
                 renderContainer.appendChild(div);
@@ -1555,24 +1668,23 @@ window.pannellum = function (window, document, undefined) {
                 span.style.maxWidth = 'initial';
             } else if (hs.URL) {
                 a = document.createElement('a');
-                a.href = encodeURI(hs.URL);
+                a.href = sanitizeURL(hs.URL);
                 a.target = '_blank';
                 renderContainer.appendChild(a);
-                div.style.cursor = 'pointer';
-                span.style.cursor = 'pointer';
+                div.className += ' pnlm-pointer';
+                span.className += ' pnlm-pointer';
                 a.appendChild(div);
             } else {
                 if (hs.sceneId) {
-                    div.onclick = function () {
-                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
+                    div.onclick = div.ontouchend = function () {
+                        if (!div.clicked) {
+                            div.clicked = true;
+                            loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
+                        }
                         return false;
                     };
-                    div.ontouchend = function () {
-                        loadScene(hs.sceneId, hs.targetPitch, hs.targetYaw, hs.targetHfov);
-                        return false;
-                    };
-                    div.style.cursor = 'pointer';
-                    span.style.cursor = 'pointer';
+                    div.className += ' pnlm-pointer';
+                    span.className += ' pnlm-pointer';
                 }
                 renderContainer.appendChild(div);
             }
@@ -1590,8 +1702,8 @@ window.pannellum = function (window, document, undefined) {
                 div.addEventListener('click', function (e) {
                     hs.clickHandlerFunc(e, hs.clickHandlerArgs);
                 }, 'false');
-                div.style.cursor = 'pointer';
-                span.style.cursor = 'pointer';
+                div.className += ' pnlm-pointer';
+                span.className += ' pnlm-pointer';
             }
             hs.div = div;
         };
@@ -1617,22 +1729,23 @@ window.pannellum = function (window, document, undefined) {
         }
 
         /**
-         * Destroys currently create hot spot elements.
+         * Destroys currently created hot spot elements.
          * @private
          */
         function destroyHotSpots() {
-            if (config.hotSpots) {
-                for (var i = 0; i < config.hotSpots.length; i++) {
-                    var current = config.hotSpots[i].div;
+            var hs = config.hotSpots;
+            hotspotsCreated = false;
+            delete config.hotSpots;
+            if (hs) {
+                for (var i = 0; i < hs.length; i++) {
+                    var current = hs[i].div;
                     while (current.parentNode != renderContainer) {
                         current = current.parentNode;
                     }
                     renderContainer.removeChild(current);
-                    delete config.hotSpots[i].div;
+                    delete hs[i].div;
                 }
             }
-            hotspotsCreated = false;
-            delete config.hotSpots;
         }
 
         /**
@@ -1655,8 +1768,8 @@ window.pannellum = function (window, document, undefined) {
                 // Subpixel rendering doesn't work in Firefox
                 // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
                 var canvas = renderer.getCanvas(),
-                    canvasWidth = canvas.width / (window.devicePixelRatio || 1),
-                    canvasHeight = canvas.height / (window.devicePixelRatio || 1);
+                    canvasWidth = canvas.clientWidth,
+                    canvasHeight = canvas.clientHeight;
                 var coord = [-canvasWidth / hfovTan * yawSin * hsPitchCos / z / 2, -canvasWidth / hfovTan * (hsPitchSin * configPitchCos - hsPitchCos * yawCos * configPitchSin) / z / 2];
                 // Apply roll
                 var rollSin = Math.sin(config.roll * Math.PI / 180),
@@ -1687,7 +1800,7 @@ window.pannellum = function (window, document, undefined) {
          */
         function mergeConfig(sceneId) {
             config = {};
-            var k;
+            var k, s;
             var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset', 'horizonPitch', 'horizonRoll'];
             specifiedPhotoSphereExcludes = [];
 
@@ -1701,9 +1814,17 @@ window.pannellum = function (window, document, undefined) {
             // Merge default scene config
             for (k in initialConfig.default) {
                 if (initialConfig.default.hasOwnProperty(k)) {
-                    config[k] = initialConfig.default[k];
-                    if (photoSphereExcludes.indexOf(k) >= 0) {
-                        specifiedPhotoSphereExcludes.push(k);
+                    if (k == 'strings') {
+                        for (s in initialConfig.default.strings) {
+                            if (initialConfig.default.strings.hasOwnProperty(s)) {
+                                config.strings[s] = escapeHTML(initialConfig.default.strings[s]);
+                            }
+                        }
+                    } else {
+                        config[k] = initialConfig.default[k];
+                        if (photoSphereExcludes.indexOf(k) >= 0) {
+                            specifiedPhotoSphereExcludes.push(k);
+                        }
                     }
                 }
             }
@@ -1713,9 +1834,17 @@ window.pannellum = function (window, document, undefined) {
                 var scene = initialConfig.scenes[sceneId];
                 for (k in scene) {
                     if (scene.hasOwnProperty(k)) {
-                        config[k] = scene[k];
-                        if (photoSphereExcludes.indexOf(k) >= 0) {
-                            specifiedPhotoSphereExcludes.push(k);
+                        if (k == 'strings') {
+                            for (s in scene.strings) {
+                                if (scene.strings.hasOwnProperty(s)) {
+                                    config.strings[s] = escapeHTML(scene.strings[s]);
+                                }
+                            }
+                        } else {
+                            config[k] = scene[k];
+                            if (photoSphereExcludes.indexOf(k) >= 0) {
+                                specifiedPhotoSphereExcludes.push(k);
+                            }
                         }
                     }
                 }
@@ -1725,9 +1854,17 @@ window.pannellum = function (window, document, undefined) {
             // Merge initial config
             for (k in initialConfig) {
                 if (initialConfig.hasOwnProperty(k)) {
-                    config[k] = initialConfig[k];
-                    if (photoSphereExcludes.indexOf(k) >= 0) {
-                        specifiedPhotoSphereExcludes.push(k);
+                    if (k == 'strings') {
+                        for (s in initialConfig.strings) {
+                            if (initialConfig.strings.hasOwnProperty(s)) {
+                                config.strings[s] = escapeHTML(initialConfig.strings[s]);
+                            }
+                        }
+                    } else {
+                        config[k] = initialConfig[k];
+                        if (photoSphereExcludes.indexOf(k) >= 0) {
+                            specifiedPhotoSphereExcludes.push(k);
+                        }
                     }
                 }
             }
@@ -1735,27 +1872,40 @@ window.pannellum = function (window, document, undefined) {
 
         /**
          * Processes configuration options.
+         * @param {boolean} [isPreview] - Whether or not the preview is being displayed
          * @private
          */
-        function processOptions() {
+        function processOptions(isPreview) {
+            isPreview = isPreview ? isPreview : false;
+
             // Process preview first so it always loads before the browser hits its
             // maximum number of connections to a server as can happen with cubic
             // panoramas
-            if ('preview' in config) {
+            if (isPreview && 'preview' in config) {
                 var p = config.preview;
-                if (config.basePath) {
-                    p = config.basePath + p;
-                }
+                if (config.basePath && !absoluteURL(p)) p = config.basePath + p;
                 preview = document.createElement('div');
                 preview.className = 'pnlm-preview-img';
-                preview.style.backgroundImage = "url('" + encodeURI(p) + "')";
+                preview.style.backgroundImage = "url('" + sanitizeURLForCss(p) + "')";
                 renderContainer.appendChild(preview);
+            }
+
+            // Handle different preview values
+            var title = config.title,
+                author = config.author;
+            if (isPreview) {
+                if ('previewTitle' in config) config.title = config.previewTitle;
+                if ('previewAuthor' in config) config.author = config.previewAuthor;
             }
 
             // Reset title / author display
             if (!config.hasOwnProperty('title')) infoDisplay.title.innerHTML = '';
             if (!config.hasOwnProperty('author')) infoDisplay.author.innerHTML = '';
             if (!config.hasOwnProperty('title') && !config.hasOwnProperty('author')) infoDisplay.container.style.display = 'none';
+
+            // Fill in load button label and loading box text
+            controls.load.innerHTML = '<p>' + config.strings.loadButtonLabel + '</p>';
+            infoDisplay.load.boxp.innerHTML = config.strings.loadingLabel;
 
             // Process other options
             for (var key in config) {
@@ -1767,12 +1917,21 @@ window.pannellum = function (window, document, undefined) {
                             break;
 
                         case 'author':
-                            infoDisplay.author.innerHTML = 'by ' + escapeHTML(config[key]);
+                            infoDisplay.author.innerHTML = config.strings.bylineLabel.replace('%s', escapeHTML(config[key]));
                             infoDisplay.container.style.display = 'inline';
                             break;
 
                         case 'fallback':
-                            infoDisplay.errorMsg.innerHTML = '<p>Your browser does not support WebGL.<br><a href="' + encodeURI(config[key]) + '" target="_blank">Click here to view this panorama in an alternative viewer.</a></p>';
+                            var link = document.createElement('a');
+                            link.href = sanitizeURL(config[key]);
+                            link.target = '_blank';
+                            link.textContent = 'Click here to view this panorama in an alternative viewer.';
+                            var message = document.createElement('p');
+                            message.textContent = 'Your browser does not support WebGL.';
+                            message.appendChild(document.createElement('br'));
+                            message.appendChild(link);
+                            infoDisplay.errorMsg.innerHTML = ''; // Removes all children nodes
+                            infoDisplay.errorMsg.appendChild(message);
                             break;
 
                         case 'hfov':
@@ -1824,10 +1983,18 @@ window.pannellum = function (window, document, undefined) {
                             break;
 
                         case 'orientationOnByDefault':
-                            if (config[key]) startOrientation();
+                            if (config[key]) {
+                                if (orientationSupport === undefined) startOrientationIfSupported = true;else if (orientationSupport === true) startOrientation();
+                            }
                             break;
                     }
                 }
+            }
+
+            if (isPreview) {
+                // Restore original values if changed for preview
+                if (title) config.title = title;else delete config.title;
+                if (author) config.author = author;else delete config.author;
             }
         }
 
@@ -1922,13 +2089,21 @@ window.pannellum = function (window, document, undefined) {
                 // Don't change view if bounds don't make sense
                 console.log('HFOV bounds do not make sense (minHfov > maxHfov).');
                 return config.hfov;
-            }if (hfov < minHfov) {
-                return minHfov;
-            } else if (hfov > config.maxHfov) {
-                return config.maxHfov;
-            } else {
-                return hfov;
             }
+            var newHfov = config.hfov;
+            if (hfov < minHfov) {
+                newHfov = minHfov;
+            } else if (hfov > config.maxHfov) {
+                newHfov = config.maxHfov;
+            } else {
+                newHfov = hfov;
+            }
+            // Optionally avoid showing background (empty space) on top or bottom by adapting newHfov
+            if (config.avoidShowingBackground && renderer) {
+                var canvas = renderer.getCanvas();
+                newHfov = Math.min(newHfov, Math.atan(Math.tan((config.maxPitch - config.minPitch) / 360 * Math.PI) / canvas.height * canvas.width) * 360 / Math.PI);
+            }
+            return newHfov;
         }
 
         /**
@@ -1959,6 +2134,7 @@ window.pannellum = function (window, document, undefined) {
             // since it is a new scene and the error from previous maybe because of lacking
             // memory etc and not because of a lack of WebGL support etc
             clearError();
+            loaded = false;
 
             controls.load.style.display = 'none';
             infoDisplay.load.box.style.display = 'inline';
@@ -1981,21 +2157,21 @@ window.pannellum = function (window, document, undefined) {
             // Set up fade if specified
             var fadeImg, workingPitch, workingYaw, workingHfov;
             if (config.sceneFadeDuration && !fadeDone) {
-                fadeImg = new Image();
-                fadeImg.className = 'pnlm-fade-img';
-                fadeImg.style.transition = 'opacity ' + config.sceneFadeDuration / 1000 + 's';
-                fadeImg.style.width = '100%';
-                fadeImg.style.height = '100%';
-                fadeImg.onload = function () {
-                    loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
-                };
                 var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, { returnImage: true });
                 if (data !== undefined) {
+                    fadeImg = new Image();
+                    fadeImg.className = 'pnlm-fade-img';
+                    fadeImg.style.transition = 'opacity ' + config.sceneFadeDuration / 1000 + 's';
+                    fadeImg.style.width = '100%';
+                    fadeImg.style.height = '100%';
+                    fadeImg.onload = function () {
+                        loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
+                    };
                     fadeImg.src = data;
+                    renderContainer.appendChild(fadeImg);
+                    renderer.fadeImg = fadeImg;
+                    return;
                 }
-                renderContainer.appendChild(fadeImg);
-                renderer.fadeImg = fadeImg;
-                return;
             }
 
             // Set new pointing
@@ -2007,7 +2183,7 @@ window.pannellum = function (window, document, undefined) {
             if (targetYaw === 'same') {
                 workingYaw = config.yaw;
             } else if (targetYaw === 'sameAzimuth') {
-                workingYaw = config.yaw + config.northOffset - initialConfig.scenes[sceneId].northOffset;
+                workingYaw = config.yaw + (config.northOffset || 0) - (initialConfig.scenes[sceneId].northOffset || 0);
             } else {
                 workingYaw = targetYaw;
             }
@@ -2056,10 +2232,9 @@ window.pannellum = function (window, document, undefined) {
          * @private
          */
         function startOrientation() {
-            orientation = true;
+            orientation = 1;
             window.addEventListener('deviceorientation', orientationListener);
             controls.orientation.classList.add('pnlm-orientation-button-active');
-            requestAnimationFrame(animate);
         }
 
         /**
@@ -2069,8 +2244,45 @@ window.pannellum = function (window, document, undefined) {
          * @returns {string} Escaped string
          */
         function escapeHTML(s) {
-            return String(s).replace(/&/g, '&amp;').replace('"', '&quot;').replace("'", '&#39;').replace('<', '&lt;').replace('>', '&gt;').replace('/', '&#x2f;');
+            if (!initialConfig.escapeHTML) return String(s).split('\n').join('<br>');
+            return String(s).split(/&/g).join('&amp;').split('"').join('&quot;').split("'").join('&#39;').split('<').join('&lt;').split('>').join('&gt;').split('/').join('&#x2f;').split('\n').join('<br>'); // Allow line breaks
         }
+
+        /**
+         * Removes possibility of XSS attacks with URLs.
+         * The URL cannot be of protocol 'javascript'.
+         * @private
+         * @param {string} url - URL to sanitize
+         * @returns {string} Sanitized URL
+         */
+        function sanitizeURL(url) {
+            if (url.trim().toLowerCase().indexOf('javascript:') === 0) {
+                return 'about:blank';
+            }
+            return url;
+        }
+
+        /**
+         * Removes possibility of XSS atacks with URLs for CSS.
+         * The URL will be sanitized with `sanitizeURL()` and single quotes
+         * and double quotes escaped.
+         * @private
+         * @param {string} url - URL to sanitize
+         * @returns {string} Sanitized URL
+         */
+        function sanitizeURLForCss(url) {
+            return sanitizeURL(url).replace(/"/g, '%22').replace(/'/g, '%27');
+        }
+
+        /**
+         * Checks whether or not a panorama is loaded.
+         * @memberof Viewer
+         * @instance
+         * @returns {boolean} `true` if a panorama is loaded, else `false`
+         */
+        this.isLoaded = function () {
+            return Boolean(loaded);
+        };
 
         /**
          * Returns the pitch of the center of the view.
@@ -2088,16 +2300,20 @@ window.pannellum = function (window, document, undefined) {
          * @instance
          * @param {number} pitch - Pitch in degrees
          * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+         * @param {function} [callback] - Function to call when animation finishes
+         * @param {object} [callbackArgs] - Arguments to pass to callback function
          * @returns {Viewer} `this`
          */
-        this.setPitch = function (pitch, animated) {
+        this.setPitch = function (pitch, animated, callback, callbackArgs) {
             animated = animated == undefined ? 1000 : Number(animated);
             if (animated) {
                 animatedMove.pitch = {
                     'startTime': Date.now(),
                     'startPosition': config.pitch,
                     'endPosition': pitch,
-                    'duration': animated
+                    'duration': animated,
+                    'callback': callback,
+                    'callbackArgs': callbackArgs
                 };
             } else {
                 config.pitch = pitch;
@@ -2145,22 +2361,24 @@ window.pannellum = function (window, document, undefined) {
          * @instance
          * @param {number} yaw - Yaw in degrees [-180, 180]
          * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+         * @param {function} [callback] - Function to call when animation finishes
+         * @param {object} [callbackArgs] - Arguments to pass to callback function
          * @returns {Viewer} `this`
          */
-        this.setYaw = function (yaw, animated) {
-            while (yaw > 180) {
-                yaw -= 360;
-            }
-            while (yaw < -180) {
-                yaw += 360;
-            }
+        this.setYaw = function (yaw, animated, callback, callbackArgs) {
             animated = animated == undefined ? 1000 : Number(animated);
+            yaw = (yaw + 180) % 360 - 180; // Keep in bounds
             if (animated) {
+                // Animate in shortest direction
+                if (config.yaw - yaw > 180) yaw += 360;else if (yaw - config.yaw > 180) yaw -= 360;
+
                 animatedMove.yaw = {
                     'startTime': Date.now(),
                     'startPosition': config.yaw,
                     'endPosition': yaw,
-                    'duration': animated
+                    'duration': animated,
+                    'callback': callback,
+                    'callbackArgs': callbackArgs
                 };
             } else {
                 config.yaw = yaw;
@@ -2208,16 +2426,20 @@ window.pannellum = function (window, document, undefined) {
          * @instance
          * @param {number} hfov - Horizontal field of view in degrees
          * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+         * @param {function} [callback] - Function to call when animation finishes
+         * @param {object} [callbackArgs] - Arguments to pass to callback function
          * @returns {Viewer} `this`
          */
-        this.setHfov = function (hfov, animated) {
+        this.setHfov = function (hfov, animated, callback, callbackArgs) {
             animated = animated == undefined ? 1000 : Number(animated);
             if (animated) {
                 animatedMove.hfov = {
                     'startTime': Date.now(),
                     'startPosition': config.hfov,
                     'endPosition': constrainHfov(hfov),
-                    'duration': animated
+                    'duration': animated,
+                    'callback': callback,
+                    'callbackArgs': callbackArgs
                 };
             } else {
                 setHfov(hfov);
@@ -2258,13 +2480,21 @@ window.pannellum = function (window, document, undefined) {
          * @param {number} [yaw] - Target yaw
          * @param {number} [hfov] - Target hfov
          * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
+         * @param {function} [callback] - Function to call when animation finishes
+         * @param {object} [callbackArgs] - Arguments to pass to callback function
          * @returns {Viewer} `this`
          */
-        this.lookAt = function (pitch, yaw, hfov, animated) {
+        this.lookAt = function (pitch, yaw, hfov, animated, callback, callbackArgs) {
             animated = animated == undefined ? 1000 : Number(animated);
-            if (pitch !== undefined) this.setPitch(pitch, animated);
-            if (yaw !== undefined) this.setYaw(yaw, animated);
-            if (hfov !== undefined) this.setHfov(hfov, animated);
+            if (pitch !== undefined) {
+                this.setPitch(pitch, animated, callback, callbackArgs);
+                callback = undefined;
+            }
+            if (yaw !== undefined) {
+                this.setYaw(yaw, animated, callback, callbackArgs);
+                callback = undefined;
+            }
+            if (hfov !== undefined) this.setHfov(hfov, animated, callback, callbackArgs);
             return this;
         };
 
@@ -2287,6 +2517,54 @@ window.pannellum = function (window, document, undefined) {
          */
         this.setNorthOffset = function (heading) {
             config.northOffset = Math.min(360, Math.max(0, heading));
+            animateInit();
+            return this;
+        };
+
+        /**
+         * Returns the panorama's horizon roll.
+         * @memberof Viewer
+         * @instance
+         * @returns {number} Horizon roll in degrees
+         */
+        this.getHorizonRoll = function () {
+            return config.horizonRoll;
+        };
+
+        /**
+         * Sets the panorama's horizon roll.
+         * @memberof Viewer
+         * @instance
+         * @param {number} roll - Horizon roll in degrees [-90, 90]
+         * @returns {Viewer} `this`
+         */
+        this.setHorizonRoll = function (roll) {
+            config.horizonRoll = Math.min(90, Math.max(-90, roll));
+            renderer.setPose(config.horizonPitch * Math.PI / 180, config.horizonRoll * Math.PI / 180);
+            animateInit();
+            return this;
+        };
+
+        /**
+         * Returns the panorama's horizon pitch.
+         * @memberof Viewer
+         * @instance
+         * @returns {number} Horizon pitch in degrees
+         */
+        this.getHorizonPitch = function () {
+            return config.horizonPitch;
+        };
+
+        /**
+         * Sets the panorama's horizon pitch.
+         * @memberof Viewer
+         * @instance
+         * @param {number} pitch - Horizon pitch in degrees [-90, 90]
+         * @returns {Viewer} `this`
+         */
+        this.setHorizonPitch = function (pitch) {
+            config.horizonPitch = Math.min(90, Math.max(-90, pitch));
+            renderer.setPose(config.horizonPitch * Math.PI / 180, config.horizonRoll * Math.PI / 180);
             animateInit();
             return this;
         };
@@ -2364,7 +2642,7 @@ window.pannellum = function (window, document, undefined) {
          * @returns {Viewer} `this`
          */
         this.loadScene = function (sceneId, pitch, yaw, hfov) {
-            if (loaded) loadScene(sceneId, pitch, yaw, hfov);
+            if (loaded !== false) loadScene(sceneId, pitch, yaw, hfov);
             return this;
         };
 
@@ -2426,6 +2704,16 @@ window.pannellum = function (window, document, undefined) {
         };
 
         /**
+         * Get viewer's container element.
+         * @memberof Viewer
+         * @instance
+         * @returns {HTMLElement} Container `div` element
+         */
+        this.getContainer = function () {
+            return container;
+        };
+
+        /**
          * Add a new hot spot.
          * @memberof Viewer
          * @instance
@@ -2435,14 +2723,26 @@ window.pannellum = function (window, document, undefined) {
          * @throws Throws an error if the scene ID is provided but invalid
          */
         this.addHotSpot = function (hs, sceneId) {
+            if (sceneId === undefined && config.scene === undefined) {
+                // Not a tour
+                config.hotSpots.push(hs);
+            } else {
+                // Tour
+                var id = sceneId !== undefined ? sceneId : config.scene;
+                if (initialConfig.scenes.hasOwnProperty(id)) {
+                    if (!initialConfig.scenes[id].hasOwnProperty('hotSpots')) {
+                        initialConfig.scenes[id].hotSpots = []; // Create hot spots array if needed
+                        if (id == config.scene) config.hotSpots = initialConfig.scenes[id].hotSpots; // Link to current config
+                    }
+                    initialConfig.scenes[id].hotSpots.push(hs); // Add hot spot to config
+                } else {
+                    throw 'Invalid scene ID!';
+                }
+            }
             if (sceneId === undefined || config.scene == sceneId) {
                 // Add to current scene
                 createHotSpot(hs);
-                config.hotSpots.push(hs);
-                renderHotSpot(hs);
-            } else {
-                // Add to a different scene
-                if (initialConfig.scenes.hasOwnProperty(sceneId)) initialConfig.scenes[sceneId].hotSpots.push(hs);else throw 'Invalid scene ID!';
+                if (loaded) renderHotSpot(hs);
             }
             return this;
         };
@@ -2452,23 +2752,95 @@ window.pannellum = function (window, document, undefined) {
          * @memberof Viewer
          * @instance
          * @param {string} hotSpotId - The ID of the hot spot
+         * @param {string} [sceneId] - Removes hot spot from specified scene if provided, else from current scene
          * @returns {boolean} True if deletion is successful, else false
          */
-        this.removeHotSpot = function (hotSpotId) {
-            if (!config.hotSpots) return false;
-            for (var i = 0; i < config.hotSpots.length; i++) {
-                if (config.hotSpots[i].hasOwnProperty('id') && config.hotSpots[i].id === hotSpotId) {
-                    // Delete hot spot DOM elements
-                    var current = config.hotSpots[i].div;
-                    while (current.parentNode != renderContainer) current = current.parentNode;
-                    renderContainer.removeChild(current);
-                    delete config.hotSpots[i].div;
-                    // Remove hot spot from configuration
-                    config.hotSpots.splice(i, 1);
-                    return true;
+        this.removeHotSpot = function (hotSpotId, sceneId) {
+            if (sceneId === undefined || config.scene == sceneId) {
+                if (!config.hotSpots) return false;
+                for (var i = 0; i < config.hotSpots.length; i++) {
+                    if (config.hotSpots[i].hasOwnProperty('id') && config.hotSpots[i].id === hotSpotId) {
+                        // Delete hot spot DOM elements
+                        var current = config.hotSpots[i].div;
+                        while (current.parentNode != renderContainer) current = current.parentNode;
+                        renderContainer.removeChild(current);
+                        delete config.hotSpots[i].div;
+                        // Remove hot spot from configuration
+                        config.hotSpots.splice(i, 1);
+                        return true;
+                    }
+                }
+            } else {
+                if (initialConfig.scenes.hasOwnProperty(sceneId)) {
+                    if (!initialConfig.scenes[sceneId].hasOwnProperty('hotSpots')) return false;
+                    for (var i = 0; i < initialConfig.scenes[sceneId].hotSpots.length; i++) {
+                        if (initialConfig.scenes[sceneId].hotSpots[i].hasOwnProperty('id') && initialConfig.scenes[sceneId].hotSpots[i].id === hotSpotId) {
+                            // Remove hot spot from configuration
+                            initialConfig.scenes[sceneId].hotSpots.splice(i, 1);
+                            return true;
+                        }
+                    }
+                } else {
+                    return false;
                 }
             }
-            return false;
+        };
+
+        /**
+         * This method should be called if the viewer's container is resized.
+         * @memberof Viewer
+         * @instance
+         */
+        this.resize = function () {
+            onDocumentResize();
+        };
+
+        /**
+         * Check if a panorama is loaded.
+         * @memberof Viewer
+         * @instance
+         * @returns {boolean} True if a panorama is loaded, else false
+         */
+        this.isLoaded = function () {
+            return loaded;
+        };
+
+        /**
+         * Check if device orientation control is supported.
+         * @memberof Viewer
+         * @instance
+         * @returns {boolean} True if supported, else false
+         */
+        this.isOrientationSupported = function () {
+            return orientationSupport || false;
+        };
+
+        /**
+         * Stop using device orientation.
+         * @memberof Viewer
+         * @instance
+         */
+        this.stopOrientation = function () {
+            stopOrientation();
+        };
+
+        /**
+         * Start using device orientation (does nothing if not supported).
+         * @memberof Viewer
+         * @instance
+         */
+        this.startOrientation = function () {
+            if (orientationSupport) startOrientation();
+        };
+
+        /**
+         * Check if device orientation control is currently activated.
+         * @memberof Viewer
+         * @instance
+         * @returns {boolean} True if active, else false
+         */
+        this.isOrientationActive = function () {
+            return Boolean(orientation);
         };
 
         /**
@@ -2504,7 +2876,7 @@ window.pannellum = function (window, document, undefined) {
                     // Remove listener if found
                     externalEventListeners[type].splice(i, 1);
                 }
-                if (externalEventListeners[type].length = 0) {
+                if (externalEventListeners[type].length == 0) {
                     // Remove category if empty
                     delete externalEventListeners[type];
                 }
@@ -2522,8 +2894,9 @@ window.pannellum = function (window, document, undefined) {
          */
         function fireEvent(type) {
             if (type in externalEventListeners) {
-                for (var i = 0; i < externalEventListeners[type].length; i++) {
-                    externalEventListeners[type][i].apply(null, [].slice.call(arguments, 1));
+                // Reverse iteration is useful, if event listener is removed inside its definition
+                for (var i = externalEventListeners[type].length; i > 0; i--) {
+                    externalEventListeners[type][externalEventListeners[type].length - i].apply(null, [].slice.call(arguments, 1));
                 }
             }
         }
@@ -2537,6 +2910,7 @@ window.pannellum = function (window, document, undefined) {
             if (renderer) renderer.destroy();
             if (listenersAdded) {
                 dragFix.removeEventListener('mousedown', onDocumentMouseDown, false);
+                dragFix.removeEventListener('dblclick', onDocumentDoubleClick, false);
                 document.removeEventListener('mousemove', onDocumentMouseMove, false);
                 document.removeEventListener('mouseup', onDocumentMouseUp, false);
                 container.removeEventListener('mousewheel', onDocumentMouseWheel, false);
@@ -2561,8 +2935,8 @@ window.pannellum = function (window, document, undefined) {
             }
             container.innerHTML = '';
             container.classList.remove('pnlm-container');
-            container.classList.remove('pnlm-grab');
-            container.classList.remove('pnlm-grabbing');
+            uiContainer.classList.remove('pnlm-grab');
+            uiContainer.classList.remove('pnlm-grabbing');
         };
     }
 

@@ -2,6 +2,103 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.4.1
+--------------------------
+
+Bugfixes:
+
+ - Fix touch input issue in Chrome
+ - The API's `loadScene` method now works when no scenes have been loaded yet
+
+
+Changes in Pannellum 2.4.0
+--------------------------
+
+New Features:
+
+- Translation support
+- Event for when scene change fade completes (`scenechangefadedone`)
+- Events for touch starts and ends (`touchstart` and `touchend`)
+- Added ability to set custom animation timing
+  function (`animationTimingFunction` parameter)
+- Added option for only enable mouse wheel zoom while in
+  fullscreen (`mouseZoom` parameter)
+- Added option to set title and author displayed while the load button
+  is displayed (`previewTitle` and `previewAuthor` parameters)
+- Mouse and touch dragging can now be disabled (`draggable` parameter)
+- Added option to disable keyboard controls (`disableKeyboardCtrl` parameter)
+- CORS setting can now be configured
+
+New API functions:
+
+- Check if image is loaded (`isLoaded`)
+- Method to update viewer after it is resized (`resize`)
+- Set horizon pitch and roll (`setPose`)
+- Turn device orientation control on and off, check if it is supported, and
+  check if it is activated (`startOrientation`, `stopOrientation`,
+  `isOrientationSupported`, and `isOrientationActive`)
+- Method to retrieve viewer's container element (`getContainer`)
+
+Improvements:
+
+- Double-clicking now causes the viewer to zoom in (and back out when
+  double-clicking while zoomed in)
+- New lines are now allowed in hot spot text
+- Support for HTML in configuration strings can be enabled when using
+  the API (`escapeHTML` parameter)
+- Fallback cursor is provided for browsers that don't support SVG data URIs
+- Image type configuration parameter is now validated
+- Optional callbacks added to `lookAt`, `setPitch`, `setYaw`, and `setHfov`
+  API functions
+- Scroll events are now only captured when they're being used
+- Viewer object is now assigned to a variable in the standalone viewer
+- Hot spots can now be added with API before panorama is loaded
+- Viewer UI is now created in a container element
+
+Bugfixes:
+
+- Fixed race condition when scene change hot spot is double-clicked
+- Fixed bug with preview image absolute URLs
+- Removed redundant constraints on yaw in API
+- Tabbing now works, and only events for keys that are used are captured
+- Fixed bug in HTML escaping
+- Fixed bug that sometimes occurred when `orientationOnByDefault` was `true`
+- Yaw no longer changes when device orientation mode is activated
+- Fixed iOS 10 canvas size too big issue
+- Fixed iOS 10 NPOT cube map issue
+- Hot spots added via API are now permanent between scene changes
+- Fixed multiple bugs with removing event listeners
+- Fixed bug with multiresolution tile loading
+- Fixed `sameAzimuth` target yaw not working when `northOffset` wasn't set
+- Fixed bug yaw out of bounds in `mouseEventToCoords`
+- Fixed bug with `animateMove` function
+- Fixed bug with scene change fade
+- Yaw animation is now always in the shortest direction
+- Fixed bug related to removing hot spots
+
+
+Changes in Pannellum 2.3.2
+--------------------------
+
+Bugfixes:
+
+ - Fix Chrome fullscreen regression introduced in 2.3.1
+
+
+Changes in Pannellum 2.3.1
+--------------------------
+
+Bugfixes:
+
+ - Removed use of poorly supported ES6 `Math.sign` function
+ - Fixed fullscreen bug in Internet Explorer
+ - Fixed framerate issue with device orientation control enabled
+
+Improvements:
+
+ - Better handling of view limits when both limits are in view
+
+
 Changes in Pannellum 2.3.0
 --------------------------
 
