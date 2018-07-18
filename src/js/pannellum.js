@@ -397,7 +397,7 @@ function init() {
                     anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 }
                 var img = this.response;
-                parseGPanoXMP(img);
+                parseGPanoXMP(img, p);
                 infoDisplay.load.msg.innerHTML = '';
             };
             xhr.onprogress = function(e) {
@@ -516,7 +516,7 @@ function onImageLoad() {
  * @private
  * @param {Image} image - Image to read XMP metadata from.
  */
-function parseGPanoXMP(image) {
+function parseGPanoXMP(image, imageUrl) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
         var img = reader.result;
@@ -591,7 +591,11 @@ function parseGPanoXMP(image) {
         }
         
         // Load panorama
-        panoImage.src = window.URL.createObjectURL(image);
+        // panoImage.src = window.URL.createObjectURL(image);
+        panoImage.src = imageUrl;
+        //if site has security content policy for src/data-src - http/https/data, then blob url gives error
+        //so instead of blob url we can directly set url here
+        panoImage.crossOrigin = "Anonymous"; //We don't want cors here.
     });
     if (reader.readAsBinaryString !== undefined)
         reader.readAsBinaryString(image);
