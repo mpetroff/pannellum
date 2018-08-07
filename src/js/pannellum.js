@@ -2145,7 +2145,7 @@ function constrainHfov(hfov) {
     // Keep field of view within bounds
     var minHfov = config.minHfov;
     if (config.type == 'multires' && renderer) {
-        minHfov = Math.min(minHfov, renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9));
+        minHfov = Math.max(minHfov, renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9));
     }
     if (minHfov > config.maxHfov) {
         // Don't change view if bounds don't make sense
