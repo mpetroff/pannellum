@@ -241,6 +241,11 @@ spot.
 If specified for an `info` hot spot, the hot spot links to the specified URL.
 Not applicable for `scene` hot spots.
 
+#### `target` (string)
+
+Specifies URL's link target attribute. Defaults to `_blank`, to open link in
+new tab to avoid opening in viewer frame / page.
+
 #### `sceneId` (string)
 
 Specifies the ID of the scene to link to for `scene` hot spots. Not applicable
