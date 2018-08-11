@@ -151,7 +151,16 @@ Defaults to `undefined`, so the viewer center can reach `-90` / `90`.
 ### `minHfov` and `maxHfov` (number)
 
 Sets the minimum / maximum horizontal field of view, in degrees, that the
-viewer can be set to. Defaults to `50` / `120`.
+viewer can be set to. Defaults to `50` / `120`. Unless the `multiResMinHfov`
+parameter is set to `true`, the `minHfov` parameter is ignored for
+`multires` panoramas.
+
+
+### `multiResMinHfov` (boolean)
+
+When set to `false`, the `minHfov` parameter is ignored for `multires`
+panoramas; an automatically calculated minimum horizontal field of view is used
+instead. Defaults to `false`.
 
 
 ### `compass` (boolean)
