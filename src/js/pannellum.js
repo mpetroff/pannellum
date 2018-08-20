@@ -1708,7 +1708,13 @@ function createHotSpot(hs) {
     } else if (hs.URL) {
         a = document.createElement('a');
         a.href = sanitizeURL(hs.URL);
-        a.target = hs.target ? hs.target : '_blank';
+        if (hs.attributes) {
+            for (var key in hs.attributes) {
+                a.setAttribute(key, hs.attributes[key]);
+            }
+        } else {
+            a.target = '_blank';
+        }
         renderContainer.appendChild(a);
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
