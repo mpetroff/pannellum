@@ -1000,7 +1000,6 @@ function onDocumentMouseWheel(event) {
         setHfov(config.hfov + event.detail * 1.5);
         speed.hfov = event.detail > 0 ? 1 : -1;
     }
-    
     animateInit();
 }
 
@@ -2113,7 +2112,7 @@ function onFullScreenChange() {
         controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = false;
     }
-
+    fireEvent('fullscreenchange', fullscreenActive);
     // Resize renderer (deal with browser quirks and fixes #155)
     renderer.resize();
     setHfov(config.hfov);
@@ -2185,6 +2184,7 @@ function constrainHfov(hfov) {
  */
 function setHfov(hfov) {
     config.hfov = constrainHfov(hfov);
+    fireEvent('zoomchange', config.hfov);
 }
 
 /**
