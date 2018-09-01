@@ -7,12 +7,14 @@
 (function(document, videojs, pannellum) {
 'use strict';
 
-videojs.plugin('pannellum', function(config) {
+var registerPlugin = videojs.registerPlugin || videojs.plugin;  // Use registerPlugin for Video.js >= 6
+registerPlugin('pannellum', function(config) {
     // Create Pannellum instance
     var player = this;
     var container = player.el();
     var vid = container.getElementsByTagName('video')[0],
         pnlmContainer = document.createElement('div');
+    pnlmContainer.style.zIndex = '0';
     config = config || {};
     config.type = 'equirectangular';
     config.dynamic = true;
