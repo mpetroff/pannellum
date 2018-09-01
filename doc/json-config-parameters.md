@@ -218,9 +218,9 @@ This specifies the type of CORS request used and can be set to either
 `anonymous` or `use-credentials`. Defaults to `anonymous`.
 
 
-### `hotSpots` (array)
+### `hotSpots` (object)
 
-This specifies an array of hot spots that can be links to other scenes,
+This specifies a dictionary of hot spots that can be links to other scenes,
 information, or external links. Each array element has the following properties.
 
 
@@ -250,7 +250,7 @@ spot.
 If specified for an `info` hot spot, the hot spot links to the specified URL.
 Not applicable for `scene` hot spots.
 
-#### `attributes` (array)
+#### `attributes` (dict)
 
 Specifies URL's link attributes. If not set, the `target` attribute is set to
 `_blank`, to open link in new tab to avoid opening in viewer frame / page.
