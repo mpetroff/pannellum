@@ -121,7 +121,7 @@ if vaov == -1:
 if args.cubeSize != 0:
     cubeSize = args.cubeSize
 else:
-    cubeSize = 8 * int(origWidth / math.pi / 8)
+    cubeSize = 8 * int((360 / haov) * origWidth / math.pi / 8)
 tileSize = min(args.tileSize, cubeSize)
 levels = int(math.ceil(math.log(float(cubeSize) / tileSize, 2))) + 1
 origHeight = str(origHeight)
@@ -222,19 +222,24 @@ if not args.debug:
 # Generate config file
 text = []
 text.append('{')
-text.append('    "haov": ' + str(haov)+ ',')
 text.append('    "hfov": ' + str(args.hfov)+ ',')
-text.append('    "minYaw": ' + str(-haov/2+0)+ ',')
-text.append('       "yaw": ' + str(-haov/2+args.hfov/2)+ ',')
-text.append('    "maxYaw": ' + str(+haov/2+0)+ ',')
-text.append('    "vaov": '    + str(vaov)+ ',')
-text.append('    "vOffset": ' + str(args.vOffset)+ ',')
-text.append('    "minPitch": ' + str(-vaov/2+args.vOffset)+ ',')
-text.append('       "pitch": ' + str(        args.vOffset)+ ',')
-text.append('    "maxPitch": ' + str(+vaov/2+args.vOffset)+ ',')
-text.append('    "backgroundColor": "' + args.backgroundColor+ '",')
-text.append('    "avoidShowingBackground": ' + ("true" if args.avoidbackground else "false") + ',')
-text.append('    "autoLoad": ' + ("true" if args.autoload else "false") + ',')
+if haov < 360:
+    text.append('    "haov": ' + str(haov)+ ',')
+    text.append('    "minYaw": ' + str(-haov/2+0)+ ',')
+    text.append('       "yaw": ' + str(-haov/2+args.hfov/2)+ ',')
+    text.append('    "maxYaw": ' + str(+haov/2+0)+ ',')
+if vaov < 180:
+    text.append('    "vaov": '    + str(vaov)+ ',')
+    text.append('    "vOffset": ' + str(args.vOffset)+ ',')
+    text.append('    "minPitch": ' + str(-vaov/2+args.vOffset)+ ',')
+    text.append('       "pitch": ' + str(        args.vOffset)+ ',')
+    text.append('    "maxPitch": ' + str(+vaov/2+args.vOffset)+ ',')
+if colorTuple != (0, 0, 0):
+    text.append('    "backgroundColor": "' + args.backgroundColor+ '",')
+if args.avoidbackground:
+    text.append('    "avoidShowingBackground": true,')
+if args.autoload:
+    text.append('    "autoLoad": true,')
 text.append('    "type": "multires",')
 text.append('    "multiRes": {')
 text.append('        "path": "/%l/%s%y_%x",')

@@ -151,7 +151,16 @@ Defaults to `undefined`, so the viewer center can reach `-90` / `90`.
 ### `minHfov` and `maxHfov` (number)
 
 Sets the minimum / maximum horizontal field of view, in degrees, that the
-viewer can be set to. Defaults to `50` / `120`.
+viewer can be set to. Defaults to `50` / `120`. Unless the `multiResMinHfov`
+parameter is set to `true`, the `minHfov` parameter is ignored for
+`multires` panoramas.
+
+
+### `multiResMinHfov` (boolean)
+
+When set to `false`, the `minHfov` parameter is ignored for `multires`
+panoramas; an automatically calculated minimum horizontal field of view is used
+instead. Defaults to `false`.
 
 
 ### `compass` (boolean)
@@ -209,9 +218,9 @@ This specifies the type of CORS request used and can be set to either
 `anonymous` or `use-credentials`. Defaults to `anonymous`.
 
 
-### `hotSpots` (array)
+### `hotSpots` (object)
 
-This specifies an array of hot spots that can be links to other scenes,
+This specifies a dictionary of hot spots that can be links to other scenes,
 information, or external links. Each array element has the following properties.
 
 
@@ -240,6 +249,11 @@ spot.
 
 If specified for an `info` hot spot, the hot spot links to the specified URL.
 Not applicable for `scene` hot spots.
+
+#### `attributes` (dict)
+
+Specifies URL's link attributes. If not set, the `target` attribute is set to
+`_blank`, to open link in new tab to avoid opening in viewer frame / page.
 
 #### `sceneId` (string)
 
