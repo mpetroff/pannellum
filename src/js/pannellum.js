@@ -72,6 +72,7 @@ var config,
 var defaultConfig = {
     hfov: 100,
     minHfov: 50,
+    multiResMinHfov: false,
     maxHfov: 120,
     pitch: 0,
     minPitch: undefined,
@@ -999,7 +1000,6 @@ function onDocumentMouseWheel(event) {
         setHfov(config.hfov + event.detail * 1.5);
         speed.hfov = event.detail > 0 ? 1 : -1;
     }
-    
     animateInit();
 }
 
@@ -1707,7 +1707,13 @@ function createHotSpot(hs) {
     } else if (hs.URL) {
         a = document.createElement('a');
         a.href = sanitizeURL(hs.URL);
-        a.target = '_blank';
+        if (hs.attributes) {
+            for (var key in hs.attributes) {
+                a.setAttribute(key, hs.attributes[key]);
+            }
+        } else {
+            a.target = '_blank';
+        }
         renderContainer.appendChild(a);
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
@@ -2106,7 +2112,7 @@ function onFullScreenChange() {
         controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = false;
     }
-
+    fireEvent('fullscreenchange', fullscreenActive);
     // Resize renderer (deal with browser quirks and fixes #155)
     renderer.resize();
     setHfov(config.hfov);
@@ -2144,7 +2150,7 @@ function zoomOut() {
 function constrainHfov(hfov) {
     // Keep field of view within bounds
     var minHfov = config.minHfov;
-    if (config.type == 'multires' && renderer) {
+    if (config.type == 'multires' && renderer && config.multiResMinHfov) {
         minHfov = Math.min(minHfov, renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9));
     }
     if (minHfov > config.maxHfov) {
@@ -2178,6 +2184,7 @@ function constrainHfov(hfov) {
  */
 function setHfov(hfov) {
     config.hfov = constrainHfov(hfov);
+    fireEvent('zoomchange', config.hfov);
 }
 
 /**
@@ -2882,7 +2889,8 @@ this.removeHotSpot = function(hotSpotId, sceneId) {
  * @instance
  */
 this.resize = function() {
-    onDocumentResize();
+    if (renderer)
+        onDocumentResize();
 }
 
 /**
