@@ -2399,6 +2399,7 @@ this.setPitch = function(pitch, animated, callback, callbackArgs) {
     } else {
         config.pitch = pitch;
     }
+    latestInteraction = Date.now();
     animateInit();
     return this;
 };
@@ -2467,6 +2468,7 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
     } else {
         config.yaw = yaw;
     }
+    latestInteraction = Date.now();
     animateInit();
     return this;
 };
@@ -2528,6 +2530,7 @@ this.setHfov = function(hfov, animated, callback, callbackArgs) {
     } else {
         setHfov(hfov);
     }
+    latestInteraction = Date.now();
     animateInit();
     return this;
 };
