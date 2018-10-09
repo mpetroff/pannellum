@@ -294,18 +294,20 @@ function Renderer(container) {
         }
         
         // Make sure image isn't too big
-        var width = 0, maxWidth = 0;
+        var maxWidth = 0;
         if (imageType == 'equirectangular') {
-            width = Math.max(image.width, image.height);
             maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            if (Math.max(image.width / 2, image.height) > maxWidth) {
+                console.log('Error: The image is too big; it\'s ' + image.width + 'px wide, '+
+                            'but this device\'s maximum supported size is ' + (maxWidth * 2) + 'px.');
+                throw {type: 'webgl size error', width: image.width, maxWidth: maxWidth * 2};
+            }
         } else if (imageType == 'cubemap') {
-            width = cubeImgWidth;
-            maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
-        }
-        if (width > maxWidth) {
-            console.log('Error: The image is too big; it\'s ' + width + 'px wide, '+
-                        'but this device\'s maximum supported size is ' + maxWidth + 'px.');
-            throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
+            if (cubeImgWidth > gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE)) {
+                console.log('Error: The image is too big; it\'s ' + width + 'px wide, '+
+                            'but this device\'s maximum supported size is ' + maxWidth + 'px.');
+                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
+            }
         }
 
         // Store horizon pitch and roll if applicable
@@ -414,8 +416,44 @@ function Renderer(container) {
                 gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[0]);
                 gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[2]);
             } else {
-                // Upload image to the texture
-                gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+                if (image.width <= maxWidth) {
+                    gl.uniform1i(gl.getUniformLocation(program, 'u_splitImage'), 0);
+                    // Upload image to the texture
+                    gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+                } else {
+                    // Image needs to be split into two parts due to texture size limits
+                    gl.uniform1i(gl.getUniformLocation(program, 'u_splitImage'), 1);
+
+                    // Draw image on canvas
+                    var cropCanvas = document.createElement('canvas');
+                    cropCanvas.width = image.width;
+                    cropCanvas.height = image.height;
+                    var cropContext = cropCanvas.getContext('2d');
+                    cropContext.drawImage(image, 0, 0);
+
+                    // Upload first half of image to the texture
+                    var cropImage = cropContext.getImageData(0, 0, image.width / 2, image.height);
+                    gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cropImage);
+
+                    // Create and bind texture for second half of image
+                    program.texture2 = gl.createTexture();
+                    gl.activeTexture(gl.TEXTURE1);
+                    gl.bindTexture(glBindType, program.texture2);
+                    gl.uniform1i(gl.getUniformLocation(program, 'u_image1'), 1);
+
+                    // Upload second half of image to the texture
+                    cropImage = cropContext.getImageData(image.width / 2, 0, image.width / 2, image.height);
+                    gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cropImage);
+
+                    // Set parameters for rendering any size
+                    gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(glBindType, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+                    // Reactive first texture unit
+                    gl.activeTexture(gl.TEXTURE0);
+                }
             }
 
             // Set parameters for rendering any size
@@ -1320,7 +1358,9 @@ var fragEquiCubeBase = [
 'const float PI = 3.14159265358979323846264;',
 
 // Texture
-'uniform sampler2D u_image;',
+'uniform sampler2D u_image0;',
+'uniform sampler2D u_image1;',
+'uniform bool u_splitImage;',
 'uniform samplerCube u_imageCube;',
 
 // Coordinates passed in from vertex shader
@@ -1365,8 +1405,17 @@ var fragEquirectangular = fragEquiCubeBase + [
     // Map from [-1,1] to [0,1] and flip y-axis
     'if(coord.x < -u_h || coord.x > u_h || coord.y < -u_v + u_vo || coord.y > u_v + u_vo)',
         'gl_FragColor = u_backgroundColor;',
-    'else',
-        'gl_FragColor = texture2D(u_image, vec2((coord.x + u_h) / (u_h * 2.0), (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
+    'else {',
+        'if(u_splitImage) {',
+            // Image was split into two textures to work around texture size limits
+            'if(coord.x < 0.0)',
+                'gl_FragColor = texture2D(u_image0, vec2((coord.x + u_h) / u_h, (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
+            'else',
+                'gl_FragColor = texture2D(u_image1, vec2((coord.x + u_h) / u_h - 1.0, (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
+        '} else {',
+            'gl_FragColor = texture2D(u_image0, vec2((coord.x + u_h) / (u_h * 2.0), (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
+        '}',
+    '}',
 '}'
 ].join('\n');
 
