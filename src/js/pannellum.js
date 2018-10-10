@@ -67,6 +67,7 @@ var config,
     externalEventListeners = {},
     specifiedPhotoSphereExcludes = [],
     update = false, // Should we update when still to render dynamic content
+    eps = 1e-6,
     hotspotsCreated = false;
 
 var defaultConfig = {
@@ -1301,11 +1302,7 @@ function animateMove(axis) {
         t.endPosition === t.startPosition) {
         result = t.endPosition;
         speed[axis] = 0;
-        var callback = animatedMove[axis].callback,
-            callbackArgs = animatedMove[axis].callbackArgs;
         delete animatedMove[axis];
-        if (typeof callback == 'function')
-            callback(callbackArgs);
     }
     config[axis] = result;
 }
@@ -2388,20 +2385,25 @@ this.getPitch = function() {
  * @returns {Viewer} `this`
  */
 this.setPitch = function(pitch, animated, callback, callbackArgs) {
+    latestInteraction = Date.now();
+    if (Math.abs(pitch - config.pitch) <= eps) {
+        if (typeof callback == 'function')
+            callback(callbackArgs);
+        return this;
+    }
     animated = animated == undefined ? 1000: Number(animated);
     if (animated) {
         animatedMove.pitch = {
             'startTime': Date.now(),
             'startPosition': config.pitch,
             'endPosition': pitch,
-            'duration': animated,
-            'callback': callback,
-            'callbackArgs': callbackArgs
+            'duration': animated
         }
+        if (typeof callback == 'function')
+            setTimeout(function(){callback(callbackArgs)}, animated);
     } else {
         config.pitch = pitch;
     }
-    latestInteraction = Date.now();
     animateInit();
     return this;
 };
@@ -2450,6 +2452,12 @@ this.getYaw = function() {
  * @returns {Viewer} `this`
  */
 this.setYaw = function(yaw, animated, callback, callbackArgs) {
+    latestInteraction = Date.now();
+    if (Math.abs(yaw - config.yaw) <= eps) {
+        if (typeof callback == 'function')
+            callback(callbackArgs);
+        return this;
+    }
     animated = animated == undefined ? 1000: Number(animated);
     yaw = ((yaw + 180) % 360) - 180 // Keep in bounds
     if (animated) {
@@ -2463,14 +2471,13 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
             'startTime': Date.now(),
             'startPosition': config.yaw,
             'endPosition': yaw,
-            'duration': animated,
-            'callback': callback,
-            'callbackArgs': callbackArgs
+            'duration': animated
         }
+        if (typeof callback == 'function')
+            setTimeout(function(){callback(callbackArgs)}, animated);
     } else {
         config.yaw = yaw;
     }
-    latestInteraction = Date.now();
     animateInit();
     return this;
 };
@@ -2519,20 +2526,25 @@ this.getHfov = function() {
  * @returns {Viewer} `this`
  */
 this.setHfov = function(hfov, animated, callback, callbackArgs) {
+    latestInteraction = Date.now();
+    if (Math.abs(hfov - config.hfov) <= eps) {
+        if (typeof callback == 'function')
+            callback(callbackArgs);
+        return this;
+    }
     animated = animated == undefined ? 1000: Number(animated);
     if (animated) {
         animatedMove.hfov = {
             'startTime': Date.now(),
             'startPosition': config.hfov,
             'endPosition': constrainHfov(hfov),
-            'duration': animated,
-            'callback': callback,
-            'callbackArgs': callbackArgs
+            'duration': animated
         }
+        if (typeof callback == 'function')
+            setTimeout(function(){callback(callbackArgs)}, animated);
     } else {
         setHfov(hfov);
     }
-    latestInteraction = Date.now();
     animateInit();
     return this;
 };
@@ -2575,16 +2587,20 @@ this.setHfovBounds = function(bounds) {
  */
 this.lookAt = function(pitch, yaw, hfov, animated, callback, callbackArgs) {
     animated = animated == undefined ? 1000: Number(animated);
-    if (pitch !== undefined) {
+    if (pitch !== undefined && Math.abs(pitch - config.pitch) > eps) {
         this.setPitch(pitch, animated, callback, callbackArgs);
         callback = undefined;
     }
-    if (yaw !== undefined) {
+    if (yaw !== undefined && Math.abs(yaw - config.yaw) > eps) {
         this.setYaw(yaw, animated, callback, callbackArgs);
         callback = undefined;
     }
-    if (hfov !== undefined)
+    if (hfov !== undefined && Math.abs(hfov - config.hfov) > eps) {
         this.setHfov(hfov, animated, callback, callbackArgs);
+        callback = undefined;
+    }
+    if (typeof callback == 'function')
+        callback(callbackArgs);
     return this;
 }
 
