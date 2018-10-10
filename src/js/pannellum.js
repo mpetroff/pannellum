@@ -658,8 +658,9 @@ function aboutMessage(event) {
 function mousePosition(event) {
     var bounds = container.getBoundingClientRect();
     var pos = {};
-    pos.x = event.clientX - bounds.left;
-    pos.y = event.clientY - bounds.top;
+    // pageX / pageY needed for iOS
+    pos.x = (event.clientX || event.pageX) - bounds.left;
+    pos.y = (event.clientY || event.pageY) - bounds.top;
     return pos;
 }
 
