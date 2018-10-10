@@ -655,13 +655,23 @@ function aboutMessage(event) {
  * @param {MouseEvent} event - Mouse event to use in calculation
  * @returns {Object} Calculated X and Y coordinates
  */
-function mousePosition(event) {
-    var bounds = container.getBoundingClientRect();
-    var pos = {};
-    pos.x = event.clientX - bounds.left;
-    pos.y = event.clientY - bounds.top;
-    return pos;
-}
+ function mousePosition(event) {
+        var bounds = container.getBoundingClientRect();
+        var pos = {};
+
+        // #ISH Change
+        // "event.clientX" does not exist on iPhone/iPad (therefore positioning in viewer does not work), on iPhone mouse position is "event.pageX"
+        if (event.pageX) {
+            pos.x = event.pageX - bounds.left;
+            pos.y = event.pageY - bounds.top;
+        }
+        else {
+            pos.x = event.clientX - bounds.left;
+            pos.y = event.clientY - bounds.top;
+        }
+
+        return pos;
+    }
 
 /**
  * Event handler for mouse clicks. Initializes panning. Prints center and click
