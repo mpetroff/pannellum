@@ -108,6 +108,7 @@ var defaultConfig = {
     crossOrigin: 'anonymous',
     touchPanSpeedCoeffFactor: 1,
     capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
+    friction: 0.15
 };
 
 // Translatable / configurable strings
@@ -1247,19 +1248,19 @@ function keyRepeat() {
     // "Inertia"
     if (diff > 0 && !config.autoRotate) {
         // "Friction"
-        var friction = 0.85;
+        var slowDownFactor = 1 - config.friction;
 
         // Yaw
         if (!keysDown[4] && !keysDown[5] && !keysDown[8] && !keysDown[9] && !animatedMove.yaw) {
-            config.yaw += speed.yaw * diff * friction;
+            config.yaw += speed.yaw * diff * slowDownFactor;
         }
         // Pitch
         if (!keysDown[2] && !keysDown[3] && !keysDown[6] && !keysDown[7] && !animatedMove.pitch) {
-            config.pitch += speed.pitch * diff * friction;
+            config.pitch += speed.pitch * diff * slowDownFactor;
         }
         // Zoom
         if (!keysDown[0] && !keysDown[1] && !animatedMove.hfov) {
-            setHfov(config.hfov + speed.hfov * diff * friction);
+            setHfov(config.hfov + speed.hfov * diff * slowDownFactor);
         }
     }
 
