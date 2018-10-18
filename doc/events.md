@@ -27,6 +27,12 @@ If a scene transition fade interval is specified, this event is fired when the
 fading is completed after changing scenes.
 
 
+## `animatefinished`
+
+Fired when any movements / animations finish, i.e. when the renderer stops
+rendering new frames. Passes final pitch, yaw, and HFOV values to handler.
+
+
 ## `error`
 
 Fired when an error occured. The error message string is passed to the
