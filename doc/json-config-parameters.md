@@ -98,6 +98,13 @@ viewer is fullscreen.
 If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
 
 
+### `friction` (number)
+
+Controls the "friction" that slows down the viewer motion after it is dragged
+and released. Higher values mean the motion stops faster. Should be set
+(0.0, 1.0]; defaults to 0.15.
+
+
 ### `disableKeyboardCtrl` (boolean)
 
 If set to `true`, keyboard controls are disabled. Defaults to `false`.
