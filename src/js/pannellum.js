@@ -1409,7 +1409,8 @@ function animate() {
     } else if (renderer && (renderer.isLoading() || (config.dynamic === true && update))) {
         requestAnimationFrame(animate);
     } else {
-        fireEvent('animatefinished', {pitch: _this.getPitch(), yaw: _this.getYaw(), hfov: _this.getHfov()});
+        if (_this.getPitch && _this.getYaw && _this.getHfov)
+            fireEvent('animatefinished', {pitch: _this.getPitch(), yaw: _this.getYaw(), hfov: _this.getHfov()});
         animating = false;
         prevTime = undefined;
         var autoRotateStartTime = config.autoRotateInactivityDelay -
