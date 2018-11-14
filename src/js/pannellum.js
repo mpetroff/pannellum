@@ -320,7 +320,7 @@ function init() {
         }
         infoDisplay.load.lbox.style.display = 'block';
         infoDisplay.load.lbar.style.display = 'none';
-    } else if (config.type == 'multires') {
+    } else if (config.type == 'multires' || config.type == 'multiresrec') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
         c.loader = config.multiRes.loader;
         // Avoid "undefined" in path, check (optional) multiRes.basePath, too
@@ -379,7 +379,7 @@ function init() {
                 panoImage[i].src = sanitizeURL(p);
             }
         }
-    } else if (config.type == 'multires') {
+    } else if (config.type == 'multires' || config.type == 'multiresrec') {
         onImageLoad();
     } else {
         p = '';

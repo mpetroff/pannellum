@@ -42,7 +42,10 @@ function Renderer(container) {
     var pose;
     var image, imageType, dynamic;
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
+    var imageVertices;
+    var texelWidth, texelHeight;
     var globalParams;
+    var epsilon = 1e-15;
 
     /**
      * Initialize renderer.
@@ -68,7 +71,7 @@ function Renderer(container) {
             _imageType = 'equirectangular';
 
         if (_imageType != 'equirectangular' && _imageType != 'cubemap' &&
-            _imageType != 'multires') {
+            _imageType != 'multires' && _imageType != 'multiresrec') {
             console.log('Error: invalid image type specified!');
             throw {type: 'config error'};
         }
@@ -297,7 +300,7 @@ function Renderer(container) {
         var maxWidth = 0;
         if (imageType == 'equirectangular') {
             maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-            if (Math.max(image.width / 2, image.height) > maxWidth) {
+            if (Math.max(image.width / 2, image.height) > maxWidth && !config.multiRes) {
                 console.log('Error: The image is too big; it\'s ' + image.width + 'px wide, '+
                             'but this device\'s maximum supported size is ' + (maxWidth * 2) + 'px.');
                 throw {type: 'webgl size error', width: image.width, maxWidth: maxWidth * 2};
@@ -338,6 +341,8 @@ function Renderer(container) {
             fragmentSrc = fragCube;
         } else if (imageType == 'multires') {
             fragmentSrc = fragMulti;
+        } else if (imageType == 'multiresrec') {
+            fragmentSrc = fragMultiresrec;
         }
         gl.shaderSource(fs, fragmentSrc);
         gl.compileShader(fs);
@@ -370,12 +375,12 @@ function Renderer(container) {
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
 
-        if (imageType != 'multires') {
+        if (imageType == 'equirectangular' || imageType == 'cubemap') {
             // Provide texture coordinates for rectangle
             if (!texCoordBuffer)
                 texCoordBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,1,1,1,-1,-1,1,1,-1,-1,-1]), gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1]), gl.STATIC_DRAW);
             gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
             // Pass aspect ratio
@@ -462,7 +467,7 @@ function Renderer(container) {
             gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        } else {
+        } else if (imageType == 'multires') {
             // Look up vertex coordinates location
             program.vertPosLocation = gl.getAttribLocation(program, 'a_vertCoord');
             gl.enableVertexAttribArray(program.vertPosLocation);
@@ -477,16 +482,85 @@ function Renderer(container) {
 
             // Bind texture coordinate buffer and pass coordinates to WebGL
             gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertTexCoordBuf);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]), gl.STATIC_DRAW);
 
             // Bind square index buffer and pass indicies to WebGL
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertIndBuf);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2, 0, 2, 3]), gl.STATIC_DRAW);
 
             // Find uniforms
             program.perspUniform = gl.getUniformLocation(program, 'u_perspMatrix');
             program.cubeUniform = gl.getUniformLocation(program, 'u_cubeMatrix');
             //program.colorUniform = gl.getUniformLocation(program, 'u_color');
+
+            program.level = -1;
+
+            program.currentNodes = [];
+            program.nodeCache = [];
+            program.nodeCacheTimestamp = 0;
+        } else if (imageType == 'multiresrec') {
+            //TODO
+            let right = haov / (Math.PI * 2.0);
+            let left = -right;
+            let up = (vaov / 2.0 + voffset) / Math.PI * 2.0;
+            let down = (-vaov / 2.0 + voffset) / Math.PI * 2.0;
+            imageVertices = [
+                [left, up],
+                [right, up],
+                [right, down],
+                [left, down]
+            ];
+
+            if (image.originalWidth >= image.originalHeight) {
+                image.relativeTileSize = (right - left) / (image.originalWidth / image.tileResolution);
+            } else {
+                image.relativeTileSize = (up - down) / (image.originalHeight / image.tileResolution);
+            }
+
+            texelWidth = (right - left) / image.originalWidth;
+            texelHeight = (up - down) / image.originalHeight;
+
+            // Provide texture coordinates for rectangle
+            if (!texCoordBuffer)
+                texCoordBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, 1, 1, 1, 1, -1, -1, 1, 1, -1, -1, -1]), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+            // Pass aspect ratio
+            program.aspectRatio = gl.getUniformLocation(program, 'u_aspectRatio');
+            gl.uniform1f(program.aspectRatio, gl.drawingBufferWidth / gl.drawingBufferHeight);
+
+            // Locate psi, theta, focal length, horizontal extent, vertical extent, and vertical offset
+            program.psi = gl.getUniformLocation(program, 'u_psi');
+            program.theta = gl.getUniformLocation(program, 'u_theta');
+            program.f = gl.getUniformLocation(program, 'u_f');
+            program.h = gl.getUniformLocation(program, 'u_h');
+            program.v = gl.getUniformLocation(program, 'u_v');
+            program.vo = gl.getUniformLocation(program, 'u_vo');
+            program.rot = gl.getUniformLocation(program, 'u_rot');
+
+            // Pass horizontal extent, vertical extent, and vertical offset
+            gl.uniform1f(program.h, haov / (Math.PI * 2.0));
+            gl.uniform1f(program.v, vaov / Math.PI);
+            gl.uniform1f(program.vo, voffset / Math.PI * 2);
+
+            // Locate parameters for tile boundaries
+            program.bt = gl.getUniformLocation(program, 'u_bt');
+            program.br = gl.getUniformLocation(program, 'u_br');
+            program.bb = gl.getUniformLocation(program, 'u_bb');
+            program.bl = gl.getUniformLocation(program, 'u_bl');
+
+            //The extent of a pixel from the original image in the [-1,1]² space
+            program.texelWidth = gl.getUniformLocation(program, 'u_texelWidth');
+            program.texelHeight = gl.getUniformLocation(program, 'u_texelHeight');
+
+            program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
+            gl.uniform4fv(program.backgroundColor, color.concat([1]));
+
+            //linearly blend fragments on the border of tiles
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); 
 
             program.level = -1;
 
@@ -639,7 +713,7 @@ function Renderer(container) {
             return;
         }
         
-        if (imageType != 'multires') {
+        if (imageType == 'equirectangular' || imageType == 'cubemap') {
             // Calculate focal length from vertical field of view
             var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
             focal = 1 / Math.tan(vfov * 0.5);
@@ -661,7 +735,7 @@ function Renderer(container) {
             // Draw using current buffer
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         
-        } else {
+        } else if(imageType == 'multires'){
             // Create perspective matrix
             var perspMatrix = makePersp(hfov, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
             
@@ -692,13 +766,13 @@ function Renderer(container) {
                 }
             }
             program.currentNodes = [];
-            
+
             var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
             for (s = 0; s < 6; s++) {
                 var ntmp = new MultiresNode(vtmps[s], sides[s], 1, 0, 0, image.fullpath);
                 testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
-            
+                        
             program.currentNodes.sort(multiresNodeRenderSort);
             
             // Unqueue any pending requests for nodes that are no longer visible
@@ -726,6 +800,66 @@ function Renderer(container) {
             
             // Draw tiles
             multiresDraw();
+        } else if (imageType == 'multiresrec') {
+            //TODO
+            // Find correct zoom level
+            checkZoom(hfov);
+
+            // Calculate focal length from vertical field of view
+            var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
+            focal = 1 / Math.tan(vfov * 0.5);
+
+            // Pass psi, theta, roll, and focal length
+            gl.uniform1f(program.psi, yaw);
+            gl.uniform1f(program.theta, pitch);
+            gl.uniform1f(program.rot, roll);
+            gl.uniform1f(program.f, focal);
+
+            // Find current nodes
+            program.nodeCache.sort(multiresNodeSort);
+            if (program.nodeCache.length > 200 &&
+                program.nodeCache.length > program.currentNodes.length + 50) {
+                // Remove older nodes from cache
+                var removed = program.nodeCache.splice(200, program.nodeCache.length - 200);
+                for (var i = 0; i < removed.length; i++) {
+                    // Explicitly delete textures
+                    gl.deleteTexture(removed[i].texture);
+                }
+            }
+            program.currentNodes = [];
+
+
+            var ntmp = new MultiresNode(imageVertices, "equirectangular", 1, 0, 0, image.fullpath);
+            testMultiresrecNode(ntmp, yaw, pitch, roll, hfov);
+            
+
+            program.currentNodes.sort(multiresNodeRenderSort);
+
+            // Unqueue any pending requests for nodes that are no longer visible
+            for (i = pendingTextureRequests.length - 1; i >= 0; i--) {
+                if (program.currentNodes.indexOf(pendingTextureRequests[i].node) === -1) {
+                    pendingTextureRequests[i].node.textureLoad = false;
+                    pendingTextureRequests.splice(i, 1);
+                }
+            }
+
+            // Allow one request to be pending, so that we can create a texture buffer for that in advance of loading actually beginning
+            if (pendingTextureRequests.length === 0) {
+                for (i = 0; i < program.currentNodes.length; i++) {
+                    var node = program.currentNodes[i];
+                    if (!node.texture && !node.textureLoad) {
+                        node.textureLoad = true;
+
+                        setTimeout(processNextTile, 0, node);
+
+                        // Only process one tile per frame to improve responsiveness
+                        break;
+                    }
+                }
+            }
+
+            // Draw tiles
+            multiresrecDraw();
         }
         
         if (params.returnImage !== undefined) {
@@ -740,7 +874,7 @@ function Renderer(container) {
      * @returns {boolean} Whether or not images are loading.
      */
     this.isLoading = function() {
-        if (gl && imageType == 'multires') {
+        if (gl && (imageType == 'multires' || imageType == 'multiresrec')) {
             for ( var i = 0; i < program.currentNodes.length; i++ ) {
                 if (!program.currentNodes[i].textureLoaded) {
                     return true;
@@ -822,6 +956,41 @@ function Renderer(container) {
                     // Bind texture and draw tile
                     gl.bindTexture(gl.TEXTURE_2D, program.currentNodes[i].texture); // Bind program.currentNodes[i].texture to TEXTURE0
                     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+                }
+            }
+            program.drawInProgress = false;
+        }
+    }
+
+    /**
+ * Draws multires nodes of equrectangular image.
+ * @private
+ */
+    function multiresrecDraw() {
+        if (!program.drawInProgress) {
+            program.drawInProgress = true;
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            for (var i = 0; i < program.currentNodes.length; i++) {
+                if (program.currentNodes[i].textureLoaded > 1) {
+                    //transform input parameters from [-1,1]² to [0,1]² in screen coordinates (i.e. y-axis pointing downwards)
+                    let v = program.currentNodes[i].vertices;
+                    let factor = Math.pow(2, image.maxLevel - program.currentNodes[i].level - 1);
+
+                    // Upload extents of tile relative to full panorama
+                    gl.uniform1f(program.bb, (-v[0][1] + texelHeight/4 + 1) / 2);
+                    gl.uniform1f(program.br, (v[1][0] - texelWidth/4 + 1) / 2);
+                    gl.uniform1f(program.bt, (-v[2][1] - texelHeight/4 + 1) / 2);
+                    gl.uniform1f(program.bl, (v[3][0] + texelWidth/4 + 1) / 2);
+                    gl.uniform1f(program.texelWidth, factor*texelWidth);
+                    gl.uniform1f(program.texelHeight, factor*texelHeight);
+
+                    // Prep for texture
+                    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+                    gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+                    // Bind texture and draw tile
+                    gl.bindTexture(gl.TEXTURE_2D, program.currentNodes[i].texture); // Bind program.currentNodes[i].texture to TEXTURE0
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
                 }
             }
             program.drawInProgress = false;
@@ -987,7 +1156,7 @@ function Renderer(container) {
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3,
                                        v[9],            v[10],            v[11]
                     ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, image.fullpath);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x * 2, node.y * 2 + 1, image.fullpath);
                     children.push(ntmp);
                 }
                 for (var j = 0; j < children.length; j++) {
@@ -996,7 +1165,96 @@ function Renderer(container) {
             }
         }
     }
-    
+
+    function testMultiresrecNode(node, yaw, pitch, roll, hfov) {
+        let v = node.vertices;
+        var children = [];
+
+        // Create rotation matrix
+        var matrix = identityMatrix3();
+        matrix = rotateMatrix(matrix, -yaw, 'y');
+        matrix = rotateMatrix(matrix, pitch, 'x');
+        matrix = rotateMatrix(matrix, roll, 'z');
+
+        //compute vertices of viewport and tile on sphere
+        let vecViewCenter = applyMatrix(matrix, [0, 0, -1]);
+        let vecNodeCenter = applyMatrix(matrix, imageToSphereCoordinates([(v[0][0] + v[1][0]) / 2, (v[1][1] + v[2][1]) / 2]));
+        var sum = 0;
+        for (var i = 0; i < 3; ++i) {
+            let diff = vecViewCenter[i] - vecNodeCenter[i];
+            sum += diff * diff;
+        }
+        node.diff = Math.sqrt(sum);
+
+        let frustumVertices = frustumVerticesOnImage(hfov)
+            .map(v => imageToSphereCoordinates(v))
+            .map(v => applyMatrix(matrix, v));
+
+        let nodeVertices = node.vertices
+            .map(v => imageToSphereCoordinates(v));
+
+        var inView = false;
+        if (node.level <= 2)
+            inView = true;
+        else
+            inView = intersect(frustumVertices, nodeVertices);
+
+        if (inView) {
+            // Add node to current nodes and load texture if needed
+            var inCurrent = false;
+            for (var k = 0; k < program.nodeCache.length; k++) {
+                if (program.nodeCache[k].path == node.path) {
+                    inCurrent = true;
+                    program.nodeCache[k].timestamp = program.nodeCacheTimestamp++;
+                    program.nodeCache[k].diff = node.diff;
+                    program.currentNodes.push(program.nodeCache[k]);
+                    break;
+                }
+            }
+            if (!inCurrent) {
+                node.timestamp = program.nodeCacheTimestamp++;
+                program.currentNodes.push(node);
+                program.nodeCache.push(node);
+            }
+
+            // Create child nodes
+            if (node.level < program.level) {
+                let dimX = v[1][0] - v[0][0];
+                let dimY = v[1][1] - v[2][1];
+                let x0 = v[0][0];
+                let y0 = v[0][1];
+                let dimXC = Math.min(dimX, texelWidth * Math.pow(2, image.maxLevel - node.level - 1) * image.tileResolution);
+                let dimYC = Math.min(dimY, texelHeight * Math.pow(2, image.maxLevel - node.level - 1) * image.tileResolution);
+
+                var children = [];
+                var childrenIndices = [[0, 0]];
+                if (dimX > dimXC) {
+                    childrenIndices.push([1, 0]);
+                    if (dimY > dimYC)
+                        childrenIndices.push([1, 1]);
+                }
+                if (dimY > dimYC)
+                    childrenIndices.push([0, 1]);
+
+                for (var child of childrenIndices) {
+                    let vtmp = [
+                        [x0 + dimXC * child[0], y0 - dimYC * child[1]],
+                        [x0 + (child[0] ? dimX : dimXC), y0 - dimYC * child[1]],
+                        [x0 + (child[0] ? dimX : dimXC), y0 - (child[1] ? dimY : dimYC)],
+                        [x0 + dimXC * child[0], y0 - (child[1] ? dimY : dimYC)]
+                    ]
+                    var ntmp = new MultiresNode(vtmp, "equirectangular", node.level + 1, node.x * 2 + child[0], node.y * 2 + child[1], image.fullpath);
+                    
+                    children.push(ntmp);
+                }
+
+                for (var j = 0; j < children.length; j++) {
+                    testMultiresrecNode(children[j], yaw, pitch, roll, hfov);
+                }
+            }
+        }
+    }
+
     /**
      * Creates cube vertex array.
      * @private
@@ -1108,7 +1366,159 @@ function Renderer(container) {
                    0,   0, -1,  0
         ];
     }
-    
+
+    /**
+     * @private
+     * @param {number} hfov - Desired horizontal field of view.
+     * @returns {number[][]} Array of 2-vectors
+     */
+    function frustumVerticesOnImage(hfov) {
+        let fovy = 2 * Math.atan(Math.tan(hfov / 2) * gl.drawingBufferHeight / gl.drawingBufferWidth);
+        let x = hfov / Math.PI / 2;
+        let y = fovy / Math.PI;
+        return [
+            [-x, y],
+            [x, y],
+            [x, -y],
+            [-x, -y]
+        ];
+    }
+
+    /**
+     * @private
+     * @param {number[]} v - Vector from [-1,1]²
+     * @returns {number[]} 3-vector on the unit sphere which is obtained
+     *  when projecting an equirectangular image (normalized to [-1,1]²) back onto the sphere
+     */
+    function imageToSphereCoordinates(v) {
+        let z = -Math.cos(v[1] * Math.PI / 2.0) * Math.cos(v[0] * Math.PI);
+        let x = Math.cos(v[1] * Math.PI / 2.0) * Math.sin(v[0] * Math.PI);
+        let y = Math.sin(v[1] * Math.PI / 2.0);
+        return [x, y, z];
+    }
+
+    /**
+     * @private
+     * @param {number[]} v1 - 3-vector on sphere
+     * @param {number[]} v2 - 3-vector on sphere
+     * @returns {number[]} normal of plane based on v1, v2 and (0,0,0)
+     */
+    function normal(v1, v2) {
+        return [
+            (v1[1] * v2[2]) - (v1[2] * v2[1]),
+            (v1[2] * v2[0]) - (v1[0] * v2[2]),
+            (v1[0] * v2[1]) - (v1[1] * v2[0])
+        ];
+    }
+
+    /**
+     * @private
+     * @param {number[]} normal - normal vector of a plane
+     * @param {number[]} v - vector to test for side
+     * @returns {number} -1, 0, 1
+     */
+    function orientation(normal, v) {
+        let scalProd = normal[0] * v[0] + normal[1] * v[1] + normal[2] * v[2];
+        return Math.sign(scalProd);
+    }
+
+    /**
+     * @private
+     * @param {number[][]} spolygon - convex spherical polygon defined by its vertices
+     * @param {number[]} v - spherical vector
+     * @returns {boolean} is v contained in spolygon?
+     */
+    function containmentOnSphere(spolygon, v) {
+        for (let i = 0; i < spolygon.length; ++i) {
+            //normals point to the inside of the polygon
+            let n = normal(spolygon[i], spolygon[(i + 1) % spolygon.length]);
+            let o = orientation(n, v);
+            if (o < 0)
+                return false;
+        }
+        return true;
+    }
+
+     /**
+     * @private
+     * @param {number[][]} sTile - vertices of a (equirectangularly projected) tile on the sphere
+     * @param {number[]} v - spherical vector
+     * @returns {number[]} weight vector
+     */
+    function linearCombinationOfBoundVectors(sTile, v) {
+        //test whether x and z component of v and be expressed
+        // as a positive linear combination of the vectors 
+        // pointing towords the left and right border of the tile
+        let a = [(sTile[3][0] + sTile[0][0]) / 2, (sTile[3][2] + sTile[0][2]) / 2];
+        let b = [(sTile[1][0] + sTile[2][0]) / 2, (sTile[1][2] + sTile[2][2]) / 2];
+        let c = [v[0], v[2]];
+        //solve (a b) * x = c
+        let x2 = (a[0] * c[1] - c[0] * a[1]) / (a[0] * b[1] - b[0] * a[1]);
+        let x1 = (c[0] * b[1] - b[0] * c[1]) / (a[0] * b[1] - b[0] * a[1]);
+        return [x1, x2];
+    }
+
+
+    /**
+     * compute modified Cohen-Sutherland out codes (with left out = right out)
+     * @private
+     * @param {number[][]} sTile - vertices of a (equirectangularly projected) tile on the sphere
+     * @param {number[]} v - spherical vector
+     * @returns {number} out code
+     */
+    function outCode(sTile, v) {
+        let ymax = sTile.map(ver => ver[1]).reduce((acc, val) => Math.max(acc, val), -1);
+        let ymin = sTile.map(ver => ver[1]).reduce((acc, val) => Math.min(acc, val), 1);
+        if (Math.abs(ymax - 1.0) <= epsilon && Math.abs(ymin + 1.0) <= epsilon)
+            return 0; //no information where the tile ends in x/z-direction
+        var oCode = 0;
+        if (v[1] > ymax)
+            oCode |= 8;
+        if (v[1] < ymin)
+            oCode |= 4;
+
+        let x = linearCombinationOfBoundVectors(sTile, v);
+        if (x[0] < 0 || x[1] < 0)
+            oCode |= 1;
+        return oCode;
+    }
+
+     /**
+     * @private
+     * @param {number[][]} sTile - vertices of a (equirectangularly projected) tile on the sphere
+     * @param {number[]} viewpolygon - spherical convex (i.e. not more than 180°) polygon
+     * @returns {boolean} sTile and viewpolygon intersect
+     */
+    function intersect(viewpolygon, sTile) {
+        var prevOutCode = outCode(sTile, viewpolygon[3]);
+        for (var v of viewpolygon) {
+            var oCode = outCode(sTile, v);
+            if (!oCode)
+                return true;
+            if ((prevOutCode & oCode) == 0)
+                return true;
+            prevOutCode = oCode;
+        }
+        if (outCode(sTile, viewpolygon[3]) == 1 && outCode(sTile, viewpolygon[2]) == 1) {
+            let left = linearCombinationOfBoundVectors(sTile, viewpolygon[3]);
+            let right = linearCombinationOfBoundVectors(sTile, viewpolygon[2]);
+            if (left[0] > 0 && left[1] < 0 && right[0] < 0 && right[1] > 0)
+                return true;
+        }
+        if (outCode(sTile, viewpolygon[0]) == 1 && outCode(sTile, viewpolygon[1]) == 1) {
+            let left = linearCombinationOfBoundVectors(sTile, viewpolygon[0]);
+            let right = linearCombinationOfBoundVectors(sTile, viewpolygon[1]);
+            if (left[0] > 0 && left[1] < 0 && right[0] < 0 && right[1] > 0)
+                return true;
+        }
+        for (let v of sTile) {
+            if (containmentOnSphere(viewpolygon, v))
+                return true;
+        }
+        return false;
+    }
+
+
     /**
      * Processes a loaded texture image into a WebGL texture.
      * @private
@@ -1132,7 +1542,7 @@ function Renderer(container) {
         var cacheTop = 4;   // Maximum number of concurrents loads
         var textureImageCache = {};
         var crossOrigin;
-
+    
         function TextureImageLoader() {
             var self = this;
             this.texture = this.callback = null;
@@ -1215,16 +1625,21 @@ function Renderer(container) {
      * @param {number} hfov - Horizontal field of view to check at.
      */
     function checkZoom(hfov) {
-        // Find optimal level
-        var newLevel = 1;
-        while ( newLevel < image.maxLevel &&
-            gl.drawingBufferWidth > image.tileResolution *
-            Math.pow(2, newLevel - 1) * Math.tan(hfov / 2) * 0.707 ) {
-            newLevel++;
+        if (image.type == 'multires') {
+            // Find optimal level
+            var newLevel = 1;
+            while (newLevel < image.maxLevel &&
+                gl.drawingBufferWidth > image.tileResolution *
+                Math.pow(2, newLevel - 1) * Math.tan(hfov / 2) * 0.707) {
+                newLevel++;
+            }
+
+            // Apply change
+            program.level = newLevel;
+        } else {
+            let f = Math.log2(hfov / gl.drawingBufferWidth / Math.PI / texelWidth);
+            program.level = image.maxLevel - Math.max(0, Math.round(f));
         }
-        
-        // Apply change
-        program.level = newLevel;
     }
     
     /**
@@ -1257,6 +1672,35 @@ function Renderer(container) {
                     m[ 4]*v[0] + m[ 5]*v[1] + m[ 6]*v[2],
             m[11] + m[ 8]*v[0] + m[ 9]*v[1] + m[10]*v[2],
                  1/(m[12]*v[0] + m[13]*v[1] + m[14]*v[2])
+        ];
+    }
+
+    /**
+ * Applies matrix to a 3-vector
+ * @private
+ * @param {number[]} m - 3x3-Matrix.
+ * @param {number[]} v - Input 3-vector.
+ * @returns {number[]} Resulting 3-vector.
+ */
+    function applyMatrix(m, v) {
+        return [
+            m[0] * v[0] + m[1] * v[1] + m[2] * v[2],
+            m[3] * v[0] + m[4] * v[1] + m[5] * v[2],
+            m[6] * v[0] + m[7] * v[1] + m[8] * v[2]
+        ];
+    }
+
+        /**
+ * @private
+ * @param {number[]} v - Input 4-vector.
+ * @returns {number[]} Normalized 4-vector.
+ */
+    function normalize(v) {
+        return [
+            v[0] / v[3],
+            v[1] / v[3],
+            v[2] / v[3],
+            1
         ];
     }
     
@@ -1358,6 +1802,7 @@ var vMulti = [
 '}'
 ].join('');
 
+
 // Fragment shader
 var fragEquiCubeBase = [
 'precision mediump float;',
@@ -1370,6 +1815,14 @@ var fragEquiCubeBase = [
 'uniform float u_v;',
 'uniform float u_vo;',
 'uniform float u_rot;',
+
+//boundaries of a tile relative to a full panorama
+'uniform float u_bt;',
+'uniform float u_br;',
+'uniform float u_bb;',
+'uniform float u_bl;',
+'uniform float u_texelWidth;',
+'uniform float u_texelHeight;',
 
 'const float PI = 3.14159265358979323846264;',
 
@@ -1432,6 +1885,47 @@ var fragEquirectangular = fragEquiCubeBase + [
             'gl_FragColor = texture2D(u_image0, vec2((coord.x + u_h) / (u_h * 2.0), (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
         '}',
     '}',
+'}'
+].join('\n');
+
+var fragMultiresrec = fragEquiCubeBase + [
+    // Wrap image
+    'lambda = mod(lambda + PI, PI * 2.0) - PI;',
+
+    // Map texture to sphere
+    'vec2 coord = vec2(lambda / PI, phi / (PI / 2.0));',
+    'vec2 fragCoord = vec2((coord.x + 1.0) / 2.0, (-coord.y + 1.0) / 2.0);',
+
+    // Look up color from texture
+    // Map from [-1,1] to [0,1] and flip y-axis
+//    'if(fragCoord.x < u_bl - u_texelWidth || fragCoord.x > u_br + u_texelWidth || fragCoord.y < u_bb - u_texelHeight || fragCoord.y > u_bb + u_texelHeight){',
+    //'if (fragCoord.x < u_bl - u_texelWidth || fragCoord.x > u_br + u_texelWidth) {',
+    //    'gl_FragColor = u_backgroundColor;',
+    //    'gl_FragColor.w = 0.0;',
+    //'} else {',
+        'x = (fragCoord.x - u_bl)/(u_br - u_bl);',
+        'float overflowX = 0.0;',
+        'if(x < 0.0){',
+            'overflowX = -x/u_texelWidth*(u_br - u_bl);',
+            'x = 0.0;',
+        '} else if (x > 1.0){',
+            'overflowX = (x-1.0)/u_texelWidth*(u_br - u_bl);',
+            'x = 1.0;',
+        '}',
+
+        'y = (fragCoord.y - u_bb)/(u_bt-u_bb);',
+        'float overflowY = 0.0;',
+        'if(y < 0.0){',
+            'overflowY = -y/u_texelHeight*(u_bt-u_bb);',
+            'y = 0.0;',
+        '} else if (y > 1.0){',
+            'overflowY = (y-1.0)/u_texelHeight*(u_bt-u_bb);',
+            'y = 1.0;',
+        '}',
+
+        'gl_FragColor = texture2D(u_image0, vec2(x,y));',
+    'gl_FragColor.w = 1.0 - overflowX - overflowY;',
+//    '}',
 '}'
 ].join('\n');
 
