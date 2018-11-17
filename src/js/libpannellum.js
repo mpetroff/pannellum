@@ -1565,12 +1565,12 @@ function Renderer(container) {
             this.texture = texture;
             this.callback = callback;
             if (src instanceof Function) {
-                src(node, this.image, this.texture).then(img => {
-                    if (!image)
+                src(JSON.parse(JSON.stringify(node)), this.image, this.texture).then(img => {
+                    if (!img)
                         this.callback(this.texture, false);
                     else if (img != this.image) {
                         processLoadedTexture(img, this.texture);
-                        this.callback(img, true);
+                        this.callback(this.texture, true);
                     }
                 })
             } else {
