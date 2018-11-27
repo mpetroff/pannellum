@@ -1249,6 +1249,7 @@ function keyRepeat() {
     // "Inertia"
     if (diff > 0 && !config.autoRotate) {
         // "Friction"
+        config.friction = config.friction == undefined ? defaultConfig.friction : config.friction;
         var slowDownFactor = 1 - config.friction;
 
         // Yaw
