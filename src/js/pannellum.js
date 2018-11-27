@@ -2713,6 +2713,16 @@ this.stopAutoRotate = function() {
 };
 
 /**
+ * Stops all movement
+ * @memberof Viewer
+ * @instance
+ */
+this.stopMovement = function() {
+    stopAnimation();
+    speed = {'yaw': 0, 'pitch': 0, 'hfov': 0};
+}
+
+/**
  * Returns the panorama renderer.
  * @memberof Viewer
  * @instance
