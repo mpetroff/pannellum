@@ -2713,7 +2713,7 @@ this.stopAutoRotate = function() {
 };
 
 /**
- * Stops all movement
+ * Stops all movement.
  * @memberof Viewer
  * @instance
  */
