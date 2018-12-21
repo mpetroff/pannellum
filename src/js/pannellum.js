@@ -1399,12 +1399,6 @@ function render() {
     var tmpyaw;
 
     if (loaded) {
-        if (config.yaw > 180) {
-            config.yaw -= 360;
-        } else if (config.yaw < -180) {
-            config.yaw += 360;
-        }
-
         // Keep a tmp value of yaw for autoRotate comparison later
         tmpyaw = config.yaw;
 
@@ -1439,6 +1433,12 @@ function render() {
             config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         }
         
+        if (config.yaw > 180) {
+            config.yaw -= 360;
+        } else if (config.yaw < -180) {
+            config.yaw += 360;
+        }
+
         // Check if we autoRotate in a limited by min and max yaw
         // If so reverse direction
         if (config.autoRotate !== false && tmpyaw != config.yaw &&
