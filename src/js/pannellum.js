@@ -1329,7 +1329,7 @@ function onDocumentResize() {
     //animateInit();
 
     // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
-    onFullScreenChange();
+    onFullScreenChange('resize');
 }
 
 /**
@@ -2105,7 +2105,7 @@ function toggleFullscreen() {
  * Event handler for fullscreen changes.
  * @private
  */
-function onFullScreenChange() {
+function onFullScreenChange(resize) {
     if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
         controls.fullscreen.classList.add('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = true;
@@ -2113,7 +2113,8 @@ function onFullScreenChange() {
         controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = false;
     }
-    fireEvent('fullscreenchange', fullscreenActive);
+    if (resize !== 'resize')
+        fireEvent('fullscreenchange', fullscreenActive);
     // Resize renderer (deal with browser quirks and fixes #155)
     renderer.resize();
     setHfov(config.hfov);
