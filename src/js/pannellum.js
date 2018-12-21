@@ -480,10 +480,10 @@ function onImageLoad() {
         if (config.doubleClickZoom) {
             dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
         }
-        uiContainer.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-        uiContainer.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-        uiContainer.addEventListener('msfullscreenchange', onFullScreenChange, false);
-        uiContainer.addEventListener('fullscreenchange', onFullScreenChange, false);
+        container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('msfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('fullscreenchange', onFullScreenChange, false);
         window.addEventListener('resize', onDocumentResize, false);
         window.addEventListener('orientationchange', onDocumentResize, false);
         if (!config.disableKeyboardCtrl) {
