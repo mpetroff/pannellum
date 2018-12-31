@@ -1784,10 +1784,12 @@ function destroyHotSpots() {
     if (hs) {
         for (var i = 0; i < hs.length; i++) {
             var current = hs[i].div;
-            while(current.parentNode != renderContainer) {
-                current = current.parentNode;
+            if (current) {
+                while(current.parentNode != renderContainer) {
+                    current = current.parentNode;
+                }
+                renderContainer.removeChild(current);
             }
-            renderContainer.removeChild(current);
             delete hs[i].div;
         }
     }
