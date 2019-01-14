@@ -2108,19 +2108,21 @@ function toggleFullscreen() {
  * @private
  */
 function onFullScreenChange(resize) {
-    if (document.fullscreenElement || document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
-        controls.fullscreen.classList.add('pnlm-fullscreen-toggle-button-active');
-        fullscreenActive = true;
-    } else {
-        controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
-        fullscreenActive = false;
-    }
-    if (resize !== 'resize')
-        fireEvent('fullscreenchange', fullscreenActive);
-    // Resize renderer (deal with browser quirks and fixes #155)
-    renderer.resize();
-    setHfov(config.hfov);
-    animateInit();
+    setTimeout(function() {
+        if (document.fullscreenElement || document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
+            controls.fullscreen.classList.add('pnlm-fullscreen-toggle-button-active');
+            fullscreenActive = true;
+        } else {
+            controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
+            fullscreenActive = false;
+        }
+        if (resize !== 'resize')
+            fireEvent('fullscreenchange', fullscreenActive);
+        // Resize renderer (deal with browser quirks and fixes #155)
+        renderer.resize();
+        setHfov(config.hfov);
+        animateInit();
+    }, 0);
 }
 
 /**
