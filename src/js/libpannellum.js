@@ -46,6 +46,7 @@ function Renderer(container) {
     var texelWidth, texelHeight;
     var globalParams;
     var epsilon = 1e-15;
+    var tilesLoadedCallback;
 
     /**
      * Initialize renderer.
@@ -861,7 +862,13 @@ function Renderer(container) {
             // Draw tiles
             multiresrecDraw();
         }
-        
+
+        if (this.tilesLoadedCallback && program.currentNodes
+            && program.currentNodes.length > 0 && !this.isLoading()) {
+            this.tilesLoadedCallback();
+            delete this.tilesLoadedCallback;
+        }
+
         if (params.returnImage !== undefined) {
             return canvas.toDataURL('image/png');
         }
@@ -882,6 +889,22 @@ function Renderer(container) {
             }
         }
         return false;
+    };
+
+    /**
+ * Check if images are loading.
+ * @memberof Renderer
+ * @param {function} callback - Load callback function.
+ * @instance
+ */
+    this.setTilesLoadedCallback = function (callback) {
+        delete this.tilesLoadedCallback;
+        if (imageType != 'multires' && imageType != 'multiresrec')
+            callback();
+        else if (program.currentNodes.length > 0 && !this.isLoading())
+            callback();
+        else
+            this.tilesLoadedCallback = callback;
     };
     
     /**
@@ -1617,6 +1640,12 @@ function Renderer(container) {
         loadTexture(node, image.loader || node.uri, function (texture, loaded) {
             node.texture = texture;
             node.textureLoaded = loaded ? 2 : 1;
+
+            if (this.tilesLoadedCallback && !this.isLoading()) {
+                this.tilesLoadedCallback();
+                delete this.tilesLoadedCallback;
+            }
+
         }, globalParams.crossOrigin);
     }
     

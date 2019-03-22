@@ -1664,14 +1664,16 @@ function renderInit() {
 function renderInitCallback() {
     // Fade if specified
     if (config.sceneFadeDuration && renderer.fadeImg !== undefined) {
-        renderer.fadeImg.style.opacity = 0;
-        // Remove image
-        var fadeImg = renderer.fadeImg;
-        delete renderer.fadeImg;
-        setTimeout(function() {
-            renderContainer.removeChild(fadeImg);
-            fireEvent('scenechangefadedone');
-        }, config.sceneFadeDuration);
+        renderer.setTilesLoadedCallback(() => {
+            renderer.fadeImg.style.opacity = 0;
+            // Remove image
+            var fadeImg = renderer.fadeImg;
+            delete renderer.fadeImg;
+            setTimeout(function () {
+                renderContainer.removeChild(fadeImg);
+                fireEvent('scenechangefadedone');
+            }, config.sceneFadeDuration);
+        });
     }
     
     // Show compass if applicable
