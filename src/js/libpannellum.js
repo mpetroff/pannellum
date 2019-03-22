@@ -863,10 +863,19 @@ function Renderer(container) {
             multiresrecDraw();
         }
 
-        if (this.tilesLoadedCallback && program.currentNodes
-            && program.currentNodes.length > 0 && !this.isLoading()) {
-            this.tilesLoadedCallback();
-            delete this.tilesLoadedCallback;
+        // check if tiles are loaded up to level 3 and issue callback
+        if (this.tilesLoadedCallback && program.currentNodes && program.currentNodes.length > 0) {
+            var minLoadedLevel = Number.MAX_SAFE_INTEGER;
+            for (var i = 0; i < program.currentNodes.length; i++) {
+                if (!program.currentNodes[i].textureLoaded) {
+                    minLoadedLevel = Math.min(minLoadedLevel, program.currentNodes[i].level)
+                }
+            }
+
+            if (minLoadedLevel > 3) {
+                this.tilesLoadedCallback();
+                delete this.tilesLoadedCallback;
+            }
         }
 
         if (params.returnImage !== undefined) {
