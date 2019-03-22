@@ -95,6 +95,7 @@ var defaultConfig = {
     northOffset: 0,
     showFullscreenCtrl: true,
     dynamic: false,
+    dynamicUpdate: false,
     doubleClickZoom: true,
     keyboardZoom: true,
     mouseZoom: true,
@@ -498,10 +499,10 @@ function onImageLoad() {
         if (config.doubleClickZoom) {
             dragFix.addEventListener('dblclick', onDocumentDoubleClick, false);
         }
-        uiContainer.addEventListener('mozfullscreenchange', onFullScreenChange, false);
-        uiContainer.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
-        uiContainer.addEventListener('msfullscreenchange', onFullScreenChange, false);
-        uiContainer.addEventListener('fullscreenchange', onFullScreenChange, false);
+        container.addEventListener('mozfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('msfullscreenchange', onFullScreenChange, false);
+        container.addEventListener('fullscreenchange', onFullScreenChange, false);
         window.addEventListener('resize', onDocumentResize, false);
         window.addEventListener('orientationchange', onDocumentResize, false);
         if (!config.disableKeyboardCtrl) {
@@ -1367,7 +1368,7 @@ function onDocumentResize() {
     //animateInit();
 
     // Kludge to deal with WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=93525
-    onFullScreenChange();
+    onFullScreenChange('resize');
 }
 
 /**
@@ -1438,12 +1439,6 @@ function render() {
     var tmpyaw;
 
     if (loaded) {
-        if (config.yaw > 180) {
-            config.yaw -= 360;
-        } else if (config.yaw < -180) {
-            config.yaw += 360;
-        }
-
         // Keep a tmp value of yaw for autoRotate comparison later
         tmpyaw = config.yaw;
 
@@ -1478,6 +1473,12 @@ function render() {
             config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         }
         
+        if (config.yaw > 180) {
+            config.yaw -= 360;
+        } else if (config.yaw < -180) {
+            config.yaw += 360;
+        }
+
         // Check if we autoRotate in a limited by min and max yaw
         // If so reverse direction
         if (config.autoRotate !== false && tmpyaw != config.yaw &&
@@ -1848,10 +1849,12 @@ function destroyHotSpots() {
     if (hs) {
         for (var i = 0; i < hs.length; i++) {
             var current = hs[i].div;
-            while(current.parentNode != renderContainer) {
-                current = current.parentNode;
+            if (current) {
+                while (current.parentNode && current.parentNode != renderContainer) {
+                    current = current.parentNode;
+                }
+                renderContainer.removeChild(current);
             }
-            renderContainer.removeChild(current);
             delete hs[i].div;
         }
     }
@@ -2173,15 +2176,16 @@ function toggleFullscreen() {
  * Event handler for fullscreen changes.
  * @private
  */
-function onFullScreenChange() {
-    if (document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
+function onFullScreenChange(resize) {
+    if (document.fullscreenElement || document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement) {
         controls.fullscreen.classList.add('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = true;
     } else {
         controls.fullscreen.classList.remove('pnlm-fullscreen-toggle-button-active');
         fullscreenActive = false;
     }
-    fireEvent('fullscreenchange', fullscreenActive);
+    if (resize !== 'resize')
+        fireEvent('fullscreenchange', fullscreenActive);
     // Resize renderer (deal with browser quirks and fixes #155)
     renderer.resize();
     setHfov(config.hfov);
@@ -2413,6 +2417,13 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     }
     fireEvent('scenechange', sceneId);
     load();
+
+    // Properly handle switching to dynamic scenes
+    update = config.dynamicUpdate === true;
+    if (config.dynamic) {
+        panoImage = config.panorama;
+        onImageLoad();
+    }
 }
 
 /**
@@ -2885,6 +2896,16 @@ this.stopAutoRotate = function() {
 };
 
 /**
+ * Stops all movement.
+ * @memberof Viewer
+ * @instance
+ */
+this.stopMovement = function() {
+    stopAnimation();
+    speed = {'yaw': 0, 'pitch': 0, 'hfov': 0};
+}
+
+/**
  * Returns the panorama renderer.
  * @memberof Viewer
  * @instance
@@ -3209,14 +3230,10 @@ function fireEvent(type) {
  */
 this.destroy = function() {
     if (renderer)
-        renderer.destroy()
+        renderer.destroy();
     if (listenersAdded) {
-        dragFix.removeEventListener('mousedown', onDocumentMouseDown, false);
-        dragFix.removeEventListener('dblclick', onDocumentDoubleClick, false);
         document.removeEventListener('mousemove', onDocumentMouseMove, false);
         document.removeEventListener('mouseup', onDocumentMouseUp, false);
-        container.removeEventListener('mousewheel', onDocumentMouseWheel, false);
-        container.removeEventListener('DOMMouseScroll', onDocumentMouseWheel, false);
         container.removeEventListener('mozfullscreenchange', onFullScreenChange, false);
         container.removeEventListener('webkitfullscreenchange', onFullScreenChange, false);
         container.removeEventListener('msfullscreenchange', onFullScreenChange, false);
@@ -3227,18 +3244,9 @@ this.destroy = function() {
         container.removeEventListener('keyup', onDocumentKeyUp, false);
         container.removeEventListener('blur', clearKeys, false);
         document.removeEventListener('mouseleave', onDocumentMouseUp, false);
-        dragFix.removeEventListener('touchstart', onDocumentTouchStart, false);
-        dragFix.removeEventListener('touchmove', onDocumentTouchMove, false);
-        dragFix.removeEventListener('touchend', onDocumentTouchEnd, false);
-        dragFix.removeEventListener('pointerdown', onDocumentPointerDown, false);
-        dragFix.removeEventListener('pointermove', onDocumentPointerMove, false);
-        dragFix.removeEventListener('pointerup', onDocumentPointerUp, false);
-        dragFix.removeEventListener('pointerleave', onDocumentPointerUp, false);
     }
     container.innerHTML = '';
     container.classList.remove('pnlm-container');
-    uiContainer.classList.remove('pnlm-grab');
-    uiContainer.classList.remove('pnlm-grabbing');
 }
 
 }

@@ -446,6 +446,12 @@ Currently, only equirectangular dynamic content is supported.
 The panorama source is considered dynamic when this is set to `true`. Defaults
 to `false`. This should be set to `true` for video.
 
+### `dynamicUpdate` (boolean)
+
+For dynamic content, viewer will start automatically updating when set to
+`true`. Defaults to `false`. If the updates are controlled via the `setUpdate`
+method, as with the Video.js plugin, this should be set to `false`.
+
 
 
 ## Additional information for tour configuration files
