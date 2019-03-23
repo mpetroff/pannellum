@@ -2471,7 +2471,7 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
         return this;
     }
     animated = animated == undefined ? 1000: Number(animated);
-    yaw = ((yaw + 180) % 360) - 180 // Keep in bounds
+    yaw = (yaw>180)?yaw-360:(yaw<-180)?yaw=yaw+360:yaw;
     if (animated) {
         // Animate in shortest direction
         if (config.yaw - yaw > 180)
@@ -2482,13 +2482,13 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
         animatedMove.yaw = {
             'startTime': Date.now(),
             'startPosition': config.yaw,
-            'endPosition': yaw,
+            'endPosition': parseFloat(yaw),
             'duration': animated
         }
         if (typeof callback == 'function')
             setTimeout(function(){callback(callbackArgs)}, animated);
     } else {
-        config.yaw = yaw;
+        config.yaw = parseFloat(yaw);
     }
     animateInit();
     return this;
