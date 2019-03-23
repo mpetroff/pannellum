@@ -2369,7 +2369,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
             fadeImg.style.width = '100%';
             fadeImg.style.height = '100%';
             fadeImg.onload = function() {
-                loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
+                setTimeout(() => loadScene(sceneId, targetPitch, targetYaw, targetHfov, true), 100); // prevents black flickering before fading
             };
             fadeImg.src = data;
             renderContainer.appendChild(fadeImg);
