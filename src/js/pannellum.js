@@ -2217,7 +2217,7 @@ function zoomOut() {
 }
 
 /**
- * Clamps horzontal field of view to viewer's limits.
+ * Clamps horizontal field of view to viewer's limits.
  * @private
  * @param {number} hfov - Input horizontal field of view (in degrees)
  * @return {number} - Clamped horizontal field of view (in degrees)
@@ -2481,7 +2481,7 @@ function sanitizeURL(url) {
 }
 
 /**
- * Removes possibility of XSS atacks with URLs for CSS.
+ * Removes possibility of XSS attacks with URLs for CSS.
  * The URL will be sanitized with `sanitizeURL()` and single quotes
  * and double quotes escaped.
  * @private
