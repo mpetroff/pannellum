@@ -321,6 +321,15 @@ function Renderer(container) {
         // Create viewport for entire canvas
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
+        // Check precision support
+        if (gl.getShaderPrecisionFormat) {
+            var precision = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT);
+            if (precision && precision.precision < 1) {
+                // `highp` precision not supported; https://stackoverflow.com/a/33308927
+                fragEquiCubeBase = fragEquiCubeBase.replace('highp', 'mediump');
+            }
+        }
+
         // Create vertex shader
         vs = gl.createShader(gl.VERTEX_SHADER);
         var vertexSrc = v;
@@ -1344,7 +1353,7 @@ var vMulti = [
 
 // Fragment shader
 var fragEquiCubeBase = [
-'precision mediump float;',
+'precision highp float;', // mediump looks bad on some mobile devices
 
 'uniform float u_aspectRatio;',
 'uniform float u_psi;',
