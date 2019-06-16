@@ -59,6 +59,9 @@ The `utils` folder contains the required build tools, with the exception of Pyth
 ## Tests
 A limited [Selenium](https://www.seleniumhq.org/)-based test suite is located in the `tests` directory. The tests can be executed by running `python3 run_tests.py`. Running the tests requires Python 3, the Selenium Python bindings, Firefox, [geckodriver](https://github.com/mozilla/geckodriver), [Pillow](https://pillow.readthedocs.io/), and [NumPy](https://www.numpy.org/).
 
+## Contributing
+Development takes place at [github.com/mpetroff/pannellum](https://github.com/mpetroff/pannellum). Issues should be opened to report bugs or suggest improvements (or ask questions), and pull requests are welcome. When reporting a bug, please try to include a minimum reproducible example (or at least some sort of example). When proposing changes, please try to match the existing code style, e.g., four space indentation and [JSHint](https://jshint.com/) validation. If your pull request adds an additional configuration parameter, please document it in `doc/json-config-parameters.md`.
+
 ## License
 Pannellum is distributed under the MIT License. For more information, read the file `COPYING` or peruse the license [online](https://github.com/mpetroff/pannellum/blob/master/COPYING).
 
