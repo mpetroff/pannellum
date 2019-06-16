@@ -33,10 +33,23 @@ thread.start()
 
 # Create a new instance of the Firefox driver
 print("Starting web driver...")
-fp = webdriver.FirefoxProfile()
-fp.set_preference("layout.css.devPixelsPerPx", "1.0")
-driver = webdriver.Firefox(firefox_profile=fp)
-driver.set_window_size(800, 600)
+if os.environ.get("TRAVIS_JOB_NUMBER"):
+    # Configuration for Travis CI / Sauce Labs testing
+    driver = webdriver.Remote(
+        command_executor="http://{}:{}@ondemand.saucelabs.com/wd/hub".format(
+            os.environ["SAUCE_USERNAME"], os.environ["SAUCE_ACCESS_KEY"]
+        ),
+        desired_capabilities={
+            "tunnel-identifier": os.environ["TRAVIS_JOB_NUMBER"],
+            "build": os.environ["TRAVIS_JOB_NUMBER"],
+            "browserName": "firefox",
+        },
+    )
+else:
+    fp = webdriver.FirefoxProfile()
+    fp.set_preference("layout.css.devPixelsPerPx", "1.0")
+    driver = webdriver.Firefox(firefox_profile=fp)
+    driver.set_window_size(800, 600)
 
 
 def run_tests():
