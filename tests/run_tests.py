@@ -41,7 +41,7 @@ driver.set_window_size(800, 600)
 
 # Load page
 print("Loading page...")
-driver.get("http://127.0.0.1:8000/tests/tests.html")
+driver.get("http://127.0.0.1:12345/tests/tests.html")
 
 
 # Make sure viewer loaded
