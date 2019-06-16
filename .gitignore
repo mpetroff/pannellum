@@ -9,3 +9,6 @@ utils/doc/generated_docs
 
 # Ignore IntelliJ Files
 .idea
+
+# Ignore logs
+tests/*.log

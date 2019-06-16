@@ -56,6 +56,9 @@ All user-facing strings can be changed using the `strings` configuration paramet
 ## Building
 The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
 
+## Tests
+A limited [Selenium](https://www.seleniumhq.org/)-based test suite is located in the `tests` directory. The tests can be executed by running `python3 run_tests.py`. Running the tests requires Python 3, the Selenium Python bindings, Firefox, [geckodriver](https://github.com/mozilla/geckodriver), [Pillow](https://pillow.readthedocs.io/), and [NumPy](https://www.numpy.org/).
+
 ## License
 Pannellum is distributed under the MIT License. For more information, read the file `COPYING` or peruse the license [online](https://github.com/mpetroff/pannellum/blob/master/COPYING).
 
