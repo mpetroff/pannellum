@@ -43,6 +43,7 @@ if os.environ.get("TRAVIS_JOB_NUMBER"):
             "tunnel-identifier": os.environ["TRAVIS_JOB_NUMBER"],
             "build": os.environ["TRAVIS_JOB_NUMBER"],
             "browserName": "firefox",
+            "seleniumVersion": "3.141.0",
         },
     )
 else:
