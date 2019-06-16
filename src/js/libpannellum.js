@@ -304,9 +304,9 @@ function Renderer(container) {
             }
         } else if (imageType == 'cubemap') {
             if (cubeImgWidth > gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE)) {
-                console.log('Error: The image is too big; it\'s ' + width + 'px wide, '+
+                console.log('Error: The image is too big; it\'s ' + cubeImgWidth + 'px wide, ' +
                             'but this device\'s maximum supported size is ' + maxWidth + 'px.');
-                throw {type: 'webgl size error', width: width, maxWidth: maxWidth};
+                throw {type: 'webgl size error', width: cubeImgWidth, maxWidth: maxWidth};
             }
         }
 
@@ -695,9 +695,9 @@ function Renderer(container) {
                 program.nodeCache.length > program.currentNodes.length + 50) {
                 // Remove older nodes from cache
                 var removed = program.nodeCache.splice(200, program.nodeCache.length - 200);
-                for (var i = 0; i < removed.length; i++) {
+                for (var j = 0; j < removed.length; j++) {
                     // Explicitly delete textures
-                    gl.deleteTexture(removed[i].texture);
+                    gl.deleteTexture(removed[j].texture);
                 }
             }
             program.currentNodes = [];
@@ -1153,7 +1153,7 @@ function Renderer(container) {
             });
             this.image.addEventListener('load', loadFn);
             this.image.addEventListener('error', loadFn); // ignore missing tile file to support partial image, otherwise retry loop causes high CPU load
-        };
+        }
 
         TextureImageLoader.prototype.loadTexture = function(src, texture, callback) {
             this.texture = texture;
@@ -1166,7 +1166,7 @@ function Renderer(container) {
             this.src = src;
             this.texture = texture;
             this.callback = callback;
-        };
+        }
 
         function releaseTextureImageLoader(til) {
             if (pendingTextureRequests.length) {
