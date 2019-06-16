@@ -14,4 +14,4 @@ install:
 jobs:
   include:
     - stage: test
-      script: xvfb-run python3 tests/run_tests.py
+      script: xvfb-run -a python3 tests/run_tests.py
