@@ -1,7 +1,7 @@
 language: generic
 dist: xenial
-env:
-  - MOZ_HEADLESS=1
+services:
+  - xvfb
 addons:
   firefox: latest
 before_install:
@@ -14,4 +14,4 @@ install:
 jobs:
   include:
     - stage: test
-      script: python3 tests/run_tests.py
+      script: xvfb-run python3 tests/run_tests.py
