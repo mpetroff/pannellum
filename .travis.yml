@@ -1,0 +1,16 @@
+language: generic
+dist: xenial
+env:
+  - MOZ_HEADLESS=1
+addons:
+  firefox: latest
+before_install:
+  - sudo apt-get install -y python3-pillow
+install:
+  - wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
+  - tar -xf geckodriver-v0.20.0-linux64.tar.gz
+  - sudo mv geckodriver /usr/local/bin
+jobs:
+  include:
+    - stage: test
+      script: python3 tests/run_tests.py
