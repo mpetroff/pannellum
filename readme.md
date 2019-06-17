@@ -27,25 +27,16 @@ Examples using both the minified version and the version in the `src` directory 
 
 ## Browser Compatibility
 
-Since Pannellum is built with recent web standards, it requires a modern browser to function.
+Since Pannellum is built with web standards, it requires a modern browser to function.
 
 #### Full support (with appropriate graphics drivers):
-* Firefox 10+
-* Chrome 15+
+* Firefox 23+
+* Chrome 24+
 * Safari 8+
 * Internet Explorer 11+
 * Edge
 
-#### Almost full support (no full screen):
-* Firefox 4+
-* Chrome 9+
-
-#### Partial support (WebGL support must first be enabled in preferences)
-
-* Safari 5.1+
-
-#### No support:
-Internet Explorer 10 and previous
+The support list is based on feature support. As only recent browsers are tested, there may be regressions in older browsers.
 
 #### Not officially supported:
 
