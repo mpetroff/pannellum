@@ -1,5 +1,7 @@
 # Pannellum
 
+[![Build Status](https://travis-ci.org/mpetroff/pannellum.svg?branch=master)](https://travis-ci.org/mpetroff/pannellum)
+
 ## About
 
 Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 15kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding. An API is included for more advanced integrations.
