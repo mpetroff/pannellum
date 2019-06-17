@@ -25,7 +25,7 @@ print("Starting web server...")
 os.chdir(os.path.dirname(os.path.abspath(__file__)))  # cd to script dir
 os.chdir("..")
 httpd = http.server.HTTPServer(
-    ("127.0.0.1", 12345), http.server.SimpleHTTPRequestHandler
+    ("localhost", 8000), http.server.SimpleHTTPRequestHandler
 )
 thread = threading.Thread(None, httpd.serve_forever)
 thread.start()
@@ -36,10 +36,10 @@ print("Starting web driver...")
 if os.environ.get("TRAVIS_JOB_NUMBER"):
     # Configuration for Travis CI / Sauce Labs testing
     driver = webdriver.Remote(
-        command_executor="http://{}:{}@ondemand.saucelabs.com/wd/hub".format(
-            os.environ["SAUCE_USERNAME"], os.environ["SAUCE_ACCESS_KEY"]
-        ),
+        command_executor="https://ondemand.saucelabs.com:443/wd/hub",
         desired_capabilities={
+            "username": os.environ["SAUCE_USERNAME"],
+            "accessKey": os.environ["SAUCE_ACCESS_KEY"],
             "tunnel-identifier": os.environ["TRAVIS_JOB_NUMBER"],
             "build": os.environ["TRAVIS_JOB_NUMBER"],
             "browserName": "firefox",
@@ -56,7 +56,7 @@ else:
 def run_tests():
     # Load page
     print("Loading page...")
-    driver.get("http://127.0.0.1:12345/tests/tests.html")
+    driver.get("http://localhost:8000/tests/tests.html")
 
     # Make sure viewer loaded
     print("Running tests...")
