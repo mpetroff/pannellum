@@ -74,7 +74,7 @@ def run_tests():
         screenshot = Image.open(io.BytesIO(viewer.screenshot_as_png)).convert("RGB")
         diff = np.mean(np.array(ImageChops.difference(screenshot, reference)))
         print("equirectangular difference:", diff)
-        assert diff < 10
+        assert diff < 3
     print("PASS: equirectangular")
 
     # Check movement
@@ -111,7 +111,7 @@ def run_tests():
         screenshot = Image.open(io.BytesIO(viewer.screenshot_as_png)).convert("RGB")
         diff = np.mean(np.array(ImageChops.difference(screenshot, reference)))
         print("cube difference:", diff)
-        assert diff < 10
+        assert diff < 3
     print("PASS: cube")
 
     # Check hot spot
@@ -129,7 +129,7 @@ def run_tests():
         screenshot = Image.open(io.BytesIO(viewer.screenshot_as_png)).convert("RGB")
         diff = np.mean(np.array(ImageChops.difference(screenshot, reference)))
         print("multires difference:", diff)
-        assert diff < 10
+        assert diff < 3
     print("PASS: multires")
 
 
