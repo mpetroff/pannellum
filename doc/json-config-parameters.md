@@ -52,7 +52,8 @@ counter-clockwise, and negative is clockwise.
 
 Sets the delay, in milliseconds, to start automatically rotating the panorama
 after user activity ceases. This parameter only has an effect if the
-`autoRotate` parameter is set.
+`autoRotate` parameter is set. Before starting rotation, the viewer is panned
+to the initial pitch.
 
 
 ### `autoRotateStopDelay` (number)
