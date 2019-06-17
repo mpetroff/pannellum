@@ -7,5 +7,7 @@ before_install:
   - sudo pip3 install selenium
 jobs:
   include:
+    - stage: build
+      script: python3 utils/build/build.py
     - stage: test
       script: python3 tests/run_tests.py

@@ -143,6 +143,7 @@ def build(files, css, html, filename, release=False):
     output(addHeaderJS(js, version), folder + filename)
 
 def main():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))  # cd to script dir
     if (len(sys.argv) > 1 and sys.argv[1] == 'release'):
         build(JS, CSS, HTML, 'pannellum', True)
     else:
