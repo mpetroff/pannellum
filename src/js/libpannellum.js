@@ -266,9 +266,9 @@ function Renderer(container) {
                 faceImg.onload = onLoad;
                 faceImg.onerror = incLoaded; // ignore missing face to support partial fallback image
                 if (imageType == 'multires') {
-                    faceImg.src = encodeURI(path.replace('%s', sides[s]) + '.' + image.extension);
+                    faceImg.src = path.replace('%s', sides[s]) + '.' + image.extension;
                 } else {
-                    faceImg.src = encodeURI(image[s].src);
+                    faceImg.src = image[s].src;
                 }
             }
             fillMissingFaces(fallbackImgSize);
@@ -1196,7 +1196,7 @@ function Renderer(container) {
      * @param {MultiresNode} node - Input node.
      */
     function processNextTile(node) {
-        loadTexture(node, encodeURI(node.path + '.' + image.extension), function(texture, loaded) {
+        loadTexture(node, node.path + '.' + image.extension, function(texture, loaded) {
             node.texture = texture;
             node.textureLoaded = loaded ? 2 : 1;
         }, globalParams.crossOrigin);
