@@ -1981,7 +1981,15 @@ function processOptions(isPreview) {
                 break;
             
             case 'author':
-                infoDisplay.author.innerHTML = config.strings.bylineLabel.replace('%s', escapeHTML(config[key]));
+                var authorText = escapeHTML(config[key]);
+                if (config.authorURL) {
+                    var authorLink = document.createElement('a');
+                    authorLink.href = sanitizeURL(config['authorURL']);
+                    authorLink.target = '_blank';
+                    authorLink.innerHTML = escapeHTML(config[key]);
+                    authorText = authorLink.outerHTML;
+                }
+                infoDisplay.author.innerHTML = config.strings.bylineLabel.replace('%s', authorText);
                 infoDisplay.container.style.display = 'inline';
                 break;
             

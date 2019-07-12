@@ -23,6 +23,13 @@ If set, the value is displayed as the panorama's author. If no author is
 desired, don't set this parameter.
 
 
+### `authorURL` (string)
+
+If set, the displayed author text is hyperlinked to this URL. If no author URL
+is desired, don't set this parameter. The `author` parameter must also be set
+for this parameter to have an effect.
+
+
 ### `strings` (dictionary)
 
 Allows user-facing strings to be changed / translated.
