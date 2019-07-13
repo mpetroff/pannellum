@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-Changes in Pannellum 2.4.1
---------------------------
+Changes in Pannellum 2.4.1 (2018-03-03)
+---------------------------------------
 
 Bugfixes:
 
@@ -11,8 +11,8 @@ Bugfixes:
  - The API's `loadScene` method now works when no scenes have been loaded yet
 
 
-Changes in Pannellum 2.4.0
---------------------------
+Changes in Pannellum 2.4.0 (2018-01-30)
+---------------------------------------
 
 New Features:
 
@@ -77,16 +77,16 @@ Bugfixes:
 - Fixed bug related to removing hot spots
 
 
-Changes in Pannellum 2.3.2
---------------------------
+Changes in Pannellum 2.3.2 (2016-11-20)
+---------------------------------------
 
 Bugfixes:
 
  - Fix Chrome fullscreen regression introduced in 2.3.1
 
 
-Changes in Pannellum 2.3.1
---------------------------
+Changes in Pannellum 2.3.1 (2016-11-19)
+---------------------------------------
 
 Bugfixes:
 
@@ -99,8 +99,8 @@ Improvements:
  - Better handling of view limits when both limits are in view
 
 
-Changes in Pannellum 2.3.0
---------------------------
+Changes in Pannellum 2.3.0 (2016-10-30)
+---------------------------------------
 
 New Features:
 
@@ -169,8 +169,8 @@ Backwards-Incompatible Configuration Parameter Changes:
    can be used with the `config` parameter
 
 
-Changes in Pannellum 2.2.1
---------------------------
+Changes in Pannellum 2.2.1 (2016-03-11)
+---------------------------------------
 
 New Features:
 
@@ -183,8 +183,8 @@ Improvements:
  - Better restriction on yaw range
 
 
-Changes in Pannellum 2.2.0
---------------------------
+Changes in Pannellum 2.2.0 (2016-01-27)
+---------------------------------------
 
 New Features:
 
@@ -251,15 +251,15 @@ Other:
  - Added JSDoc documentation
 
 
-Changes in Pannellum 2.1.1
---------------------------
+Changes in Pannellum 2.1.1 (2015-01-19)
+---------------------------------------
 
 Bugfixes:
  - Force subpixel rendering for hot spots
 
 
-Changes in Pannellum 2.1.0
---------------------------
+Changes in Pannellum 2.1.0 (2015-01-14)
+---------------------------------------
 
 New Features:
 
@@ -301,15 +301,15 @@ Other:
    removed
 
 
-Changes in Pannellum 2.0.1
---------------------------
+Changes in Pannellum 2.0.1 (2014-08-24)
+---------------------------------------
 
 Bugfixes:
  - Fix keyboard controls in Safari
 
 
-Changes in Pannellum 2.0
-------------------------
+Changes in Pannellum 2.0 (2014-08-22)
+-------------------------------------
 
 New Features:
 
@@ -334,8 +334,8 @@ Bugfixes:
  - Numerous
 
 
-Changes in Pannellum 1.2
-------------------------
+Changes in Pannellum 1.2 (2012-08-28)
+-------------------------------------
 
 New Features:
 
