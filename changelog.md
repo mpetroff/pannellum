@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.1 (2019-07-13)
+---------------------------------------
+
+Other:
+ - Fixed issue with tagging 2.5.0 release
+
+
 Changes in Pannellum 2.5.0 (2019-07-13)
 ---------------------------------------
 
