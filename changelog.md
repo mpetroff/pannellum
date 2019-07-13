@@ -2,6 +2,52 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.0 (2019-07-13)
+---------------------------------------
+
+New Features:
+ - The background color can be set for partial panoramas
+   (`backgroundColor` parameter)
+ - Partial panoramas are now supported for the multiresolution format
+ - An author URL can now be added (`authorURL` parameter)
+
+New API functions:
+ - Added `fullscreenchange`, `zoomchange`, and `animatefinished` events
+ - Added `stopMovement` function for stopping all viewer movement
+
+Improvements:
+ - Equirectangular images are now automatically split into two separate
+   textures if they're too big (images up to 8192px wide should now be
+   widely supported)
+ - Improved render quality for equirectangular images on mobile (using `highp`
+   for fragment shader)
+ - Keyboard events for keys not used by the viewer are no longer captured, and
+   the list of captured keys is configurable (`capturedKeyNumbers` parameter)
+ - Multiresolution tiles can now be generated from cylindrical panoramas
+ - Hot spots can now be removed from scenes that aren't currently loaded
+ - Hot spot cursor is now set via CSS class (so it can be overridden)
+ - Hot spot link attributes can now be set (`attributes` parameter)
+ - The "friction" that slows down the viewer motion can now be configured
+   (`friction` parameter)
+ - Dynamic scenes are now properly supported for tours
+
+Bugfixes:
+ - Fixed regression in fallback renderer
+ - Fixed bug with URL encoding
+ - Fixed regression in Video.js plugin
+ - Fixed auto-rotate bug that was manifested when using API to set view
+ - Fixed full screen bug in Chrome
+ - Fixed bug with removing event listeners
+ - Fixed issue with mouse dragging causing jump around yaw limits
+ - Fixed bug with deleting hot spots
+ - Fixed bug with fading between scenes
+
+Other:
+ - Added limited test suite / continuous integration
+ - Removed `requestAnimationFrame` shim, dropping support for some
+   older browsers
+
+
 Changes in Pannellum 2.4.1 (2018-03-03)
 ---------------------------------------
 
