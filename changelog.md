@@ -2,6 +2,13 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.2 (2019-07-13)
+---------------------------------------
+
+Bugfixes:
+ - Fixed regression in Video.js plugin
+
+
 Changes in Pannellum 2.5.1 (2019-07-13)
 ---------------------------------------
 
