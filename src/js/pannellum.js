@@ -449,7 +449,7 @@ function init() {
 
     // Properly handle switching to dynamic scenes
     update = config.dynamicUpdate === true;
-    if (config.dynamic) {
+    if (config.dynamic && update) {
         panoImage = config.panorama;
         onImageLoad();
     }
