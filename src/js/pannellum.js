@@ -335,6 +335,7 @@ function init() {
         } else {
             if (config.panorama === undefined) {
                 anError(config.strings.noPanoramaError);
+                loaded = undefined;
                 return;
             }
             panoImage = new Image();
@@ -637,6 +638,7 @@ function clearError() {
         infoDisplay.load.box.style.display = 'none';
         infoDisplay.errorMsg.style.display = 'none';
         error = false;
+        renderContainer.style.display = 'block';
         fireEvent('errorcleared');
     }
 }
