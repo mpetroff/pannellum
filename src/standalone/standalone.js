@@ -32,9 +32,11 @@ function parseURLParameters() {
             case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
             case 'minHfov': case 'maxHfov': case 'minPitch': case 'maxPitch':
             case 'minYaw': case 'maxYaw': case 'vOffset': case 'autoRotate':
+            case 'autoRotateInactivityDelay':
                 configFromURL[option] = Number(value);
                 break;
-            case 'autoLoad': case 'ignoreGPanoXMP':
+            case 'autoLoad': case 'ignoreGPanoXMP': case 'hotSpotDebug':
+            case 'compass':
                 configFromURL[option] = JSON.parse(value);
                 break;
             case 'author': case 'title': case 'firstScene': case 'fallback':
