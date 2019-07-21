@@ -39,8 +39,8 @@ function parseURLParameters() {
             case 'compass':
                 configFromURL[option] = JSON.parse(value);
                 break;
-            case 'author': case 'title': case 'firstScene': case 'fallback':
-            case 'preview': case 'panorama': case 'config':
+            case 'author': case 'authorURL': case 'title': case 'firstScene':
+            case 'fallback': case 'preview': case 'panorama': case 'config':
                 configFromURL[option] = decodeURIComponent(value);
                 break;
             default:
