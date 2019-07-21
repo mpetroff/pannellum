@@ -36,7 +36,7 @@ function parseURLParameters() {
                 configFromURL[option] = Number(value);
                 break;
             case 'autoLoad': case 'ignoreGPanoXMP': case 'hotSpotDebug':
-            case 'compass':
+            case 'compass': case 'showZoomCtrl': case 'showControls':
                 configFromURL[option] = JSON.parse(value);
                 break;
             case 'author': case 'authorURL': case 'title': case 'firstScene':
