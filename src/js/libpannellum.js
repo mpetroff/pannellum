@@ -738,7 +738,7 @@ function Renderer(container) {
         }
         
         if (params.returnImage !== undefined) {
-            return canvas.toDataURL('image/png');
+            return canvas.toDataURL('image/jpeg');
         }
     };
     
