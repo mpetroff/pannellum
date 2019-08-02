@@ -318,7 +318,10 @@ for the hot spot's `click` event. The event object and the contents of
 
 #### `scale` (boolean)
 
-When `true`, the hotspot is scaled to match the fish eye effect of the image
+When `true`, the hot spot is scaled to match changes in the field of view,
+relative to the initial field of view. Note that this does not account for
+changes in local image scale that occur due to distortions within the viewport.
+Defaults to `false`.
 
 ### `hotSpotDebug` (boolean)
 
