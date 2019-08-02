@@ -316,6 +316,13 @@ If `clickHandlerFunc` is specified, this function is added as an event handler
 for the hot spot's `click` event. The event object and the contents of
 `clickHandlerArgs` are passed to the function as arguments.
 
+#### `scale` (boolean)
+
+When `true`, the hot spot is scaled to match changes in the field of view,
+relative to the initial field of view. Note that this does not account for
+changes in local image scale that occur due to distortions within the viewport.
+Defaults to `false`.
+
 ### `hotSpotDebug` (boolean)
 
 When `true`, the mouse pointer's pitch and yaw are logged to the console when
