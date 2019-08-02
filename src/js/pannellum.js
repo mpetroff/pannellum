@@ -1409,6 +1409,15 @@ function render() {
     if (loaded) {
         var canvas = renderer.getCanvas();
 
+        if (config.autoRotate !== false) {
+            // When auto-rotating this check needs to happen first (see issue #764)
+            if (config.yaw > 180) {
+                config.yaw -= 360;
+            } else if (config.yaw < -180) {
+                config.yaw += 360;
+            }
+        }
+
         // Keep a tmp value of yaw for autoRotate comparison later
         tmpyaw = config.yaw;
 
@@ -1442,10 +1451,14 @@ function render() {
             config.yaw = Math.max(minYaw, Math.min(maxYaw, config.yaw));
         }
         
-        if (config.yaw > 180) {
-            config.yaw -= 360;
-        } else if (config.yaw < -180) {
-            config.yaw += 360;
+        if (!(config.autoRotate !== false)) {
+            // When not auto-rotating, this check needs to happen after the
+            // previous check (see issue #698)
+            if (config.yaw > 180) {
+                config.yaw -= 360;
+            } else if (config.yaw < -180) {
+                config.yaw += 360;
+            }
         }
 
         // Check if we autoRotate in a limited by min and max yaw
