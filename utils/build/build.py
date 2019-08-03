@@ -8,7 +8,6 @@ import urllib.parse
 
 JS = [
 'js/libpannellum.js',
-'js/RequestAnimationFrame.js',
 'js/pannellum.js',
 ]
 
@@ -132,7 +131,6 @@ def build(files, css, html, filename, release=False):
     html = merge(html)
     html = html.replace('<link type="text/css" rel="Stylesheet" href="../css/pannellum.css"/>','<style type="text/css">' + standalone_css + '</style>')
     html = html.replace('<script type="text/javascript" src="../js/libpannellum.js"></script>','')
-    html = html.replace('<script type="text/javascript" src="../js/RequestAnimationFrame.js"></script>','')
     html = html.replace('<script type="text/javascript" src="../js/pannellum.js"></script>','<script type="text/javascript">' + standalone_js + '</script>')
     html = html.replace('<script type="text/javascript" src="standalone.js"></script>','')
     html = html.replace('<link type="text/css" rel="Stylesheet" href="standalone.css"/>', '')
@@ -143,6 +141,7 @@ def build(files, css, html, filename, release=False):
     output(addHeaderJS(js, version), folder + filename)
 
 def main():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))  # cd to script dir
     if (len(sys.argv) > 1 and sys.argv[1] == 'release'):
         build(JS, CSS, HTML, 'pannellum', True)
     else:

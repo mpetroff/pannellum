@@ -1,0 +1,13 @@
+language: generic
+dist: xenial
+addons:
+  sauce_connect: true
+before_install:
+  - sudo apt-get install -y python3-pillow python3-numpy python3-pip
+  - sudo pip3 install selenium
+jobs:
+  include:
+    - stage: build
+      script: python3 utils/build/build.py
+    - stage: test
+      script: python3 tests/run_tests.py

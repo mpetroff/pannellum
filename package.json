@@ -1,7 +1,7 @@
 {
   "name": "pannellum",
   "description": "Pannellum is a lightweight, free, and open source panorama viewer for the web.",
-  "version": "2.4.1",
+  "version": "2.5.2",
   "bugs": {
     "url": "https://github.com/mpetroff/pannellum/issues"
   },

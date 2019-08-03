@@ -23,6 +23,13 @@ If set, the value is displayed as the panorama's author. If no author is
 desired, don't set this parameter.
 
 
+### `authorURL` (string)
+
+If set, the displayed author text is hyperlinked to this URL. If no author URL
+is desired, don't set this parameter. The `author` parameter must also be set
+for this parameter to have an effect.
+
+
 ### `strings` (dictionary)
 
 Allows user-facing strings to be changed / translated.
@@ -52,7 +59,8 @@ counter-clockwise, and negative is clockwise.
 
 Sets the delay, in milliseconds, to start automatically rotating the panorama
 after user activity ceases. This parameter only has an effect if the
-`autoRotate` parameter is set.
+`autoRotate` parameter is set. Before starting rotation, the viewer is panned
+to the initial pitch.
 
 
 ### `autoRotateStopDelay` (number)
@@ -307,6 +315,13 @@ spot tooltip DOM instead of the default function. The contents of
 If `clickHandlerFunc` is specified, this function is added as an event handler
 for the hot spot's `click` event. The event object and the contents of
 `clickHandlerArgs` are passed to the function as arguments.
+
+#### `scale` (boolean)
+
+When `true`, the hot spot is scaled to match changes in the field of view,
+relative to the initial field of view. Note that this does not account for
+changes in local image scale that occur due to distortions within the viewport.
+Defaults to `false`.
 
 ### `hotSpotDebug` (boolean)
 
