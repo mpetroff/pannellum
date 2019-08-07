@@ -9,7 +9,7 @@ Pannellum is a lightweight, free, and open source panorama viewer for the web. B
 
 ## How to use
 1. Upload `build/pannellum.htm` and a full equirectangular panorama to a web server.
-    * Due to browser security restrictions, a web server must be used locally as well. With Python 2, one can use `python -m SimpleHTTPServer`, and with Python 3, one can use `python -m http.server`, but any other web server will work as well.
+    * Due to browser security restrictions, a web server must be used locally as well. With Python 3, one can use `python3 -m http.server`, but any other web server will work as well.
 2. Use the included multi-resolution generator (`utils/multires/generate.py`) or configuration tool (`utils/config/configuration.htm`).
 3. Insert the generated `<iframe>` code into a page.
 
@@ -26,7 +26,9 @@ in the `utils/multires` directory. This will generate all the image tiles and th
 
 ## Examples
 
-Examples using both the minified version and the version in the `src` directory are included in the `examples` directory. Additional examples are available at [pannellum.org](https://pannellum.org/documentation/examples/simple-example/).
+Examples using both the minified version and the version in the `src` directory are included in the `examples` directory. These can be viewed by starting a local web server in the root of the repository, e.g., by running `python3 -m http.server` in the directory containing this readme file, and then navigating to the hosted HTML files using a web browser; note that the examples use files from the `src` directory, so the web server must be started from the repository root, not the `examples` directory.
+
+Additional examples are available at [pannellum.org](https://pannellum.org/documentation/examples/simple-example/).
 
 ## Browser Compatibility
 
