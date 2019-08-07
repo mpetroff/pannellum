@@ -35,6 +35,7 @@ thread.start()
 print("Starting web driver...")
 fp = webdriver.FirefoxProfile()
 fp.set_preference("layout.css.devPixelsPerPx", "1.0")
+fp.set_preference("devtools.console.stdout.content", true)
 driver = webdriver.Firefox(firefox_profile=fp)
 driver.set_window_size(800, 600)
 
@@ -121,9 +122,6 @@ def run_tests():
 
 try:
     run_tests()
-except AssertionError:
-    for entry in driver.get_log('browser'):
-        print(entry)
 finally:
     driver.quit()
     httpd.shutdown()
