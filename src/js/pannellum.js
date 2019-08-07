@@ -68,7 +68,8 @@ var config,
     specifiedPhotoSphereExcludes = [],
     update = false, // Should we update when still to render dynamic content
     eps = 1e-6,
-    hotspotsCreated = false;
+    hotspotsCreated = false,
+    destroyed = false;
 
 var defaultConfig = {
     hfov: 100,
@@ -1357,6 +1358,10 @@ function animateInit() {
  * @private
  */
 function animate() {
+    if (destroyed) {
+        return;
+    }
+
     render();
     if (autoRotateStart)
         clearTimeout(autoRotateStart);
@@ -3079,6 +3084,9 @@ function fireEvent(type) {
  * @memberof Viewer
  */
 this.destroy = function() {
+    destroyed = true;
+    clearTimeout(autoRotateStart);
+
     if (renderer)
         renderer.destroy();
     if (listenersAdded) {
