@@ -59,7 +59,29 @@ All user-facing strings can be changed using the `strings` configuration paramet
 The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
 
 ## Tests
-A limited [Selenium](https://www.seleniumhq.org/)-based test suite is located in the `tests` directory. The tests can be executed by running `python3 run_tests.py`. Running the tests requires Python 3, the Selenium Python bindings, Firefox, [geckodriver](https://github.com/mozilla/geckodriver), [Pillow](https://pillow.readthedocs.io/), and [NumPy](https://www.numpy.org/).
+
+A minimal [Selenium](https://www.seleniumhq.org/)-based test suite is located in the `tests` directory. The tests can be executed by running:
+
+```bash
+python3 run_tests.py
+```
+
+A Selenium-driven web browser (with a Chrome driver, by default) is created, and screenshots are generated
+and compared against previously generated ones in [tests](tests). For example, to regenerate the screenshots
+one can run:
+
+```bash
+$ python3 tests/run_tests.py --create-ref
+```
+
+And to simply run the tests to compare to, eliminate that argument. By default, a random
+port is selected, along with other arguments. One can see usage via:
+
+```bash
+$ python tests/run_tests.py --help
+```
+
+Continuous integration tests are run via CircleCI. Running the tests locally requires Python 3, the Selenium Python bindings, [Pillow](https://pillow.readthedocs.io/), [NumPy](https://www.numpy.org/), and either Firefox & [geckodriver](https://github.com/mozilla/geckodriver) or Chrome & [ChromeDriver](https://chromedriver.chromium.org/).
 
 ## Seeking support
 If you wish to ask a question or report a bug, please open an issue at [github.com/mpetroff/pannellum](https://github.com/mpetroff/pannellum). See the _Contributing_ section below for more details.
