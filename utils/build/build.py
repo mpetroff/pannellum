@@ -99,7 +99,11 @@ def build(files, css, html, filename, release=False):
     if release:
         version = read('../VERSION').strip()
     else:
-        version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip()
+        if os.path.exists('.git'):
+            version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip()
+        else:
+            print('No .git folder detected, setting version to testing')
+            version = "testing"
     js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + version)
     with open('../../src/standalone/standalone.js', 'r') as f:
         standalone_js = f.read()
