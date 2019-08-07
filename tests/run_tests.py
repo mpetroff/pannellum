@@ -35,7 +35,7 @@ thread.start()
 print("Starting web driver...")
 fp = webdriver.FirefoxProfile()
 fp.set_preference("layout.css.devPixelsPerPx", "1.0")
-fp.set_preference("devtools.console.stdout.content", true)
+fp.set_preference("devtools.console.stdout.content", True)
 driver = webdriver.Firefox(firefox_profile=fp)
 driver.set_window_size(800, 600)
 
