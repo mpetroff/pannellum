@@ -20,6 +20,7 @@ from PIL import Image, ImageChops
 import argparse
 import json
 import io
+import numpy
 import os
 import re
 import shutil
@@ -56,10 +57,10 @@ class PannellumTester(object):
     ''' bring up a server with a testing robot        
     '''
   
-    def __init__(self, **kwargs):
+    def __init__(self, port=None, browser="Chrome", headless=False):
         self.Handler = PannellumServer
-        if "port" in kwargs:
-            self.port = kwargs['port']
+        if port:
+            self.port = port
         else:
             self.port = choice(range(8000, 9999))
         print('Selected port is %s' % self.port)
@@ -70,11 +71,33 @@ class PannellumTester(object):
         self.started = True
         self.pause_time = 100
         self.browser = None
-        self.headless = False
+        self.headless = headless
         self.display = None
-        self.driver = "Chrome"
-        if "browser" in kwargs:
-            self.driver = kwargs['browser']
+        self.driver = browser
+        
+    def take_screenshot(self, output_file, element_id):
+        '''take a screenshot and save to file based on element id
+        '''
+        element = self.browser.find_element_by_id(element_id)
+        location = element.location
+        self.browser.save_screenshot(output_file)
+
+        # Now crop to correct size
+        x = location['x']
+        y = location['y']
+        width = location['x'] + element.size['width']
+        height = location['y'] + element.size['height']
+
+        im = Image.open(output_file)
+        im = im.crop((int(x), int(y), int(width), int(height)))
+        im.save(output_file)
+        return Image.open(output_file)
+
+    def equal_images(self, image1, image2, name, threshold=3):
+        '''compare two images, both loaded with PIL, based on the histograms'''
+        diff = numpy.mean(numpy.array(ImageChops.difference(image1, image2)))
+        print("%s difference: %s" % (name, diff))
+        assert diff < threshold
 
 
     def run_tests(self, create_ref=False):
@@ -86,11 +109,17 @@ class PannellumTester(object):
         print("Running tests...")
         time.sleep(5)
 
-        viewer = self.browser.find_element_by_id("panorama")
         assert self.browser.execute_script("return viewer.isLoaded()") == True
 
         # Check equirectangular
         assert self.browser.execute_script("return viewer.getScene() == 'equirectangular'")
+        if create_ref:
+            self.take_screenshot("tests/equirectangular.png", "panorama")
+        else:
+            reference = Image.open("tests/equirectangular.png")
+            comparator = self.take_screenshot("tests/equirectangular-comparison.png", "panorama")
+            self.equal_images(reference, comparator, 'equirectangular')
+        print('PASS: equirectangular')
 
         # Check movement
         self.browser.execute_script("viewer.setPitch(30).setYaw(-20).setHfov(90)")
@@ -118,6 +147,12 @@ class PannellumTester(object):
         self.browser.execute_script("viewer.loadScene('cube')")
         time.sleep(5)
         assert self.browser.execute_script("return viewer.getScene() == 'cube'")
+        if create_ref:
+            self.take_screenshot("tests/cube.png", "panorama")
+        else:
+            reference = Image.open("tests/cube.png")
+            comparator = self.take_screenshot("tests/cube-comparison.png", "panorama")
+            self.equal_images(reference, comparator, 'cube')
 
         # Check hot spot
         self.browser.find_element_by_class_name("pnlm-scene").click()
@@ -126,6 +161,13 @@ class PannellumTester(object):
         print("PASS: hot spot")
 
         # Check multires
+        if create_ref:
+            self.take_screenshot("tests/multires.png", "panorama")
+        else:
+            reference = Image.open("tests/multires.png")
+            comparator = self.take_screenshot("tests/multires-comparison.png", "panorama")
+            self.equal_images(reference, comparator, 'multires')
+
         self.httpd.server_close()
 
 
@@ -192,7 +234,7 @@ def get_parser():
 
     parser.add_argument("--port",'-p', dest='port', 
                         help="port to run webserver",
-                        type=int, default=3030)
+                        type=int, default=None)
 
     parser.add_argument("--headless", dest='headless',
                         help="start a display before browser",

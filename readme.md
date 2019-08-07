@@ -26,7 +26,13 @@ in the `utils/multires` directory. This will generate all the image tiles and th
 
 ## Examples
 
-Examples using both the minified version and the version in the `src` directory are included in the `examples` directory. These can be viewed by starting a local web server in the root of the repository, e.g., by running `python3 -m http.server` in the directory containing this readme file, and then navigating to the hosted HTML files using a web browser; note that the examples use files from the `src` directory, so the web server must be started from the repository root, not the `examples` directory.
+Examples using both the minified version and the version in the `src` directory are included in the `examples` directory. These can be viewed by starting a local web server in the root of the repository:
+
+```bash
+python3 -m http.server
+```
+
+in the directory containing this readme file, and then navigating to the hosted HTML files using a web browser; note that the examples use files from the `src` directory, so the **web server must be started from the repository root, not the `examples` directory**.
 
 Additional examples are available at [pannellum.org](https://pannellum.org/documentation/examples/simple-example/).
 
@@ -55,7 +61,29 @@ All user-facing strings can be changed using the `strings` configuration paramet
 The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
 
 ## Tests
-A limited [Selenium](https://www.seleniumhq.org/)-based test suite is located in the `tests` directory. The tests can be executed by running `python3 run_tests.py`. Running the tests requires Python 3, the Selenium Python bindings, Firefox, [geckodriver](https://github.com/mozilla/geckodriver), [Pillow](https://pillow.readthedocs.io/), and [NumPy](https://www.numpy.org/).
+
+A minimal [Selenium](https://www.seleniumhq.org/)-based test suite is located in the `tests` directory. The tests can be executed by running:
+
+```bash
+python3 run_tests.py
+```
+
+We create a selenium web browser (with a Chrome driver) and compare generated screenshots
+against previously generated ones in [tests](tests). For example, to regenerate the screen shots
+you can do:
+
+```bash
+$ python tests/run_tests.py --create-ref
+```
+
+And to simply run the tests to compare to, eliminate that argument. By default, a random
+port is selected, along with other arguments. You can see usage via:
+
+```bash
+$ python tests/run_tests.py --help
+```
+
+We run tests using CircleCI. Running the tests locally requires Python 3, the Selenium Python bindings, Firefox, [geckodriver](https://github.com/mozilla/geckodriver), [Pillow](https://pillow.readthedocs.io/), and [NumPy](https://www.numpy.org/).
 
 ## Seeking support
 If you wish to ask a question or report a bug, please open an issue at [github.com/mpetroff/pannellum](https://github.com/mpetroff/pannellum). See the _Contributing_ section below for more details.

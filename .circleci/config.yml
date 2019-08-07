@@ -17,7 +17,7 @@ jobs:
           command: |
             sudo apt-get update && \
             sudo apt-get install -y python3 python3-dev default-jdk python3-pillow python3-numpy python3-pip && \
-            sudo apt-get install -y libjpeg-dev libfreetype6 libfreetype6-dev zlib1g-dev
+            sudo apt-get install -y libjpeg-dev libfreetype6 libfreetype6-dev zlib1g-dev optipng
             sudo pip3 install selenium Pillow
 
       - run:
