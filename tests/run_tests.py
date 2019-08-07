@@ -121,6 +121,9 @@ def run_tests():
 
 try:
     run_tests()
+except AssertionError:
+    for entry in driver.get_log('browser'):
+        print(entry)
 finally:
     driver.quit()
     httpd.shutdown()
