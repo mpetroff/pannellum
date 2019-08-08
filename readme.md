@@ -26,7 +26,11 @@ in the `utils/multires` directory. This will generate all the image tiles and th
 
 ## Examples
 
-Examples using both the minified version and the version in the `src` directory are included in the `examples` directory. These can be viewed by starting a local web server in the root of the repository, e.g., by running `python3 -m http.server` in the directory containing this readme file, and then navigating to the hosted HTML files using a web browser; note that the examples use files from the `src` directory, so the web server must be started from the repository root, not the `examples` directory.
+Examples using both the minified version and the version in the `src` directory are included in the `examples` directory. These can be viewed by starting a local web server in the root of the repository, e.g., by running:
+```bash
+$ python3 -m http.server
+```
+in the directory containing this readme file, and then navigating to the hosted HTML files using a web browser; note that the examples use files from the `src` directory, so **the web server must be started from the repository root, not the `examples` directory**. For the `example-minified.htm` example to work, a minified copy of Pannellum must first be built; see the _Building_ section below for details.
 
 Additional examples are available at [pannellum.org](https://pannellum.org/documentation/examples/simple-example/).
 
