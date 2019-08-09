@@ -7,24 +7,70 @@
 
 Pannellum is a lightweight, free, and open source panorama viewer for the web. Built using HTML5, CSS3, JavaScript, and WebGL, it is plug-in free. It can be deployed easily as a single file, just 21kB gzipped, and then embedded into pages as an `<iframe>`. A configuration utility is included to generate the required code for embedding. An API is included for more advanced integrations.
 
+## Getting started
+
+### Hosted examples
+
+A set of [examples](https://pannellum.org/documentation/examples/simple-example/) that demonstrate the viewer's various functionality is hosted on [pannellum.org](https://pannellum.org/). This is the best place to start if you want an overview of Pannellum's functionality. They also provide helpful starting points for creating custom configurations.
+
+### Simple tutorial and configuration utility
+
+If you are just looking to display a single panorama without any advanced functionality, the steps for doing so are covered on the [simple tutorial page](https://pannellum.org/documentation/overview/tutorial/). Said page also includes a utility for easily creating the necessary Pannellum configuration.
+
+### Local testing and self-hosting
+
+If you would like to locally test or self-host Pannellum, continue to the _How to use_ section below.
+
 ## How to use
-1. Upload `build/pannellum.htm` and a full equirectangular panorama to a web server.
-    * Due to browser security restrictions, a web server must be used locally as well. With Python 3, one can use `python3 -m http.server`, but any other web server will work as well.
-2. Use the included multi-resolution generator (`utils/multires/generate.py`) or configuration tool (`utils/config/configuration.htm`).
-3. Insert the generated `<iframe>` code into a page.
+1. Upload `build/pannellum.htm` and a full equirectangular panorama to a web server or run a development web server locally.
+    * Due to browser security restrictions, _a web server must be used locally as well_. With Python 3, one can use `python3 -m http.server`, but any other web server should also work.
+2. Use the included multi-resolution generator (`utils/multires/generate.py`), the configuration tool (`utils/config/configuration.htm`), or create a configuration from scratch or based on an [example](https://pannellum.org/documentation/examples/simple-example/).
+3. Insert the generated `<iframe>` code into a page, or create a more advanced configuration with [JSON](https://pannellum.org/documentation/reference) or the [API](https://pannellum.org/documentation/api/).
 
 Configuration parameters are documented in the `doc/json-config-parameters.md` file, which is also available at [pannellum.org/documentation/reference/](https://pannellum.org/documentation/reference). API methods are documented inline with [JSDoc](https://jsdoc.app/) comments, and generated documentation is available at [pannellum.org/documentation/api/](https://pannellum.org/documentation/api/).
+
+### Using a minified copy
+
+For final deployment, it is recommended that one use a minified copy of Pannellum instead of using the source files in `src` directly. The easiest method is to download the most recent [release](https://github.com/mpetroff/pannellum/releases) and use the pre-built copy of either `pannellum.htm` or `pannellum.js` & `pannellum.css`. If you wish to make changes to Pannellum or use the latest development copy of the code, follow the instructions in the _Building_ section below to create `build/pannellum.htm`, `build/pannellum.js`, and `build/pannellum.css`.
 
 ### Using `generate.py` to create multires panoramas
 To be able to create multiresolution panoramas, you need to have the `nona` program installed, which is available as part of [Hugin](http://hugin.sourceforge.net/), as well as Python with the [Pillow](https://pillow.readthedocs.org/) package. Then, run
 
 ```
-python generate.py pano_image.jpg
+python3 generate.py pano_image.jpg
 ```
 
-in the `utils/multires` directory. This will generate all the image tiles and the `config.json` file in the `./output` folder by default. For this to work, `nona` needs to be on the system path; otherwise, the location of `nona` can be specified using the `-n` flag, e.g. `python generate.py -n /path/to/nona pano_image.jpg`.
+in the `utils/multires` directory. This will generate all the image tiles and the `config.json` file in the `./output` folder by default. For this to work, `nona` needs to be on the system path; otherwise, the location of `nona` can be specified using the `-n` flag. On a Unix-like platform, with `nona` already on the system path use:
 
-## Examples
+```bash
+$ cd utils/multires
+$ python3 generate.py pano_image.jpg
+```
+
+where `pano_image.jpg` is the filename of your equirectangular panorama. If `nona` is not on the system path, use:
+
+```bash
+$ cd utils/multires
+$ python3 generate.py -n /path/to/nona pano_image.jpg
+```
+
+For a complete list of options, run:
+
+```bash
+$ python3 generate.py --help
+```
+
+To view the generated configuration, run:
+
+```bash
+$ cd ../..
+$ python3 -m http.server
+```
+
+This goes back to the root directory of the repository and starts a local development web server. Then open http://localhost:8000/src/standalone/pannellum.htm?config=../../utils/multires/output/config.json in your web browser of choice.
+
+
+## Bundled examples
 
 Examples using both the minified version and the version in the `src` directory are included in the `examples` directory. These can be viewed by starting a local web server in the root of the repository, e.g., by running:
 ```bash
@@ -56,7 +102,14 @@ Mobile / app frameworks are not officially supported. They may work, but they're
 All user-facing strings can be changed using the `strings` configuration parameter. There exists a [third-party respository of user-contributed translations](https://github.com/DanielBiegler/pannellum-translation) that can be used with this configuration option.
 
 ## Building
-The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform.
+The `utils` folder contains the required build tools, with the exception of Python 3.2+ and Java installations. To build a minified version of Pannellum, run either `build.sh` or `build.bat` depending on your platform. On a Unix-like platform:
+
+```bash
+$ cd utils/build
+$ ./build.sh
+```
+
+If successful, this should create `build/pannellum.htm`, `build/pannellum.js`, and `build/pannellum.css`, relative to the root directory of the repository.
 
 ## Tests
 
@@ -81,7 +134,7 @@ port is selected, along with other arguments. One can see usage via:
 $ python tests/run_tests.py --help
 ```
 
-Continuous integration tests are run via CircleCI. Running the tests locally requires Python 3, the Selenium Python bindings, [Pillow](https://pillow.readthedocs.io/), [NumPy](https://www.numpy.org/), and either Firefox & [geckodriver](https://github.com/mozilla/geckodriver) or Chrome & [ChromeDriver](https://chromedriver.chromium.org/).
+Continuous integration tests are run via [Travis CI](https://travis-ci.org/mpetroff/pannellum). Running the tests locally requires Python 3, the Selenium Python bindings, [Pillow](https://pillow.readthedocs.io/), [NumPy](https://www.numpy.org/), and either Firefox & [geckodriver](https://github.com/mozilla/geckodriver) or Chrome & [ChromeDriver](https://chromedriver.chromium.org/).
 
 ## Seeking support
 If you wish to ask a question or report a bug, please open an issue at [github.com/mpetroff/pannellum](https://github.com/mpetroff/pannellum). See the _Contributing_ section below for more details.
