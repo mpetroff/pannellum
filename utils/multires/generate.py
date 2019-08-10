@@ -51,8 +51,8 @@ except KeyError:
 class GenParser(argparse.ArgumentParser):
     def error(self, message):
         if '--nona' in message:
-            sys.stderr.write('''IMPORTANT: The location of nona must be specified with -n, since it was not
-           found on the PATH!\n\n''')
+            sys.stderr.write('''IMPORTANT: The location of the nona utility (from Hugin) must be specified
+           with -n, since it was not found on the PATH!\n\n''')
         super(GenParser, self).error(message)
 
 # Parse input
