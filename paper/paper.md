@@ -47,7 +47,7 @@ panoramas were taken can be displayed as markers on the map, whereby clicking a
 marker will open the corresponding panorama in the viewer. Panoramic
 videos---videos that cover up to a full 360 degrees of azimuth---are supported
 via a bundled extension, which is built using
-the API. The viewer's underlying rendering code is separate from the user interface
+the API. The viewer's underlying rendering code is separate from its user interface
 code, which allows for more extensive customization and tighter integration
 with external code, if desired. This rendering code uses a pinhole camera model
 for equirectangular panoramas implemented as a WebGL fragment shader, instead
