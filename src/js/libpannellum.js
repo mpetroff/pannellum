@@ -1524,6 +1524,28 @@ function Renderer(container) {
         return oCode;
     }
 
+    /**
+    * @private
+    * @param{number[]} v1 - spherical vector
+    * @param{number[]} v2 - spherical vector
+    * @returns {number[]} the normalized angel bisector of (v1, 0, v2) 
+    */
+    function computeAngleBisector(v1, v2)
+    {
+        var angleBisector = [
+            v1[0] + v2[0],
+            v1[1] + v2[1],
+            v1[2] + v2[2]
+        ];
+
+        var angleBisectorLength = 0;
+        for(var e of angleBisector)
+            angleBisectorLength += e * e;
+        angleBisectorLength = Math.sqrt(angleBisectorLength);
+        angleBisector = angleBisector.map(e => e / angleBisectorLength);
+        return angleBisector;
+    }
+
      /**
      * @private
      * @param {number[][]} sTile - vertices of a (equirectangularly projected) tile on the sphere
@@ -1554,6 +1576,20 @@ function Renderer(container) {
         }
         for (let v of sTile) {
             if (containmentOnSphere(viewpolygon, v))
+                return true;
+        }
+        if (outCode(sTile, viewpolygon[0]) & outCode(sTile, viewpolygon[1]) & 4){ 
+            // viewport below tile, check whether viewport upper border and tile lower border overlap
+            let angleBisector = computeAngleBisector(viewpolygon[0], viewpolygon[1]);
+            var linearCombination = linearCombinationOfBoundVectors(sTile, angleBisector);
+            if(linearCombination[0] >= 0 && linearCombination[1] >= 0 && angleBisector[1] >= sTile[2][1])
+                return true;
+        }
+        if (outCode(sTile, viewpolygon[2]) & outCode(sTile, viewpolygon[3]) & 8){ 
+            // viewport above tile, check whether viewport lower border and tile upper border overlap
+            let angleBisector = computeAngleBisector(viewpolygon[2], viewpolygon[3]);
+            var linearCombination = linearCombinationOfBoundVectors(sTile, angleBisector);
+            if(linearCombination[0] >= 0 && linearCombination[1] >= 0 && angleBisector[1] <= sTile[0][1])
                 return true;
         }
         return false;
