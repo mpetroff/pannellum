@@ -2191,7 +2191,7 @@ function zoomOut() {
 function constrainHfov(hfov) {
     // Keep field of view within bounds
     var minHfov = config.minHfov;
-    if (config.type == 'multires' && renderer && config.multiResMinHfov) {
+    if (config.type == 'multires' && renderer && !config.multiResMinHfov) {
         minHfov = Math.min(minHfov, renderer.getCanvas().width / (config.multiRes.cubeResolution / 90 * 0.9));
     }
     if (minHfov > config.maxHfov) {
