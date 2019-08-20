@@ -34,13 +34,20 @@ web browser plug-ins [@Chen1995]. When development on _Pannellum_ started in
 2011, WebGL was a nascent technology, and the majority of existing panorama
 viewers for websites were then still based on Java or Adobe Flash plug-ins,
 which had supplanted QuickTime as the technology of choice. Since then, both
-the viewer and underlying technologies have matured immensely.
+the viewer and underlying technologies have matured immensely. As an aside, the
+name _Pannellum_ was derived as a portmanteau of "panorama" and "vellum," as
+this made a unique, pronounceable word, with "vellum" used as a quasi-synonym
+to the ``<canvas>`` drawing surface used by the viewer.
 
 An application programming interface (API) is provided, which allows external
 code to control the viewer and implement features such as custom buttons or
-integration with other web page elements, e.g., maps [@Gede2015; @Albrizio2013].
-Panoramic videos are supported via a bundled extension, which is built using
-the API. The underlying rendering code is separate from the user interface
+integration with other webpage elements. One such example is integrating the
+viewer with a map [@Gede2015; @Albrizio2013; @OSM2018]; the locations where
+panoramas were taken can be displayed as markers on the map, whereby clicking a
+marker will open the corresponding panorama in the viewer. Panoramic
+videos---videos that cover up to a full 360 degrees of azimuth---are supported
+via a bundled extension, which is built using
+the API. The viewer's underlying rendering code is separate from its user interface
 code, which allows for more extensive customization and tighter integration
 with external code, if desired. This rendering code uses a pinhole camera model
 for equirectangular panoramas implemented as a WebGL fragment shader, instead
@@ -54,9 +61,11 @@ applications range from cartography [@Gede2015] to digital humanities
 education [@Herault2018]. It has also found use in public outreach
 applications, such as its use by the European Southern Observatory to display
 panoramas of their observatories [@ESO2017]. _Pannellum_ is intended to be used
-any time an interactive panorama needs to be displayed in a web page, be it an
+any time an interactive panorama needs to be displayed on a webpage, be it an
 internal research application or a publicly accessible website. It may also
 work with certain mobile application frameworks, but such use is not officially
-supported.
+supported. [Documentation](https://pannellum.org/documentation/overview/) and
+[interactive examples](https://pannellum.org/documentation/examples/simple-example/)
+are provided at [pannellum.org](https://pannellum.org/).
 
 # References

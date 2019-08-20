@@ -1,0 +1,3 @@
+# Contributing
+
+Development takes place at [github.com/mpetroff/pannellum](https://github.com/mpetroff/pannellum). Issues should be opened to report bugs or suggest improvements (or ask questions), and pull requests are welcome. When reporting a bug, please try to include a minimum reproducible example (or at least some sort of example). When proposing changes, please try to match the existing code style, e.g., four space indentation and [JSHint](https://jshint.com/) validation. If your pull request adds an additional configuration parameter, please document it in `doc/json-config-parameters.md`. Pull requests should preferably be created from [feature branches](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow).
