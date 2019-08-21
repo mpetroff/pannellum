@@ -336,7 +336,6 @@ function init() {
         } else {
             if (config.panorama === undefined) {
                 anError(config.strings.noPanoramaError);
-                loaded = undefined;
                 return;
             }
             panoImage = new Image();
@@ -626,6 +625,7 @@ function anError(errorMsg) {
     infoDisplay.load.box.style.display = 'none';
     infoDisplay.errorMsg.style.display = 'table';
     error = true;
+    loaded = undefined;
     renderContainer.style.display = 'none';
     fireEvent('error', errorMsg);
 }
