@@ -1590,6 +1590,8 @@ function computeQuaternion(alpha, beta, gamma) {
  * @param {DeviceOrientationEvent} event - Device orientation event.
  */
 function orientationListener(e) {
+    if (e.hasOwnProperty('requestPermission'))
+        e.requestPermission()
     var q = computeQuaternion(e.alpha, e.beta, e.gamma).toEulerAngles();
     if (typeof(orientation) == 'number' && orientation < 10) {
         // This kludge is necessary because iOS sometimes provides a few stale
