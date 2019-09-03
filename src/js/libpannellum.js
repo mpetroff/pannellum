@@ -435,7 +435,7 @@ function Renderer(container) {
 
                     // Draw image on canvas
                     var cropCanvas = document.createElement('canvas');
-                    cropCanvas.width = image.width;
+                    cropCanvas.width = image.width / 2;
                     cropCanvas.height = image.height;
                     var cropContext = cropCanvas.getContext('2d');
                     cropContext.drawImage(image, 0, 0);
@@ -451,7 +451,8 @@ function Renderer(container) {
                     gl.uniform1i(gl.getUniformLocation(program, 'u_image1'), 1);
 
                     // Upload second half of image to the texture
-                    cropImage = cropContext.getImageData(image.width / 2, 0, image.width / 2, image.height);
+                    cropContext.drawImage(image, -image.width / 2, 0);
+                    cropImage = cropContext.getImageData(0, 0, image.width / 2, image.height);
                     gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cropImage);
 
                     // Set parameters for rendering any size
@@ -460,7 +461,7 @@ function Renderer(container) {
                     gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                     gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-                    // Reactive first texture unit
+                    // Reactivate first texture unit
                     gl.activeTexture(gl.TEXTURE0);
                 }
             }
