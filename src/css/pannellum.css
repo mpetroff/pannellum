@@ -287,7 +287,7 @@
     table-layout: fixed;
 }
 
-.pnlm-info-box a {
+.pnlm-info-box a, .pnlm-author-box a {
     color: #fff;
     word-wrap: break-word;
     overflow-wrap: break-word;

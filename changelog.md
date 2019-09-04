@@ -2,8 +2,92 @@ Changelog
 =========
 
 
-Changes in Pannellum 2.4.1
---------------------------
+Changes in Pannellum 2.5.3 (2019-08-21)
+---------------------------------------
+
+Bugfixes:
+ - Fixed loading scenes after previous load failure
+ - Fixed regression that caused auto-rotation to stop after one revolution
+ - Fixed behavior of `multiResMinHfov` to match documentation;
+   default multi-resolution `minHfov` behavior now matches pre-v2.5
+
+Improvements:
+ - Added optional `scale` parameter to scale hot spots while zooming
+ - Improved recovery from failed scene loading
+
+API improvements:
+ - Added optional pitch argument to `startAutoRotate`
+
+Other:
+ - Added Journal of Open Source Software (JOSS) manuscript
+ - Numerous documentation improvements per JOSS review (thanks @vsoch and @Fil)
+ - Improved continuous integration and automated testing support
+ - Clarified `generate.py` error messages
+ - Added Dockerfile for `generate.py`
+
+
+Changes in Pannellum 2.5.2 (2019-07-13)
+---------------------------------------
+
+Bugfixes:
+ - Fixed regression in Video.js plugin
+
+
+Changes in Pannellum 2.5.1 (2019-07-13)
+---------------------------------------
+
+Other:
+ - Fixed issue with tagging 2.5.0 release
+
+
+Changes in Pannellum 2.5.0 (2019-07-13)
+---------------------------------------
+
+New Features:
+ - The background color can be set for partial panoramas
+   (`backgroundColor` parameter)
+ - Partial panoramas are now supported for the multiresolution format
+ - An author URL can now be added (`authorURL` parameter)
+
+New API functions:
+ - Added `fullscreenchange`, `zoomchange`, and `animatefinished` events
+ - Added `stopMovement` function for stopping all viewer movement
+
+Improvements:
+ - Equirectangular images are now automatically split into two separate
+   textures if they're too big (images up to 8192px wide should now be
+   widely supported)
+ - Improved render quality for equirectangular images on mobile (using `highp`
+   for fragment shader)
+ - Keyboard events for keys not used by the viewer are no longer captured, and
+   the list of captured keys is configurable (`capturedKeyNumbers` parameter)
+ - Multiresolution tiles can now be generated from cylindrical panoramas
+ - Hot spots can now be removed from scenes that aren't currently loaded
+ - Hot spot cursor is now set via CSS class (so it can be overridden)
+ - Hot spot link attributes can now be set (`attributes` parameter)
+ - The "friction" that slows down the viewer motion can now be configured
+   (`friction` parameter)
+ - Dynamic scenes are now properly supported for tours
+
+Bugfixes:
+ - Fixed regression in fallback renderer
+ - Fixed bug with URL encoding
+ - Fixed regression in Video.js plugin
+ - Fixed auto-rotate bug that was manifested when using API to set view
+ - Fixed full screen bug in Chrome
+ - Fixed bug with removing event listeners
+ - Fixed issue with mouse dragging causing jump around yaw limits
+ - Fixed bug with deleting hot spots
+ - Fixed bug with fading between scenes
+
+Other:
+ - Added limited test suite / continuous integration
+ - Removed `requestAnimationFrame` shim, dropping support for some
+   older browsers
+
+
+Changes in Pannellum 2.4.1 (2018-03-03)
+---------------------------------------
 
 Bugfixes:
 
@@ -11,8 +95,8 @@ Bugfixes:
  - The API's `loadScene` method now works when no scenes have been loaded yet
 
 
-Changes in Pannellum 2.4.0
---------------------------
+Changes in Pannellum 2.4.0 (2018-01-30)
+---------------------------------------
 
 New Features:
 
@@ -77,16 +161,16 @@ Bugfixes:
 - Fixed bug related to removing hot spots
 
 
-Changes in Pannellum 2.3.2
---------------------------
+Changes in Pannellum 2.3.2 (2016-11-20)
+---------------------------------------
 
 Bugfixes:
 
  - Fix Chrome fullscreen regression introduced in 2.3.1
 
 
-Changes in Pannellum 2.3.1
---------------------------
+Changes in Pannellum 2.3.1 (2016-11-19)
+---------------------------------------
 
 Bugfixes:
 
@@ -99,8 +183,8 @@ Improvements:
  - Better handling of view limits when both limits are in view
 
 
-Changes in Pannellum 2.3.0
---------------------------
+Changes in Pannellum 2.3.0 (2016-10-30)
+---------------------------------------
 
 New Features:
 
@@ -169,8 +253,8 @@ Backwards-Incompatible Configuration Parameter Changes:
    can be used with the `config` parameter
 
 
-Changes in Pannellum 2.2.1
---------------------------
+Changes in Pannellum 2.2.1 (2016-03-11)
+---------------------------------------
 
 New Features:
 
@@ -183,8 +267,8 @@ Improvements:
  - Better restriction on yaw range
 
 
-Changes in Pannellum 2.2.0
---------------------------
+Changes in Pannellum 2.2.0 (2016-01-27)
+---------------------------------------
 
 New Features:
 
@@ -251,15 +335,15 @@ Other:
  - Added JSDoc documentation
 
 
-Changes in Pannellum 2.1.1
---------------------------
+Changes in Pannellum 2.1.1 (2015-01-19)
+---------------------------------------
 
 Bugfixes:
  - Force subpixel rendering for hot spots
 
 
-Changes in Pannellum 2.1.0
---------------------------
+Changes in Pannellum 2.1.0 (2015-01-14)
+---------------------------------------
 
 New Features:
 
@@ -301,15 +385,15 @@ Other:
    removed
 
 
-Changes in Pannellum 2.0.1
---------------------------
+Changes in Pannellum 2.0.1 (2014-08-24)
+---------------------------------------
 
 Bugfixes:
  - Fix keyboard controls in Safari
 
 
-Changes in Pannellum 2.0
-------------------------
+Changes in Pannellum 2.0 (2014-08-22)
+-------------------------------------
 
 New Features:
 
@@ -334,8 +418,8 @@ Bugfixes:
  - Numerous
 
 
-Changes in Pannellum 1.2
-------------------------
+Changes in Pannellum 1.2 (2012-08-28)
+-------------------------------------
 
 New Features:
 

@@ -47,9 +47,17 @@ except KeyError:
     # Handle case of PATH not being set
     nona = None
 
+# Subclass parser to add explaination for semi-option nona flag
+class GenParser(argparse.ArgumentParser):
+    def error(self, message):
+        if '--nona' in message:
+            sys.stderr.write('''IMPORTANT: The location of the nona utility (from Hugin) must be specified
+           with -n, since it was not found on the PATH!\n\n''')
+        super(GenParser, self).error(message)
+
 # Parse input
-parser = argparse.ArgumentParser(description='Generate a Pannellum multires tile set from a full or partial equirectangular or cylindrical panorama.',
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = GenParser(description='Generate a Pannellum multires tile set from a full or partial equirectangular or cylindrical panorama.',
+                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('inputFile', metavar='INPUT',
                     help='panorama to be processed')
 parser.add_argument('-C', '--cylindrical', action='store_true',

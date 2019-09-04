@@ -1,0 +1,21 @@
+language: generic
+dist: xenial
+services:
+  - xvfb
+addons:
+  chrome: stable
+before_install:
+  - sudo apt-get install -y python3-pillow python3-numpy python3-pip mesa-utils libgl1-mesa-dri libglapi-mesa libosmesa6
+  - sudo pip3 install selenium
+install:
+  - CHROME_VERSION=`google-chrome --version | sed -r 's/Google Chrome ([0-9]+\.[0-9]+\.[0-9]+).*/\1/'`
+  - LATEST_CHROMEDRIVER_VERSION=`curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}"`
+  - curl "https://chromedriver.storage.googleapis.com/${LATEST_CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" -O
+  - unzip chromedriver_linux64.zip
+  - sudo mv chromedriver /usr/local/bin
+jobs:
+  include:
+    - stage: build
+      script: python3 utils/build/build.py
+    - stage: test
+      script: xvfb-run -a python3 tests/run_tests.py

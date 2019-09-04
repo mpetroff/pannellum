@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pannellum Tests</title>
+    <link rel="stylesheet" href="../src/css/pannellum.css"/>
+    <script type="text/javascript" src="../src/js/libpannellum.js"></script>
+    <script type="text/javascript" src="../src/js/pannellum.js"></script>
+    <style>
+    #panorama {
+        width: 300px;
+        height: 200px;
+    }
+    </style>
+</head>
+<body>
+
+<div id="panorama"></div>
+<script>
+viewer = pannellum.viewer('panorama', ﻿{
+    "default": {
+        "author": "testauthor",
+        "firstScene": "equirectangular",
+        "autoLoad": true
+    },
+    
+    "scenes": {
+        "cube": {
+            "title": "cube title",
+            "type": "cubemap",
+            "cubeMap": [
+                "../examples/multires/1/f00.png",
+                "../examples/multires/1/r00.png",
+                "../examples/multires/1/b00.png",
+                "../examples/multires/1/l00.png",
+                "../examples/multires/1/u00.png",
+                "../examples/multires/1/d00.png"
+            ],
+            "hotSpots": [
+                {
+                    "pitch": -12,
+                    "yaw": 170,
+                    "type": "info",
+                    "text": "info test"
+                },
+                {
+                    "pitch": -10,
+                    "yaw": -50,
+                    "type": "info",
+                    "text": "link test",
+                    "URL": "https://github.com/mpetroff/pannellum"
+                },
+                {
+                    "pitch": 0,
+                    "yaw": -10,
+                    "type": "scene",
+                    "text": "scene test",
+                    "sceneId": "multires"
+                }
+            ]
+        },
+
+        "equirectangular": {
+            "title": "equirectangular title",
+            "panorama": "../examples/examplepano.jpg"
+        },
+
+        "multires": {
+            "title": "multires title",
+            "type": "multires",
+            "hfov": 85,
+            "multiRes": {
+                "basePath": "../examples/multires",
+                "path": "/%l/%s%x%y",
+                "fallbackPath": "/fallback/%s",
+                "extension": "png",
+                "tileResolution": 256,
+                "maxLevel": 4,
+                "cubeResolution": 2048
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>

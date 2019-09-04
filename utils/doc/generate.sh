@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Generates API documentation.
-# Requires documentationjs <http://documentation.js.org/>.
+# Requires documentationjs <https://documentation.js.org/>.
 
 # Usage:
 #
@@ -19,4 +19,4 @@ elif [ "$1" = "private" ]; then
 fi
 
 echo "Generating documentation..."
-documentation ../../src/js/pannellum.js ../../src/js/libpannellum.js -o generated_docs -f html --name Pannellum --project-version $version -g $private
+documentation build ../../src/js/pannellum.js ../../src/js/libpannellum.js -o generated_docs -f html --project-name Pannellum --project-version $version -g $private
