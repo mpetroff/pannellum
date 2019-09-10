@@ -10,7 +10,7 @@ Bugfixes:
  - Fixed issue with touch-based scrolling with `draggable` set to `false`
 
 Improvements:
- - Started requestion device orientation permission (untested)
+ - Started requesting device orientation permission (untested)
 
 
 Changes in Pannellum 2.5.3 (2019-08-21)
