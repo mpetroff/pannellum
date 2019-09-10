@@ -2,6 +2,17 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.4 (2019-09-10)
+---------------------------------------
+
+Bugfixes:
+ - Fixed issue with loading large equirectangular panoramas on iOS
+ - Fixed issue with touch-based scrolling with `draggable` set to `false`
+
+Improvements:
+ - Started requestion device orientation permission (untested)
+
+
 Changes in Pannellum 2.5.3 (2019-08-21)
 ---------------------------------------
 
