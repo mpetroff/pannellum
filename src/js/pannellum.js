@@ -1595,8 +1595,6 @@ function computeQuaternion(alpha, beta, gamma) {
  * @param {DeviceOrientationEvent} event - Device orientation event.
  */
 function orientationListener(e) {
-    if (e.hasOwnProperty('requestPermission'))
-        e.requestPermission()
     var q = computeQuaternion(e.alpha, e.beta, e.gamma).toEulerAngles();
     if (typeof(orientation) == 'number' && orientation < 10) {
         // This kludge is necessary because iOS sometimes provides a few stale
@@ -2353,9 +2351,19 @@ function stopOrientation() {
  * @private
  */
 function startOrientation() {
-    orientation = 1;
-    window.addEventListener('deviceorientation', orientationListener);
-    controls.orientation.classList.add('pnlm-orientation-button-active');
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(response => {
+            if (response == 'granted') {
+                orientation = 1;
+                window.addEventListener('deviceorientation', orientationListener);
+                controls.orientation.classList.add('pnlm-orientation-button-active');
+            }
+        });
+    } else {
+        orientation = 1;
+        window.addEventListener('deviceorientation', orientationListener);
+        controls.orientation.classList.add('pnlm-orientation-button-active');
+    }
 }
 
 /**
