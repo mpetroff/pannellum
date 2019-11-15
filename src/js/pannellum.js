@@ -1726,7 +1726,7 @@ function createHotSpot(hs) {
         if (config.basePath && !absoluteURL(imgp))
             imgp = config.basePath + imgp;
         a = document.createElement('a');
-        a.href = sanitizeURL(hs.URL ? hs.URL : imgp);
+        a.href = sanitizeURL(hs.URL ? hs.URL : imgp, true);
         a.target = '_blank';
         span.appendChild(a);
         var image = document.createElement('img');
@@ -1738,7 +1738,7 @@ function createHotSpot(hs) {
         span.style.maxWidth = 'initial';
     } else if (hs.URL) {
         a = document.createElement('a');
-        a.href = sanitizeURL(hs.URL);
+        a.href = sanitizeURL(hs.URL, true);
         if (hs.attributes) {
             for (var key in hs.attributes) {
                 a.setAttribute(key, hs.attributes[key]);
@@ -2012,7 +2012,7 @@ function processOptions(isPreview) {
                 var authorText = escapeHTML(config[key]);
                 if (config.authorURL) {
                     var authorLink = document.createElement('a');
-                    authorLink.href = sanitizeURL(config['authorURL']);
+                    authorLink.href = sanitizeURL(config['authorURL'], true);
                     authorLink.target = '_blank';
                     authorLink.innerHTML = escapeHTML(config[key]);
                     authorText = authorLink.outerHTML;
@@ -2023,7 +2023,7 @@ function processOptions(isPreview) {
             
             case 'fallback':
                 var link = document.createElement('a');
-                link.href = sanitizeURL(config[key]);
+                link.href = sanitizeURL(config[key], true);
                 link.target = '_blank';
                 link.textContent = 'Click here to view this panorama in an alternative viewer.';
                 var message = document.createElement('p');
@@ -2389,10 +2389,17 @@ function escapeHTML(s) {
  * The URL cannot be of protocol 'javascript'.
  * @private
  * @param {string} url - URL to sanitize
+ * @param {boolean} href - True if URL is for link (blocks data URIs)
  * @returns {string} Sanitized URL
  */
-function sanitizeURL(url) {
-    if (url.trim().toLowerCase().indexOf('javascript:') === 0) {
+function sanitizeURL(url, href) {
+    if (url.trim().toLowerCase().indexOf('javascript:') === 0 ||
+        url.trim().toLowerCase().indexOf('vbscript:') === 0) {
+        console.log('Script URL removed.');
+        return 'about:blank';
+    }
+    if (href && url.trim().toLowerCase().indexOf('data:') === 0) {
+        console.log('Data URI removed from link.');
         return 'about:blank';
     }
     return url;
