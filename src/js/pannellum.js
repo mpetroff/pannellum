@@ -254,22 +254,15 @@ controls.orientation.addEventListener('mousedown', function(e) {e.stopPropagatio
 controls.orientation.addEventListener('touchstart', function(e) {e.stopPropagation();});
 controls.orientation.addEventListener('pointerdown', function(e) {e.stopPropagation();});
 controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
-var orientationSupport, startOrientationIfSupported = false;
-function deviceOrientationTest(e) {
-    window.removeEventListener('deviceorientation', deviceOrientationTest);
-    if (e && e.alpha !== null && e.beta !== null && e.gamma !== null) {
-        controls.container.appendChild(controls.orientation);
-        orientationSupport = true;
-        if (startOrientationIfSupported)
-            startOrientation();
-    } else {
-        orientationSupport = false;
-    }
-}
-if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', deviceOrientationTest);
-} else {
-    orientationSupport = false;
+var orientationSupport = false;
+if (window.DeviceOrientationEvent && location.protocol == 'https:' &&
+    navigator.userAgent.toLowerCase().indexOf('mobi') >= 0) {
+    // This user agent check is here because there's no way to check if a
+    // device has an inertia measurement unit. We used to be able to check if a
+    // DeviceOrientationEvent had non-null values, but with iOS 13 requiring a
+    // permission prompt to access such events, this is no longer possible.
+    controls.container.appendChild(controls.orientation);
+    orientationSupport = true;
 }
 
 // Compass
@@ -2087,12 +2080,8 @@ function processOptions(isPreview) {
                 break;
 
             case 'orientationOnByDefault':
-                if (config[key]) {
-                    if (orientationSupport === undefined)
-                        startOrientationIfSupported = true;
-                    else if (orientationSupport === true)
-                        startOrientation();
-                }
+                if (config[key])
+                    startOrientation();
                 break;
         }
       }
