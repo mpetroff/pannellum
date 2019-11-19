@@ -1414,9 +1414,9 @@ function render() {
 
         if (config.autoRotate !== false) {
             // When auto-rotating this check needs to happen first (see issue #764)
-            if (config.yaw > 180) {
+            if (config.yaw > 360) {
                 config.yaw -= 360;
-            } else if (config.yaw < -180) {
+            } else if (config.yaw < -360) {
                 config.yaw += 360;
             }
         }
@@ -1457,9 +1457,9 @@ function render() {
         if (!(config.autoRotate !== false)) {
             // When not auto-rotating, this check needs to happen after the
             // previous check (see issue #698)
-            if (config.yaw > 180) {
+            if (config.yaw > 360) {
                 config.yaw -= 360;
-            } else if (config.yaw < -180) {
+            } else if (config.yaw < -360) {
                 config.yaw += 360;
             }
         }
@@ -2485,7 +2485,7 @@ this.setPitchBounds = function(bounds) {
  * @returns {number} Yaw in degrees
  */
 this.getYaw = function() {
-    return config.yaw;
+    return (config.yaw + 540) % 360 - 180;
 };
 
 /**
@@ -2540,15 +2540,15 @@ this.getYawBounds = function() {
 };
 
 /**
- * Set the minimum and maximum allowed yaws (in degrees [-180, 180]).
+ * Set the minimum and maximum allowed yaws (in degrees [-360, 360]).
  * @memberof Viewer
  * @instance
  * @param {number[]} bounds - [minimum yaw, maximum yaw]
  * @returns {Viewer} `this`
  */
 this.setYawBounds = function(bounds) {
-    config.minYaw = Math.max(-180, Math.min(bounds[0], 180));
-    config.maxYaw = Math.max(-180, Math.min(bounds[1], 180));
+    config.minYaw = Math.max(-360, Math.min(bounds[0], 360));
+    config.maxYaw = Math.max(-360, Math.min(bounds[1], 360));
     return this;
 };
 
