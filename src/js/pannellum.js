@@ -1676,10 +1676,10 @@ function renderInitCallback() {
         preview = undefined;
     }
     loaded = true;
-
-    fireEvent('load');
     
     animateInit();
+
+    fireEvent('load');
 }
 
 /**
