@@ -11,7 +11,7 @@ Bugfixes:
 
 Security fixes:
  - Fixed XSS vulnerability that allowed script execution when hot spots
-   were clicked
+   were clicked (CVE-2019-16763)
 
 
 Changes in Pannellum 2.5.4 (2019-09-10)
