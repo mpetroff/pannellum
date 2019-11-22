@@ -2,6 +2,18 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.5 (2019-11-21)
+---------------------------------------
+
+Bugfixes:
+ - Fixed device orientation permission request such that it works with iOS 13
+ - Extend yaw bounds range to allow restricted range that crosses +/-180 deg
+
+Security fixes:
+ - Fixed XSS vulnerability that allowed script execution when hot spots
+   were clicked
+
+
 Changes in Pannellum 2.5.4 (2019-09-10)
 ---------------------------------------
 
