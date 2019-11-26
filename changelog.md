@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.6 (2019-11-26)
+---------------------------------------
+
+Security fixes:
+ - Extended partial fix in v2.5.5 for XSS vulnerability that allowed script
+   execution when hot spots were clicked (CVE-2019-16763)
+
+
 Changes in Pannellum 2.5.5 (2019-11-21)
 ---------------------------------------
 
