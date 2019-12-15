@@ -598,8 +598,13 @@ function parseGPanoXMP(image, url) {
         // Load panorama
         panoImage.src = window.URL.createObjectURL(image);
         panoImage.onerror = function() {
+            // If the image fails to load, we check the Content Security Policy
+            // headers and see if they block loading images as blobs. If they
+            // do, we load the image directly from the URL. While this should
+            // allow the image to load, it does prevent parsing of XMP data.
             function getCspHeaders() {
-                if (!window.fetch) return null;
+                if (!window.fetch)
+                    return null;
                 return window.fetch(document.location.href)
                     .then(function(resp){
                         return resp.headers.get('Content-Security-Policy');
@@ -607,14 +612,15 @@ function parseGPanoXMP(image, url) {
             }
             getCspHeaders().then(function(cspHeaders) {
                 if (cspHeaders) {
-                    var invalidImgSource = cspHeaders.split(";").find(function(p){
+                    var invalidImgSource = cspHeaders.split(";").find(function(p) {
                         var matchstring = p.match(/img-src(.*)/);
                         if (matchstring) {
                             return !matchstring[1].includes("blob");
                         }
                     });
                     if (invalidImgSource) {
-                        panoImage.crossOrigin = "anonymous";
+                        console.log('CSP blocks blobs; reverting to URL.');
+                        panoImage.crossOrigin = config.crossOrigin;
                         panoImage.src = url;
                     }
                 }
