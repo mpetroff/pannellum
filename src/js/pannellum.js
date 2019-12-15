@@ -395,7 +395,7 @@ function init() {
                     anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 }
                 var img = this.response;
-                parseGPanoXMP(img);
+                parseGPanoXMP(img, p);
                 infoDisplay.load.msg.innerHTML = '';
             };
             xhr.onprogress = function(e) {
@@ -521,7 +521,7 @@ function onImageLoad() {
  * @private
  * @param {Image} image - Image to read XMP metadata from.
  */
-function parseGPanoXMP(image) {
+function parseGPanoXMP(image, url) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
         var img = reader.result;
@@ -597,6 +597,29 @@ function parseGPanoXMP(image) {
         
         // Load panorama
         panoImage.src = window.URL.createObjectURL(image);
+        panoImage.onerror = function() {
+            function getCspHeaders() {
+                if (!window.fetch) return null;
+                return window.fetch(document.location.href)
+                    .then(function(resp){
+                        return resp.headers.get('Content-Security-Policy');
+                    });
+            }
+            getCspHeaders().then(function(cspHeaders) {
+                if (cspHeaders) {
+                    var invalidImgSource = cspHeaders.split(";").find(function(p){
+                        var matchstring = p.match(/img-src(.*)/);
+                        if (matchstring) {
+                            return !matchstring[1].includes("blob");
+                        }
+                    });
+                    if (invalidImgSource) {
+                        panoImage.crossOrigin = "anonymous";
+                        panoImage.src = url;
+                    }
+                }
+            });
+        }
     });
     if (reader.readAsBinaryString !== undefined)
         reader.readAsBinaryString(image);
