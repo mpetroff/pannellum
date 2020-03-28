@@ -1,6 +1,6 @@
 /*
  * libpannellum - A WebGL and CSS 3D transform based Panorama Renderer
- * Copyright (c) 2012-2019 Matthew Petroff
+ * Copyright (c) 2012-2020 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -311,9 +311,12 @@ function Renderer(container) {
         }
 
         // Store horizon pitch and roll if applicable
-        if (params !== undefined && (params.horizonPitch !== undefined || params.horizonRoll !== undefined))
-            pose = [params.horizonPitch == undefined ? 0 : params.horizonPitch,
-                    params.horizonRoll == undefined ? 0 : params.horizonRoll];
+        if (params !== undefined) {
+            var horizonPitch = isNaN(params.horizonPitch) ? 0 : Number(params.horizonPitch),
+                horizonRoll = isNaN(params.horizonRoll) ? 0 : Number(params.horizonRoll);
+            if (horizonPitch != 0 || horizonRoll != 0)
+                pose = [horizonPitch, horizonRoll];
+        }
 
         // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
@@ -563,9 +566,16 @@ function Renderer(container) {
      * Set renderer horizon pitch and roll.
      * @memberof Renderer
      * @instance
+     * @param {number} horizonPitch - Pitch of horizon (in radians).
+     * @param {number} horizonRoll - Roll of horizon (in radians).
      */
     this.setPose = function(horizonPitch, horizonRoll) {
-        pose = [horizonPitch, horizonRoll];
+        horizonPitch = isNaN(horizonPitch) ? 0 : Number(horizonPitch);
+        horizonRoll = isNaN(horizonRoll) ? 0 : Number(horizonRoll);
+        if (horizonPitch == 0 && horizonRoll == 0)
+            pose = undefined;
+        else
+            pose = [horizonPitch, horizonRoll];
     };
 
     /**

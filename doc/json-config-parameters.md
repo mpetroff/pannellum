@@ -102,6 +102,12 @@ Can also be set to `fullscreenonly`, in which case it is only enabled when the
 viewer is fullscreen.
 
 
+### `doubleClickZoom` (boolean)
+
+If set to `false`, the zoom to click location on double click function will be
+disabled. Defaults to `true`.
+
+
 ### `draggable` (boolean)
 
 If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.

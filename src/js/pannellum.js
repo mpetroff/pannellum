@@ -1,6 +1,6 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
- * Copyright (c) 2011-2019 Matthew Petroff
+ * Copyright (c) 2011-2020 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2369,7 +2369,10 @@ function stopOrientation() {
  * @private
  */
 function startOrientation() {
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    if (!orientationSupport)
+        return;
+    if (typeof DeviceMotionEvent !== undefined &&
+        typeof DeviceMotionEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(function(response) {
             if (response == 'granted') {
                 orientation = 1;
@@ -3073,8 +3076,7 @@ this.stopOrientation = function() {
  * @instance
  */
 this.startOrientation = function() {
-    if (orientationSupport)
-        startOrientation();
+    startOrientation();
 };
 
 /**
