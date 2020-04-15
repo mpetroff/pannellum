@@ -1,6 +1,6 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
- * Copyright (c) 2011-2019 Matthew Petroff
+ * Copyright (c) 2011-2020 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -259,22 +259,15 @@ controls.orientation.addEventListener('mousedown', function(e) {e.stopPropagatio
 controls.orientation.addEventListener('touchstart', function(e) {e.stopPropagation();});
 controls.orientation.addEventListener('pointerdown', function(e) {e.stopPropagation();});
 controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
-var orientationSupport, startOrientationIfSupported = false;
-function deviceOrientationTest(e) {
-    window.removeEventListener('deviceorientation', deviceOrientationTest);
-    if (e && e.alpha !== null && e.beta !== null && e.gamma !== null) {
-        controls.container.appendChild(controls.orientation);
-        orientationSupport = true;
-        if (startOrientationIfSupported)
-            startOrientation();
-    } else {
-        orientationSupport = false;
-    }
-}
-if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', deviceOrientationTest);
-} else {
-    orientationSupport = false;
+var orientationSupport = false;
+if (window.DeviceOrientationEvent && location.protocol == 'https:' &&
+    navigator.userAgent.toLowerCase().indexOf('mobi') >= 0) {
+    // This user agent check is here because there's no way to check if a
+    // device has an inertia measurement unit. We used to be able to check if a
+    // DeviceOrientationEvent had non-null values, but with iOS 13 requiring a
+    // permission prompt to access such events, this is no longer possible.
+    controls.container.appendChild(controls.orientation);
+    orientationSupport = true;
 }
 
 // Compass
@@ -342,7 +335,6 @@ function init() {
         } else {
             if (config.panorama === undefined) {
                 anError(config.strings.noPanoramaError);
-                loaded = undefined;
                 return;
             }
             panoImage = new Image();
@@ -415,7 +407,7 @@ function init() {
                     anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 }
                 var img = this.response;
-                parseGPanoXMP(img);
+                parseGPanoXMP(img, p);
                 infoDisplay.load.msg.innerHTML = '';
             };
             xhr.onprogress = function(e) {
@@ -548,7 +540,7 @@ function onImageLoad() {
  * @private
  * @param {Image} image - Image to read XMP metadata from.
  */
-function parseGPanoXMP(image) {
+function parseGPanoXMP(image, url) {
     var reader = new FileReader();
     reader.addEventListener('loadend', function() {
         var img = reader.result;
@@ -624,6 +616,35 @@ function parseGPanoXMP(image) {
         
         // Load panorama
         panoImage.src = window.URL.createObjectURL(image);
+        panoImage.onerror = function() {
+            // If the image fails to load, we check the Content Security Policy
+            // headers and see if they block loading images as blobs. If they
+            // do, we load the image directly from the URL. While this should
+            // allow the image to load, it does prevent parsing of XMP data.
+            function getCspHeaders() {
+                if (!window.fetch)
+                    return null;
+                return window.fetch(document.location.href)
+                    .then(function(resp){
+                        return resp.headers.get('Content-Security-Policy');
+                    });
+            }
+            getCspHeaders().then(function(cspHeaders) {
+                if (cspHeaders) {
+                    var invalidImgSource = cspHeaders.split(";").find(function(p) {
+                        var matchstring = p.match(/img-src(.*)/);
+                        if (matchstring) {
+                            return !matchstring[1].includes("blob");
+                        }
+                    });
+                    if (invalidImgSource) {
+                        console.log('CSP blocks blobs; reverting to URL.');
+                        panoImage.crossOrigin = config.crossOrigin;
+                        panoImage.src = url;
+                    }
+                }
+            });
+        }
     });
     if (reader.readAsBinaryString !== undefined)
         reader.readAsBinaryString(image);
@@ -645,6 +666,7 @@ function anError(errorMsg) {
     infoDisplay.load.box.style.display = 'none';
     infoDisplay.errorMsg.style.display = 'table';
     error = true;
+    loaded = undefined;
     renderContainer.style.display = 'none';
     fireEvent('error', errorMsg);
 }
@@ -968,6 +990,9 @@ var pointerIDs = [],
  */
 function onDocumentPointerDown(event) {
     if (event.pointerType == 'touch') {
+        // Only do something if the panorama is loaded
+        if (!loaded || !config.draggable)
+            return;
         pointerIDs.push(event.pointerId);
         pointerCoordinates.push({clientX: event.clientX, clientY: event.clientY});
         event.targetTouches = pointerCoordinates;
@@ -983,6 +1008,8 @@ function onDocumentPointerDown(event) {
  */
 function onDocumentPointerMove(event) {
     if (event.pointerType == 'touch') {
+        if (!config.draggable)
+            return;
         for (var i = 0; i < pointerIDs.length; i++) {
             if (event.pointerId == pointerIDs[i]) {
                 pointerCoordinates[i].clientX = event.clientX;
@@ -1456,9 +1483,9 @@ function render() {
 
         if (config.autoRotate !== false) {
             // When auto-rotating this check needs to happen first (see issue #764)
-            if (config.yaw > 180) {
+            if (config.yaw > 360) {
                 config.yaw -= 360;
-            } else if (config.yaw < -180) {
+            } else if (config.yaw < -360) {
                 config.yaw += 360;
             }
         }
@@ -1499,9 +1526,9 @@ function render() {
         if (!(config.autoRotate !== false)) {
             // When not auto-rotating, this check needs to happen after the
             // previous check (see issue #698)
-            if (config.yaw > 180) {
+            if (config.yaw > 360) {
                 config.yaw -= 360;
-            } else if (config.yaw < -180) {
+            } else if (config.yaw < -360) {
                 config.yaw += 360;
             }
         }
@@ -1719,10 +1746,10 @@ function renderInitCallback() {
         preview = undefined;
     }
     loaded = true;
-
-    fireEvent('load');
     
     animateInit();
+
+    fireEvent('load');
 }
 
 /**
@@ -1762,7 +1789,7 @@ function createHotSpot(hs) {
         if (config.basePath && !absoluteURL(imgp))
             imgp = config.basePath + imgp;
         a = document.createElement('a');
-        a.href = sanitizeURL(hs.URL ? hs.URL : imgp);
+        a.href = sanitizeURL(hs.URL ? hs.URL : imgp, true);
         a.target = '_blank';
         span.appendChild(a);
         var image = document.createElement('img');
@@ -1774,7 +1801,7 @@ function createHotSpot(hs) {
         span.style.maxWidth = 'initial';
     } else if (hs.URL) {
         a = document.createElement('a');
-        a.href = sanitizeURL(hs.URL);
+        a.href = sanitizeURL(hs.URL, true);
         if (hs.attributes) {
             for (var key in hs.attributes) {
                 a.setAttribute(key, hs.attributes[key]);
@@ -2074,7 +2101,7 @@ function processOptions(isPreview) {
                 var authorText = escapeHTML(config[key]);
                 if (config.authorURL) {
                     var authorLink = document.createElement('a');
-                    authorLink.href = sanitizeURL(config['authorURL']);
+                    authorLink.href = sanitizeURL(config['authorURL'], true);
                     authorLink.target = '_blank';
                     authorLink.innerHTML = escapeHTML(config[key]);
                     authorText = authorLink.outerHTML;
@@ -2085,7 +2112,7 @@ function processOptions(isPreview) {
             
             case 'fallback':
                 var link = document.createElement('a');
-                link.href = sanitizeURL(config[key]);
+                link.href = sanitizeURL(config[key], true);
                 link.target = '_blank';
                 link.textContent = 'Click here to view this panorama in an alternative viewer.';
                 var message = document.createElement('p');
@@ -2153,12 +2180,8 @@ function processOptions(isPreview) {
                 break;
 
             case 'orientationOnByDefault':
-                if (config[key]) {
-                    if (orientationSupport === undefined)
-                        startOrientationIfSupported = true;
-                    else if (orientationSupport === true)
-                        startOrientation();
-                }
+                if (config[key])
+                    startOrientation();
                 break;
         }
       }
@@ -2474,9 +2497,22 @@ function stopOrientation() {
  * @private
  */
 function startOrientation() {
-    orientation = 1;
-    window.addEventListener('deviceorientation', orientationListener);
-    controls.orientation.classList.add('pnlm-orientation-button-active');
+    if (!orientationSupport)
+        return;
+    if (typeof DeviceMotionEvent !== undefined &&
+        typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(function(response) {
+            if (response == 'granted') {
+                orientation = 1;
+                window.addEventListener('deviceorientation', orientationListener);
+                controls.orientation.classList.add('pnlm-orientation-button-active');
+            }
+        });
+    } else {
+        orientation = 1;
+        window.addEventListener('deviceorientation', orientationListener);
+        controls.orientation.classList.add('pnlm-orientation-button-active');
+    }
 }
 
 /**
@@ -2502,17 +2538,51 @@ function escapeHTML(s) {
  * The URL cannot be of protocol 'javascript'.
  * @private
  * @param {string} url - URL to sanitize
+ * @param {boolean} href - True if URL is for link (blocks data URIs)
  * @returns {string} Sanitized URL
  */
-function sanitizeURL(url) {
-    if (url.trim().toLowerCase().indexOf('javascript:') === 0) {
+function sanitizeURL(url, href) {
+    try {
+        var decoded_url = decodeURIComponent(unescape(url)).replace(/[^\w:]/g, '').toLowerCase();
+    } catch (e) {
+        return 'about:blank';
+    }
+    if (decoded_url.indexOf('javascript:') === 0 ||
+        decoded_url.indexOf('vbscript:') === 0) {
+        console.log('Script URL removed.');
+        return 'about:blank';
+    }
+    if (href && decoded_url.indexOf('data:') === 0) {
+        console.log('Data URI removed from link.');
         return 'about:blank';
     }
     return url;
 }
 
 /**
- * Removes possibility of XSS attacks with URLs for CSS.
+ * Unescapes HTML entities.
+ * Copied from Marked.js 0.7.0.
+ * @private
+ * @param {string} url - URL to sanitize
+ * @param {boolean} href - True if URL is for link (blocks data URIs)
+ * @returns {string} Sanitized URL
+ */
+function unescape(html) {
+    // Explicitly match decimal, hex, and named HTML entities
+    return html.replace(/&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig, function(_, n) {
+        n = n.toLowerCase();
+        if (n === 'colon') return ':';
+        if (n.charAt(0) === '#') {
+            return n.charAt(1) === 'x'
+                ? String.fromCharCode(parseInt(n.substring(2), 16))
+                : String.fromCharCode(+n.substring(1));
+        }
+        return '';
+    });
+}
+
+/**
+ * Removes possibility of XSS atacks with URLs for CSS.
  * The URL will be sanitized with `sanitizeURL()` and single quotes
  * and double quotes escaped.
  * @private
@@ -2609,7 +2679,7 @@ this.setPitchBounds = function(bounds) {
  * @returns {number} Yaw in degrees
  */
 this.getYaw = function() {
-    return config.yaw;
+    return (config.yaw + 540) % 360 - 180;
 };
 
 /**
@@ -2664,15 +2734,15 @@ this.getYawBounds = function() {
 };
 
 /**
- * Set the minimum and maximum allowed yaws (in degrees [-180, 180]).
+ * Set the minimum and maximum allowed yaws (in degrees [-360, 360]).
  * @memberof Viewer
  * @instance
  * @param {number[]} bounds - [minimum yaw, maximum yaw]
  * @returns {Viewer} `this`
  */
 this.setYawBounds = function(bounds) {
-    config.minYaw = Math.max(-180, Math.min(bounds[0], 180));
-    config.maxYaw = Math.max(-180, Math.min(bounds[1], 180));
+    config.minYaw = Math.max(-360, Math.min(bounds[0], 360));
+    config.maxYaw = Math.max(-360, Math.min(bounds[1], 360));
     return this;
 };
 
@@ -3188,8 +3258,7 @@ this.stopOrientation = function() {
  * @instance
  */
 this.startOrientation = function() {
-    if (orientationSupport)
-        startOrientation();
+    startOrientation();
 };
 
 /**

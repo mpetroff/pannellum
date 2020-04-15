@@ -1,6 +1,6 @@
 /*
  * libpannellum - A WebGL and CSS 3D transform based Panorama Renderer
- * Copyright (c) 2012-2019 Matthew Petroff
+ * Copyright (c) 2012-2020 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -315,9 +315,12 @@ function Renderer(container) {
         }
 
         // Store horizon pitch and roll if applicable
-        if (params !== undefined && (params.horizonPitch !== undefined || params.horizonRoll !== undefined))
-            pose = [params.horizonPitch == undefined ? 0 : params.horizonPitch,
-                    params.horizonRoll == undefined ? 0 : params.horizonRoll];
+        if (params !== undefined) {
+            var horizonPitch = isNaN(params.horizonPitch) ? 0 : Number(params.horizonPitch),
+                horizonRoll = isNaN(params.horizonRoll) ? 0 : Number(params.horizonRoll);
+            if (horizonPitch != 0 || horizonRoll != 0)
+                pose = [horizonPitch, horizonRoll];
+        }
 
         // Set 2d texture binding
         var glBindType = gl.TEXTURE_2D;
@@ -441,7 +444,7 @@ function Renderer(container) {
 
                     // Draw image on canvas
                     var cropCanvas = document.createElement('canvas');
-                    cropCanvas.width = image.width;
+                    cropCanvas.width = image.width / 2;
                     cropCanvas.height = image.height;
                     var cropContext = cropCanvas.getContext('2d');
                     cropContext.drawImage(image, 0, 0);
@@ -457,7 +460,8 @@ function Renderer(container) {
                     gl.uniform1i(gl.getUniformLocation(program, 'u_image1'), 1);
 
                     // Upload second half of image to the texture
-                    cropImage = cropContext.getImageData(image.width / 2, 0, image.width / 2, image.height);
+                    cropContext.drawImage(image, -image.width / 2, 0);
+                    cropImage = cropContext.getImageData(0, 0, image.width / 2, image.height);
                     gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cropImage);
 
                     // Set parameters for rendering any size
@@ -466,7 +470,7 @@ function Renderer(container) {
                     gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                     gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-                    // Reactive first texture unit
+                    // Reactivate first texture unit
                     gl.activeTexture(gl.TEXTURE0);
                 }
             }
@@ -637,9 +641,16 @@ function Renderer(container) {
      * Set renderer horizon pitch and roll.
      * @memberof Renderer
      * @instance
+     * @param {number} horizonPitch - Pitch of horizon (in radians).
+     * @param {number} horizonRoll - Roll of horizon (in radians).
      */
     this.setPose = function(horizonPitch, horizonRoll) {
-        pose = [horizonPitch, horizonRoll];
+        horizonPitch = isNaN(horizonPitch) ? 0 : Number(horizonPitch);
+        horizonRoll = isNaN(horizonRoll) ? 0 : Number(horizonRoll);
+        if (horizonPitch == 0 && horizonRoll == 0)
+            pose = undefined;
+        else
+            pose = [horizonPitch, horizonRoll];
     };
 
     /**

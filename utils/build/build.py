@@ -99,7 +99,7 @@ def build(files, css, html, filename, release=False):
     if release:
         version = read('../VERSION').strip()
     else:
-        if os.path.exists('.git'):
+        if os.path.exists('../../.git'):
             version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip()
         else:
             print('No .git folder detected, setting version to testing')

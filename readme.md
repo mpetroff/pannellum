@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/mpetroff/pannellum.svg?branch=master)](https://travis-ci.org/mpetroff/pannellum)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3334433.svg)](https://doi.org/10.5281/zenodo.3334433)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.01628/status.svg)](https://doi.org/10.21105/joss.01628)
 
 ## About
 
@@ -153,3 +154,7 @@ The panoramic image provided with the examples is licensed under the [Creative C
 
 * [Matthew Petroff](http://mpetroff.net/), Original Author
 * [three.js](https://github.com/mrdoob/three.js) r40, Former Underlying Framework
+
+If used as part of academic research, please cite:
+
+> Petroff, Matthew A. "Pannellum: a lightweight web-based panorama viewer." _Journal of Open Source Software_ 4, no. 40 (2019): 1628. [doi:10.21105/joss.01628](https://doi.org/10.21105/joss.01628)

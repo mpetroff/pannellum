@@ -2,6 +2,61 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.6 (2019-11-26)
+---------------------------------------
+
+Security fixes:
+ - Extended partial fix in v2.5.5 for XSS vulnerability that allowed script
+   execution when hot spots were clicked (CVE-2019-16763)
+
+
+Changes in Pannellum 2.5.5 (2019-11-21)
+---------------------------------------
+
+Bugfixes:
+ - Fixed device orientation permission request such that it works with iOS 13
+ - Extend yaw bounds range to allow restricted range that crosses +/-180 deg
+
+Security fixes:
+ - Fixed XSS vulnerability that allowed script execution when hot spots
+   were clicked (CVE-2019-16763)
+
+
+Changes in Pannellum 2.5.4 (2019-09-10)
+---------------------------------------
+
+Bugfixes:
+ - Fixed issue with loading large equirectangular panoramas on iOS
+ - Fixed issue with touch-based scrolling with `draggable` set to `false`
+
+Improvements:
+ - Started requesting device orientation permission (untested)
+
+
+Changes in Pannellum 2.5.3 (2019-08-21)
+---------------------------------------
+
+Bugfixes:
+ - Fixed loading scenes after previous load failure
+ - Fixed regression that caused auto-rotation to stop after one revolution
+ - Fixed behavior of `multiResMinHfov` to match documentation;
+   default multi-resolution `minHfov` behavior now matches pre-v2.5
+
+Improvements:
+ - Added optional `scale` parameter to scale hot spots while zooming
+ - Improved recovery from failed scene loading
+
+API improvements:
+ - Added optional pitch argument to `startAutoRotate`
+
+Other:
+ - Added Journal of Open Source Software (JOSS) manuscript
+ - Numerous documentation improvements per JOSS review (thanks @vsoch and @Fil)
+ - Improved continuous integration and automated testing support
+ - Clarified `generate.py` error messages
+ - Added Dockerfile for `generate.py`
+
+
 Changes in Pannellum 2.5.2 (2019-07-13)
 ---------------------------------------
 

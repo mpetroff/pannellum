@@ -81,7 +81,8 @@ a link and visit this URL if Pannellum fails to work.
 
 If set to `true`, device orientation control will be used when the panorama is
 loaded, if the device supports it. If false, device orientation control needs
-to be activated by pressing a button. Defaults to `false`.
+to be activated by pressing a button. Defaults to `false`. Note that a secure
+HTTPS connection is required for device orientation access in most browsers.
 
 
 ### `showZoomCtrl` (boolean)
@@ -99,6 +100,12 @@ If set to `false`, zooming with keyboard will be disabled. Defaults to `true`.
 If set to `false`, zooming with mouse wheel will be disabled. Defaults to `true`.
 Can also be set to `fullscreenonly`, in which case it is only enabled when the
 viewer is fullscreen.
+
+
+### `doubleClickZoom` (boolean)
+
+If set to `false`, the zoom to click location on double click function will be
+disabled. Defaults to `true`.
 
 
 ### `draggable` (boolean)
