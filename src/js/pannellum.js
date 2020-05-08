@@ -1800,6 +1800,16 @@ function createHotSpot(hs) {
         div.addEventListener('click', function(e) {
             hs.clickHandlerFunc(e, hs.clickHandlerArgs);
         }, 'false');
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            div.addEventListener('pointerup', function(e) {
+                hs.clickHandlerFunc(e, hs.clickHandlerArgs);
+            }, false);
+        } else {
+            div.addEventListener('touchend', function(e) {
+                hs.clickHandlerFunc(e, hs.clickHandlerArgs);
+            }, false);
+        }
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
     }
