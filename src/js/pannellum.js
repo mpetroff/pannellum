@@ -1800,6 +1800,9 @@ function createHotSpot(hs) {
         div.addEventListener('click', function(e) {
             hs.clickHandlerFunc(e, hs.clickHandlerArgs);
         }, 'false');
+        div.addEventListener('touchend', function(e) {
+            hs.clickHandlerFunc(e, hs.clickHandlerArgs);
+        }, 'false');
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
     }
