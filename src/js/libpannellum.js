@@ -1026,7 +1026,8 @@ function Renderer(container) {
                 if (program.currentNodes[i].textureLoaded > 1) {
                     //transform input parameters from [-1,1]² to [0,1]² in screen coordinates (i.e. y-axis pointing downwards)
                     let v = program.currentNodes[i].vertices;
-                    let factor = Math.pow(2, image.maxLevel - program.currentNodes[i].level - 1);
+                    let level = program.currentNodes[i].level;
+                    let factor = program.level == level ? Math.pow(2, image.maxLevel - level - 1) : 0;
 
                     // Upload extents of tile relative to full panorama
                     gl.uniform1f(program.bb, (-v[0][1] + texelHeight/4 + 1) / 2);
@@ -1280,12 +1281,12 @@ function Renderer(container) {
 
                 var children = [];
                 var childrenIndices = [[0, 0]];
-                if (dimX > dimXC) {
+                if (dimX - dimXC > epsilon) {
                     childrenIndices.push([1, 0]);
-                    if (dimY > dimYC)
+                    if (dimY - dimYC > epsilon)
                         childrenIndices.push([1, 1]);
                 }
-                if (dimY > dimYC)
+                if (dimY - dimYC > epsilon)
                     childrenIndices.push([0, 1]);
 
                 for (var child of childrenIndices) {
@@ -1661,7 +1662,9 @@ function Renderer(container) {
                         this.callback(this.texture, true);
                     }
                     releaseTextureImageLoader(this);
-                })
+                }).catch(() => {
+                    this.callback(this.texture, false);
+                });
             } else {
                 this.image.src = src;
             }
@@ -1720,7 +1723,7 @@ function Renderer(container) {
      * @param {number} hfov - Horizontal field of view to check at.
      */
     function checkZoom(hfov) {
-        if (image.type == 'multires') {
+        if (imageType == 'multires') {
             // Find optimal level
             var newLevel = 1;
             while (newLevel < image.maxLevel &&
