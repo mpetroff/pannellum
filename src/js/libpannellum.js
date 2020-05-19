@@ -899,7 +899,11 @@ function Renderer(container) {
         }
 
         if (params.returnImage !== undefined) {
-            return canvas.toDataURL('image/png');
+            var canv = document.createElement('canvas');
+            canv.width = canvas.width;
+            canv.height = canvas.height;
+            canv.getContext('2d').drawImage(canvas, 0, 0);
+            return canv;
         }
     };
     

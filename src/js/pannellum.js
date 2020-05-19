@@ -2424,15 +2424,24 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     if (config.sceneFadeDuration && !fadeDone) {
         var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {returnImage: true});
         if (data !== undefined) {
-            fadeImg = new Image();
+            if (data instanceof HTMLCanvasElement)
+                fadeImg = data;
+            else
+                fadeImg = new Image();
+
             fadeImg.className = 'pnlm-fade-img';
             fadeImg.style.transition = 'opacity ' + (config.sceneFadeDuration / 1000) + 's';
             fadeImg.style.width = '100%';
             fadeImg.style.height = '100%';
-            fadeImg.onload = function() {
-                setTimeout(() => loadScene(sceneId, targetPitch, targetYaw, targetHfov, true), 100); // prevents black flickering before fading
-            };
-            fadeImg.src = data;
+
+            if (data instanceof HTMLCanvasElement)
+                setTimeout(() => loadScene(sceneId, targetPitch, targetYaw, targetHfov, true), 100);
+            else {
+                fadeImg.onload = function () {
+                    setTimeout(() => loadScene(sceneId, targetPitch, targetYaw, targetHfov, true), 100); // prevents black flickering before fading
+                };
+                fadeImg.src = data;
+            }
             renderContainer.appendChild(fadeImg);
             renderer.fadeImg = fadeImg;
             return;
