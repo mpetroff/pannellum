@@ -916,11 +916,6 @@ function onDocumentTouchStart(event) {
  * @param {TouchEvent} event - Document touch move event.
  */
 function onDocumentTouchMove(event) {
-    if (draggingHotSpot) {
-        moveHotSpot(draggingHotSpot, event.targetTouches[0])
-        return;
-    }
-
     if (!config.draggable) {
         return;
     }
@@ -969,8 +964,6 @@ function onDocumentTouchMove(event) {
  * @private
  */
 function onDocumentTouchEnd() {
-    if (draggingHotSpot && draggingHotSpot.dragHandlerFunc)
-        draggingHotSpot.dragHandlerFunc(event);
     draggingHotSpot = null;
 
     isUserInteracting = false;
@@ -1010,6 +1003,11 @@ function onDocumentPointerDown(event) {
  */
 function onDocumentPointerMove(event) {
     if (event.pointerType == 'touch') {
+        if (draggingHotSpot) {
+            moveHotSpot(draggingHotSpot, event);
+            return;
+        }
+
         if (!config.draggable)
             return;
         for (var i = 0; i < pointerIDs.length; i++) {
@@ -1858,16 +1856,27 @@ function createHotSpot(hs) {
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
     }
-    if(hs.draggable){
+    if (hs.draggable) {
+        // handle mouse by container event listeners
         div.addEventListener('mousedown', (e) => {
             draggingHotSpot = hs;
         });
-        div.addEventListener('touchstart', (e) => {
-            draggingHotSpot = hs;
+
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            div.addEventListener('pointerdown', (e) => {
+                draggingHotSpot = hs;
+            });
+        }
+
+        // handle touch events by hotspot event listener
+        div.addEventListener('touchmove', (e) => {
+            moveHotSpot(hs, e.targetTouches[0]);
         });
-        div.addEventListener('pointerdown', (e) => {
-            draggingHotSpot = hs;
-        });
+        div.addEventListener('touchend', (e) => {
+            hs.dragHandlerFunc(event);
+            draggingHotSpot = null;
+        })
     }
     
     hs.div = div;
