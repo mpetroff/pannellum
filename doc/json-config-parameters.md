@@ -7,8 +7,9 @@
 
 ### `type` (string)
 
-This specifies the panorama type. Can be `equirectangular`, `cubemap`, or
-`multires`. Defaults to `equirectangular`.
+This specifies the panorama type. Can be `equirectangular`, `cubemap`, `multires`, 
+or `multiresrec`. For `multires` the tiles were created from a `cubemap` and for 
+`multiresrec` from an `equirectangular` image. Defaults to `equirectangular`.
 
 
 ### `title` (string)
@@ -407,7 +408,7 @@ are relative to the location of `pannellum.htm`. Absolute URLs can also be
 used. Partial cubemap images may be specified by giving `null` instead of a URL.
 
 
-## `multires` specific options
+## Multiresolution specific options (`multires` and `multiresrec`)
 
 ### `multiRes`
 
@@ -428,15 +429,6 @@ to `multiRes.basePath`, which is relative to `basePath`. Format parameters are
 `%l` for the zoom level, `%s` for the cube face, `%x` for the x index, and
 `%y` for the y index. For each tile, `.extension` is appended.
 
-
-#### `fallbackPath` (string)
-
-This is a format string for the location of the fallback tiles for the CSS 3D
-transform-based renderer if the WebGL renderer is not supported, relative
-to `multiRes.basePath`, which is relative to `basePath`. The only format
-parameter is `%s`, for the cube face. For each face, `.extension` is appended.
-
-
 #### `extension` (string)
 
 Specifies the tiles' file extension. Do not include the `.`.
@@ -451,10 +443,58 @@ This specifies the size in pixels of each image tile.
 
 This specifies the maximum zoom level.
 
+#### `loader` (function)
+
+Supply a loader function instead of an URL to load tiles.
+
+Input: node, HTMLImageElement. Output: Promise
+
+Node has the following properties: `x` (number), `y` (number),
+`level` (number), `vertices` ([[number]]) part of the full image 
+where the full image corresponds to [-1,1]², `path` (string) `path` parameter
+from config with %-parameters resolved, `uri` (string) `basePath` + `path` + `extension`.
+
+The Promise can be resolved with HTMLCanvasElement, ImageBitmap, HTMLImageElement. Alternatively,
+one can save ressources and load the content into the provided HTMLImageElement.
+
+
+## `multires` specific options
+
+### `interpolateBetweenTiles` (boolean)
+
+Covers the visible boundary between tiles by properly interpolating the edge
+pixels of neighboring tiles.
+
+### `multiRes`
+
+#### `fallbackPath` (string)
+
+This is a format string for the location of the fallback tiles for the CSS 3D
+transform-based renderer if the WebGL renderer is not supported, relative
+to `multiRes.basePath`, which is relative to `basePath`. The only format
+parameter is `%s`, for the cube face. For each face, `.extension` is appended.
+
 
 #### `cubeResolution` (number)
 
 This specifies the size in pixels of the full resolution cube faces the image
+tiles were created from.
+
+
+
+## `multiresrec` specific options
+
+### `multiRes`
+
+#### `originalWidth` (number)
+
+This specifies the width in pixels of the full resolution image the
+tiles were created from.
+
+
+#### `originalHeight` (number)
+
+This specifies the height in pixels of the full resolution image the
 tiles were created from.
 
 
