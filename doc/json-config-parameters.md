@@ -362,7 +362,8 @@ by constraining the yaw and the field-of-view. Even at the corners and edges
 of the canvas only areas actually belonging to the image
 (i.e., within [`minYaw`, `maxYaw`] and [`minPitch`, `maxPitch`]) are shown,
 thus setting the `backgroundColor` option is not needed if this option is set.
-Defaults to `false`.
+Defaults to `false`. The `minPitch` and `maxPitch` parameters must be defined
+if this option is enabled.
 
 
 ## `equirectangular` specific options

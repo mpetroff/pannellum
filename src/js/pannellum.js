@@ -1845,6 +1845,16 @@ function createHotSpot(hs) {
         div.addEventListener('click', function(e) {
             hs.clickHandlerFunc(e, hs.clickHandlerArgs);
         }, 'false');
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            div.addEventListener('pointerup', function(e) {
+                hs.clickHandlerFunc(e, hs.clickHandlerArgs);
+            }, false);
+        } else {
+            div.addEventListener('touchend', function(e) {
+                hs.clickHandlerFunc(e, hs.clickHandlerArgs);
+            }, false);
+        }
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
     }
@@ -2306,7 +2316,7 @@ function constrainHfov(hfov) {
         newHfov = hfov;
     }
     // Optionally avoid showing background (empty space) on top or bottom by adapting newHfov
-    if (config.avoidShowingBackground && renderer) {
+    if (config.avoidShowingBackground && renderer && !isNaN(config.maxPitch - config.minPitch)) {
         var canvas = renderer.getCanvas();
         newHfov = Math.min(newHfov,
                            Math.atan(Math.tan((config.maxPitch - config.minPitch) / 360 * Math.PI) /
