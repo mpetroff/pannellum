@@ -1036,48 +1036,83 @@ function Renderer(container) {
  * @private
  */
     function multiresrecDraw() {
-        if (!program.drawInProgress) {
-            program.drawInProgress = true;
-            gl.clear(gl.COLOR_BUFFER_BIT);
+        if (program.drawInProgress || !program.currentNodes.length)
+            return;
 
-            var draw = (node) => {
-                //transform input parameters from [-1,1]² to [0,1]² in screen coordinates (i.e. y-axis pointing downwards)
-                let v = node.vertices;
 
-                // Upload extents of tile relative to full panorama
-                gl.uniform1f(program.bb, (-v[0][1] + 1) / 2);
-                gl.uniform1f(program.br, (v[1][0] + 1) / 2);
-                gl.uniform1f(program.bt, (-v[2][1] + 1) / 2);
-                gl.uniform1f(program.bl, (v[3][0] + 1) / 2);
+        program.drawInProgress = true;
+        gl.clear(gl.COLOR_BUFFER_BIT);
 
-                // Prep for texture
-                gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-                gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+        var parentNodes = [];
+        var nodesToRender = [];
+        var nodes = program.currentNodes;
+        var currentMaxLevel = nodes[nodes.length - 1].level;
 
-                // Bind texture and draw tile
-                gl.bindTexture(gl.TEXTURE_2D, node.texture); // Bind node.texture to TEXTURE0
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-            }
-
-            gl.uniform1f(program.tilePaddingX, 0);
-            gl.uniform1f(program.tilePaddingY, 0);
-            for (var node of program.currentNodes) {
+        for (var i = nodes.length - 1; i >= 0; i--) {
+            var node = nodes[i];
+            if (node.level == currentMaxLevel) {
                 if (node.textureLoaded > 1)
-                    draw(node);
+                    nodesToRender.unshift(node);
+                else parentNodes.push({
+                    x: Math.floor(node.x / 2),
+                    y: Math.floor(node.y / 2),
+                    level: node.level - 1
+                });
+            } else if (!parentNodes.length) {
+                break;
+            } else {
+                for (var parent of parentNodes) {
+                    if (parent.x == node.x && parent.y == node.y && parent.level == node.level) {
+                        if (node.textureLoaded > 1)
+                            nodesToRender.unshift(node);
+                        else parentNodes.push({
+                            x: Math.floor(node.x / 2),
+                            y: Math.floor(node.y / 2),
+                            level: node.level - 1
+                        });
+                        break;
+                    }
+                }
             }
-
-            if (globalParams.interpolateBetweenTiles) {
-                gl.uniform1f(program.tilePaddingX, texelWidth / 4);
-                gl.uniform1f(program.tilePaddingY, texelHeight / 4);
-
-
-                for (var node of program.currentGapNodes.values())
-                    if(!node.missing)
-                        draw(node);
-            }
-
-            program.drawInProgress = false;
         }
+
+        var draw = (node) => {
+            //transform input parameters from [-1,1]² to [0,1]² in screen coordinates (i.e. y-axis pointing downwards)
+            let v = node.vertices;
+
+            // Upload extents of tile relative to full panorama
+            gl.uniform1f(program.bb, (-v[0][1] + 1) / 2);
+            gl.uniform1f(program.br, (v[1][0] + 1) / 2);
+            gl.uniform1f(program.bt, (-v[2][1] + 1) / 2);
+            gl.uniform1f(program.bl, (v[3][0] + 1) / 2);
+
+            // Prep for texture
+            gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+            gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+            // Bind texture and draw tile
+            gl.bindTexture(gl.TEXTURE_2D, node.texture); // Bind node.texture to TEXTURE0
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+
+        gl.uniform1f(program.tilePaddingX, 0);
+        gl.uniform1f(program.tilePaddingY, 0);
+        for (var node of nodesToRender) {
+                draw(node);
+        }
+
+        if (globalParams.interpolateBetweenTiles) {
+            gl.uniform1f(program.tilePaddingX, texelWidth / 4);
+            gl.uniform1f(program.tilePaddingY, texelHeight / 4);
+
+
+            for (var node of program.currentGapNodes.values())
+                if (!node.missing)
+                    draw(node);
+        }
+
+        program.drawInProgress = false;
+
     }
 
     /**
