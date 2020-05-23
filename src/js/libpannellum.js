@@ -99,6 +99,12 @@ function Renderer(container) {
             if (program.nodeCache)
                 for (var i = 0; i < program.nodeCache.length; i++)
                     gl.deleteTexture(program.nodeCache[i].texture);
+            if (program.nodeEdges)
+                for (var elem of program.nodeEdges.values())
+                    gl.deleteTexture(elem.texture);
+            if (program.nodeCorners)
+                for (var elem of program.nodeCorners.values())
+                    gl.deleteTexture(elem.texture);
             gl.deleteProgram(program);
             program = undefined;
         }
@@ -154,8 +160,10 @@ function Renderer(container) {
             navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 10_/) ||
             navigator.userAgent.match(/Trident.*rv[ :]*11\./)))) {
             // Enable WebGL on canvas
-            if (!gl)
-                gl = canvas.getContext('experimental-webgl', {alpha: false, depth: false});
+            if (!gl) {
+                gl = canvas.getContext('experimental-webgl', { alpha: false, depth: false });
+            }
+                
             if (gl && gl.getError() == 1286)
                 handleWebGLError1286();
         }
@@ -513,7 +521,6 @@ function Renderer(container) {
             program.nodeCache = [];
             program.nodeCacheTimestamp = 0;
         } else if (imageType == 'multiresrec') {
-            //TODO
             let right = haov / (Math.PI * 2.0);
             let left = -right;
             let up = (vaov / 2.0 + voffset) / Math.PI * 2.0;
@@ -566,8 +573,8 @@ function Renderer(container) {
             program.bl = gl.getUniformLocation(program, 'u_bl');
 
             //The extent of a pixel from the original image in the [-1,1]� space
-            program.texelWidth = gl.getUniformLocation(program, 'u_texelWidth');
-            program.texelHeight = gl.getUniformLocation(program, 'u_texelHeight');
+            program.tilePaddingX = gl.getUniformLocation(program, 'u_paddingX');
+            program.tilePaddingY = gl.getUniformLocation(program, 'u_paddingY');
 
             program.backgroundColor = gl.getUniformLocation(program, 'u_backgroundColor');
             gl.uniform4fv(program.backgroundColor, color.concat([1]));
@@ -579,7 +586,10 @@ function Renderer(container) {
             program.level = -1;
 
             program.currentNodes = [];
+            program.currentGapNodes = new Set();
             program.nodeCache = [];
+            program.nodeEdges = new Map();
+            program.nodeCorners = new Map();
             program.nodeCacheTimestamp = 0;
         }
 
@@ -848,13 +858,16 @@ function Renderer(container) {
                 }
             }
             program.currentNodes = [];
-
+            program.currentGapNodes = new Set();
 
             var ntmp = new MultiresNode(imageVertices, "equirectangular", 1, 0, 0, image.fullpath);
             testMultiresrecNode(ntmp, yaw, pitch, roll, hfov);
-            
 
             program.currentNodes.sort(multiresNodeRenderSort);
+            for (var node of Array.from(program.currentGapNodes.values())) {
+                if (!checkMultiresNodeInView(node, yaw, pitch, roll, hfov))
+                    program.currentGapNodes.delete(node);
+            }
 
             // Unqueue any pending requests for nodes that are no longer visible
             for (i = pendingTextureRequests.length - 1; i >= 0; i--) {
@@ -1026,30 +1039,43 @@ function Renderer(container) {
         if (!program.drawInProgress) {
             program.drawInProgress = true;
             gl.clear(gl.COLOR_BUFFER_BIT);
-            for (var i = 0; i < program.currentNodes.length; i++) {
-                if (program.currentNodes[i].textureLoaded > 1) {
-                    //transform input parameters from [-1,1]� to [0,1]� in screen coordinates (i.e. y-axis pointing downwards)
-                    let v = program.currentNodes[i].vertices;
-                    let level = program.currentNodes[i].level;
-                    let factor = program.level == level ? Math.pow(2, image.maxLevel - level - 1) : 0;
 
-                    // Upload extents of tile relative to full panorama
-                    gl.uniform1f(program.bb, (-v[0][1] + texelHeight/4 + 1) / 2);
-                    gl.uniform1f(program.br, (v[1][0] - texelWidth/4 + 1) / 2);
-                    gl.uniform1f(program.bt, (-v[2][1] - texelHeight/4 + 1) / 2);
-                    gl.uniform1f(program.bl, (v[3][0] + texelWidth/4 + 1) / 2);
-                    gl.uniform1f(program.texelWidth, factor*texelWidth);
-                    gl.uniform1f(program.texelHeight, factor*texelHeight);
+            var draw = (node) => {
+                //transform input parameters from [-1,1]� to [0,1]� in screen coordinates (i.e. y-axis pointing downwards)
+                let v = node.vertices;
 
-                    // Prep for texture
-                    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-                    gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+                // Upload extents of tile relative to full panorama
+                gl.uniform1f(program.bb, (-v[0][1] + 1) / 2);
+                gl.uniform1f(program.br, (v[1][0] + 1) / 2);
+                gl.uniform1f(program.bt, (-v[2][1] + 1) / 2);
+                gl.uniform1f(program.bl, (v[3][0] + 1) / 2);
 
-                    // Bind texture and draw tile
-                    gl.bindTexture(gl.TEXTURE_2D, program.currentNodes[i].texture); // Bind program.currentNodes[i].texture to TEXTURE0
-                    gl.drawArrays(gl.TRIANGLES, 0, 6);
-                }
+                // Prep for texture
+                gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+                gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+                // Bind texture and draw tile
+                gl.bindTexture(gl.TEXTURE_2D, node.texture); // Bind node.texture to TEXTURE0
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
             }
+
+            gl.uniform1f(program.tilePaddingX, 0);
+            gl.uniform1f(program.tilePaddingY, 0);
+            for (var node of program.currentNodes) {
+                if (node.textureLoaded > 1)
+                    draw(node);
+            }
+
+            if (globalParams.interpolateBetweenTiles) {
+                gl.uniform1f(program.tilePaddingX, texelWidth / 4);
+                gl.uniform1f(program.tilePaddingY, texelHeight / 4);
+
+
+                for (var node of program.currentGapNodes.values())
+                    if(!node.missing)
+                        draw(node);
+            }
+
             program.drawInProgress = false;
         }
     }
@@ -1077,6 +1103,122 @@ function Renderer(container) {
             this.path = path.replace('%s', side).replace('%l', level).replace('%x', x).replace('%y', y);
         }
         this.uri = encodeURI(this.path + '.' + image.extension);
+    }
+
+    function getCornerTile(node, dx, dy) {
+        if (!globalParams.interpolateBetweenTiles || !program.nodeCorners)
+            return null;
+
+        var x = node.x + dx;
+        let y = node.y + dy;
+        let maxX = Math.ceil(image.originalWidth / image.tileResolution);
+        x = x % maxX;
+
+        if (node.side === 'equirectangular') {
+            var id = x + '_' + y;
+            if (program.nodeCorners.has(id))
+                return program.nodeCorners.get(id);
+
+            let maxY = Math.ceil(image.originalHeight / image.tileResolution) + 1;
+            if (y >= maxY || y <= 0)
+                return null;
+
+            let vN = node.vertices;
+            let center = [vN[dx][0], vN[2 * dy][1]];
+            let vtmp = [
+                [center[0] - texelWidth, center[1] - texelHeight],
+                [center[0] + texelWidth, center[1] - texelHeight],
+                [center[0] + texelWidth, center[1] + texelHeight],
+                [center[0] - texelWidth, center[1] + texelHeight]
+            ];
+
+            var gapNode = new MultiresNode(vtmp, node.side, node.level, x, y);
+            gapNode.canvas = document.createElement('canvas');
+            gapNode.canvas.width = 2;
+            gapNode.canvas.height = 2;
+            gapNode.missing = 4;
+            gapNode.texture = gl.createTexture();
+            program.nodeCorners.set(id, gapNode);
+
+            return gapNode;
+        }
+        return null;
+    }
+
+
+    /**
+     * {vertical: false, offset: false} - top edge
+     * {vertical: true, offset: false} - left edge
+     * {vertical: false, offset: true} - bottom edge
+     * {vertical: true, offset: true} - right edge
+     * 
+     * @param {MultiresNode} node
+     * @param {boolean} vertical - vertical edge tile (i.e. 2 x length) or horizontal (i.e. length x 2).
+     * @param {boolean} offset - further from origin
+     * @param {number} length - length of the tile
+     */
+    function getEdgeTile(node, vertical, offset, length) {
+        if (!globalParams.interpolateBetweenTiles || !program.nodeEdges)
+            return null;
+
+        vertical = !!vertical;
+        offset = !!offset;
+        var x = node.x + vertical * offset;
+        var y = node.y + !vertical * offset;
+        let maxX = Math.ceil(image.originalWidth / image.tileResolution);
+        x = x % maxX;
+
+        if (node.side === 'equirectangular') {
+            var id = vertical + '_' + x + '_' + y;
+            if (program.nodeEdges.has(id))
+                return program.nodeEdges.get(id);
+
+            let vN = node.vertices;
+            if (vertical) {
+                
+                let centerX = node.x == x ? vN[0][0] : vN[1][0];
+
+
+                let vtmp = [
+                    [centerX - texelWidth, vN[0][1]],
+                    [centerX + texelWidth, vN[0][1]],
+                    [centerX + texelWidth, vN[2][1]],
+                    [centerX - texelWidth, vN[2][1]]
+                ]
+
+                var gapNode = new MultiresNode(vtmp, node.side, node.level, x, y);
+                gapNode.canvas = document.createElement('canvas');
+                gapNode.canvas.width = 2;
+                gapNode.canvas.height = length;
+
+            } else {
+                var maxY = Math.ceil(image.originalHeight / image.tileResolution);
+                if (y >= maxY || y <= 0)
+                    return null;
+
+                let centerY = node.y == y ? vN[0][1] : vN[2][1];
+
+                let vtmp = [
+                    [vN[0][0], centerY + texelHeight],
+                    [vN[1][0], centerY - texelHeight],
+                    [vN[2][0], centerY - texelHeight],
+                    [vN[3][0], centerY + texelHeight],
+                ];
+
+                var gapNode = new MultiresNode(vtmp, node.side, node.level, x, y);
+                gapNode.canvas = document.createElement('canvas');
+                gapNode.canvas.width = length;
+                gapNode.canvas.height = 2;
+
+            }
+
+            gapNode.missing = 2;
+            gapNode.texture = gl.createTexture();
+            program.nodeEdges.set(id, gapNode);
+
+            return gapNode;
+        }
+        return null;
     }
 
     /**
@@ -1223,38 +1365,23 @@ function Renderer(container) {
         }
     }
 
+    /**
+    * Test if multiresrec node is visible. If it is, add it to current nodes,
+    * load its texture, and load appropriate child nodes.
+    * @private
+    * @param {MultiresNode} node - Multiresrec node to check.
+    * @param {number} pitch - Pitch to check at.
+    * @param {number} yaw - Yaw to check at.
+    * @param {number} roll - Roll to check at.
+    * @param {number} hfov - Horizontal field of view to check at.
+    */
     function testMultiresrecNode(node, yaw, pitch, roll, hfov) {
         let v = node.vertices;
         var children = [];
 
-        // Create rotation matrix
-        var matrix = identityMatrix3();
-        matrix = rotateMatrix(matrix, -yaw, 'y');
-        matrix = rotateMatrix(matrix, pitch, 'x');
-        matrix = rotateMatrix(matrix, roll, 'z');
+        var inView = checkMultiresNodeInView(node, yaw, pitch, roll, hfov);
 
-        //compute vertices of viewport and tile on sphere
-        let vecViewCenter = applyMatrix(matrix, [0, 0, -1]);
-        let vecNodeCenter = applyMatrix(matrix, imageToSphereCoordinates([(v[0][0] + v[1][0]) / 2, (v[1][1] + v[2][1]) / 2]));
-        var sum = 0;
-        for (var i = 0; i < 3; ++i) {
-            let diff = vecViewCenter[i] - vecNodeCenter[i];
-            sum += diff * diff;
-        }
-        node.diff = Math.sqrt(sum);
 
-        let frustumVertices = frustumVerticesOnImage(hfov)
-            .map(v => imageToSphereCoordinates(v))
-            .map(v => applyMatrix(matrix, v));
-
-        let nodeVertices = node.vertices
-            .map(v => imageToSphereCoordinates(v));
-
-        var inView = false;
-        if (node.level <= 2)
-            inView = true;
-        else
-            inView = intersect(frustumVertices, nodeVertices);
 
         if (inView) {
             // Add node to current nodes and load texture if needed
@@ -1264,7 +1391,8 @@ function Renderer(container) {
                     inCurrent = true;
                     program.nodeCache[k].timestamp = program.nodeCacheTimestamp++;
                     program.nodeCache[k].diff = node.diff;
-                    program.currentNodes.push(program.nodeCache[k]);
+                    node = program.nodeCache[k];
+                    program.currentNodes.push(node);
                     break;
                 }
             }
@@ -1301,12 +1429,32 @@ function Renderer(container) {
                         [x0 + dimXC * child[0], y0 - (child[1] ? dimY : dimYC)]
                     ]
                     var ntmp = new MultiresNode(vtmp, "equirectangular", node.level + 1, node.x * 2 + child[0], node.y * 2 + child[1], image.fullpath);
-                    
+
                     children.push(ntmp);
                 }
 
                 for (var j = 0; j < children.length; j++) {
                     testMultiresrecNode(children[j], yaw, pitch, roll, hfov);
+                }
+            } else if (node.missing == null && node.level == image.maxLevel && node.textureLoaded > 1 && globalParams.interpolateBetweenTiles) {
+                try {
+                    for (var x = 0; x <= 1; x++) {
+                        for (var y = 0; y <= 1; y++) {
+                            var corner = getCornerTile(node, x, y);
+                            if (corner)
+                                program.currentGapNodes.add(corner);
+                        }
+                    }
+
+                    for (var vertical of [false, true]) {
+                        for (var offset of [0, 1]) {
+                            var edge = getEdgeTile(node, vertical, offset, image.tileResolution);
+                            if (edge)
+                                program.currentGapNodes.add(edge);
+                        }
+                    }
+                } catch (e) {
+                    console.log(e);
                 }
             }
         }
@@ -1615,17 +1763,67 @@ function Renderer(container) {
     /**
      * Processes a loaded texture image into a WebGL texture.
      * @private
-     * @param {Image} img - Input image.
+     * @param {Image | ImageBitmap | ImageData | HTMLCanvasElement} img - Input image.
      * @param {WebGLTexture} tex - Texture to bind image to.
      */
     function processLoadedTexture(img, tex) {
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+        if (img instanceof HTMLCanvasElement) {
+            var data = img.getContext('2d').getImageData(0, 0, img.width, img.height);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, data)
+        }else
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    /**
+     * If interpolateBetweenTiles is enabled, this function
+     * fills the edge and corner tiles to properly interpolate
+     * between node tiles
+     * 
+     * @param {MultiresNode | MultiresrecNode} node
+     * @param {Image | ImageBitmap | ImageData | HTMLCanvasElement} img - Input image.
+     */
+    function processGapTiles(node, img) {
+        if (!globalParams.interpolateBetweenTiles || node.level !== image.maxLevel)
+            return;
+        try {
+            for (var x = 0; x <= 1; x++) {
+                for (var y = 0; y <= 1; y++) {
+                    var corner = getCornerTile(node, x, y);
+                    if (corner && corner.canvas) {
+                        var texture = corner.texture;
+                        var canvas = corner.canvas;
+                        canvas.getContext('2d').drawImage(img, img.width * (-x) + 1, img.height * (-y) + 1);
+                        processLoadedTexture(canvas, texture);
+                        corner.textureLoaded = 2;
+                        if (!--corner.missing)
+                            delete corner.canvas;
+                    }
+                }
+            }
+
+            for (var vertical of [false, true]) {
+                for (var offset of [0, 1]) {
+                    var edge = getEdgeTile(node, vertical, offset, vertical ? img.height : img.width);
+                    if (edge && edge.canvas) {
+                        var texture = edge.texture;
+                        var canvas = edge.canvas;
+                        canvas.getContext('2d').drawImage(img, vertical ? img.width * (-offset) + 1 : 0, !vertical ? img.height * (-offset) + 1 : 0);
+                        processLoadedTexture(canvas, texture);
+                        edge.textureLoaded = 2;
+                        if (!--edge.missing)
+                            delete edge.canvas;
+                    }
+                }
+            }
+        } catch (e) {
+            console.log(e);
+        }
     }
     
     var pendingTextureRequests = [];
@@ -1644,6 +1842,7 @@ function Renderer(container) {
             var loadFn = (function() {
                 if (self.image.width > 0 && self.image.height > 0) { // ignore missing tile to supporting partial image
                     processLoadedTexture(self.image, self.texture);
+                    processGapTiles(self.node, self.image);
                     self.callback(self.texture, true);
                 } else {
                     self.callback(self.texture, false);
@@ -1657,12 +1856,14 @@ function Renderer(container) {
         TextureImageLoader.prototype.loadTexture = function(node, src, texture, callback) {
             this.texture = texture;
             this.callback = callback;
+            this.node = node;
             if (src instanceof Function) {
                 src(JSON.parse(JSON.stringify(node)), this.image, this.texture).then(img => {
                     if (!img)
                         this.callback(this.texture, false);
                     else if (img != this.image) {
                         processLoadedTexture(img, this.texture);
+                        processGapTiles(this.node, img);
                         this.callback(this.texture, true);
                     }
                     releaseTextureImageLoader(this);
@@ -1859,6 +2060,48 @@ function Renderer(container) {
     }
 
     /**
+    * Test if multiresrec node is visible.
+    * @private
+    * @param {MultiresNode} node - Multiresrec node to check.
+    * @param {number} pitch - Pitch to check at.
+    * @param {number} yaw - Yaw to check at.
+    * @param {number} roll - Roll to check at.
+    * @param {number} hfov - Horizontal field of view to check at.
+    */
+    function checkMultiresNodeInView(node, yaw, pitch, roll, hfov) {
+        // Create rotation matrix
+        var matrix = identityMatrix3();
+        matrix = rotateMatrix(matrix, -yaw, 'y');
+        matrix = rotateMatrix(matrix, pitch, 'x');
+        matrix = rotateMatrix(matrix, roll, 'z');
+
+        //compute vertices of viewport and tile on sphere
+        let vecViewCenter = applyMatrix(matrix, [0, 0, -1]);
+        let vecNodeCenter = applyMatrix(matrix, imageToSphereCoordinates([(v[0][0] + v[1][0]) / 2, (v[1][1] + v[2][1]) / 2]));
+        var sum = 0;
+        for (var i = 0; i < 3; ++i) {
+            let diff = vecViewCenter[i] - vecNodeCenter[i];
+            sum += diff * diff;
+        }
+        node.diff = Math.sqrt(sum);
+
+        let frustumVertices = frustumVerticesOnImage(hfov)
+            .map(v => imageToSphereCoordinates(v))
+            .map(v => applyMatrix(matrix, v));
+
+        let nodeVertices = node.vertices
+            .map(v => imageToSphereCoordinates(v));
+
+        var inView = false;
+        if (node.level <= 2)
+            inView = true;
+        else
+            inView = intersect(frustumVertices, nodeVertices);
+
+        return inView;
+    }
+
+    /**
      * On iOS (iPhone 5c, iOS 10.3), this WebGL error occurs when the canvas is
      * too big. Unfortuately, there's no way to test for this beforehand, so we
      * reduce the canvas size if this error is thrown.
@@ -1923,8 +2166,8 @@ var fragEquiCubeBase = [
 'uniform float u_br;',
 'uniform float u_bb;',
 'uniform float u_bl;',
-'uniform float u_texelWidth;',
-'uniform float u_texelHeight;',
+'uniform float u_paddingX;',
+'uniform float u_paddingY;',
 
 'const float PI = 3.14159265358979323846264;',
 
@@ -2000,34 +2243,16 @@ var fragMultiresrec = fragEquiCubeBase + [
 
     // Look up color from texture
     // Map from [-1,1] to [0,1] and flip y-axis
-//    'if(fragCoord.x < u_bl - u_texelWidth || fragCoord.x > u_br + u_texelWidth || fragCoord.y < u_bb - u_texelHeight || fragCoord.y > u_bb + u_texelHeight){',
-    //'if (fragCoord.x < u_bl - u_texelWidth || fragCoord.x > u_br + u_texelWidth) {',
-    //    'gl_FragColor = u_backgroundColor;',
-    //    'gl_FragColor.w = 0.0;',
-    //'} else {',
+    'if(fragCoord.x < u_bl + u_paddingX || fragCoord.x > u_br - u_paddingX || fragCoord.y < u_bb + u_paddingY || fragCoord.y > u_bt - u_paddingY){',
+        'gl_FragColor = u_backgroundColor;',
+        'gl_FragColor.w = 0.0;',
+    '} else {',
         'x = (fragCoord.x - u_bl)/(u_br - u_bl);',
-        'float overflowX = 0.0;',
-        'if(x < 0.0){',
-            'overflowX = -x/u_texelWidth*(u_br - u_bl);',
-            'x = 0.0;',
-        '} else if (x > 1.0){',
-            'overflowX = (x-1.0)/u_texelWidth*(u_br - u_bl);',
-            'x = 1.0;',
-        '}',
-
         'y = (fragCoord.y - u_bb)/(u_bt-u_bb);',
-        'float overflowY = 0.0;',
-        'if(y < 0.0){',
-            'overflowY = -y/u_texelHeight*(u_bt-u_bb);',
-            'y = 0.0;',
-        '} else if (y > 1.0){',
-            'overflowY = (y-1.0)/u_texelHeight*(u_bt-u_bb);',
-            'y = 1.0;',
-        '}',
 
         'gl_FragColor = texture2D(u_image0, vec2(x,y));',
-    'gl_FragColor.w = 1.0 - overflowX - overflowY;',
-//    '}',
+        'gl_FragColor.w = 1.0;',
+    '}',
 '}'
 ].join('\n');
 
