@@ -1665,7 +1665,7 @@ function orientationListener(e) {
         orientation += 1;
     } else if (orientation === 10) {
         // Record starting yaw to prevent jumping
-        orientationYawOffset = q[2] / Math.PI * 180 + config.orientationAlignNorth ? (config.northOffset || 0) : config.yaw;
+        orientationYawOffset = q[2] / Math.PI * 180 + (config.orientationAlignNorth ? (config.northOffset || 0) : config.yaw);
         orientation = true;
         requestAnimationFrame(animate);
     } else {
