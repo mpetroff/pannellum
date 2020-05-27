@@ -2381,7 +2381,7 @@ function stopOrientation() {
 function startOrientation() {
     if (!orientationSupport)
         return;
-    if (typeof DeviceMotionEvent !== undefined &&
+    if (typeof DeviceMotionEvent !== 'undefined' &&
         typeof DeviceMotionEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(function(response) {
             if (response == 'granted') {
