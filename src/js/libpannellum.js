@@ -1900,6 +1900,7 @@ function Renderer(container) {
                     releaseTextureImageLoader(this);
                 }).catch(() => {
                     this.callback(this.texture, false);
+                    releaseTextureImageLoader(this);
                 });
             } else {
                 this.image.src = src;
@@ -2100,6 +2101,8 @@ function Renderer(container) {
     * @param {number} hfov - Horizontal field of view to check at.
     */
     function checkMultiresNodeInView(node, yaw, pitch, roll, hfov) {
+        let v = node.vertices;
+
         // Create rotation matrix
         var matrix = identityMatrix3();
         matrix = rotateMatrix(matrix, -yaw, 'y');

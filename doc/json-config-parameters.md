@@ -452,9 +452,9 @@ This specifies the maximum zoom level.
 
 #### `loader` (function)
 
-Supply a loader function instead of an URL to load tiles.
+Supply an async loader function instead of an URL to load tiles.
 
-Input: node, HTMLImageElement. Output: Promise
+Input: node, HTMLImageElement. Resolved output: HTMLCanvasElement, ImageBitmap, HTMLImageElement
 
 Node has the following properties: `x` (number), `y` (number),
 `level` (number), `vertices` ([[number]]) part of the full image 
