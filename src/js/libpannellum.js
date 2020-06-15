@@ -276,7 +276,8 @@ function Renderer(container) {
                 faceImg.onload = onLoad;
                 faceImg.onerror = incLoaded; // ignore missing face to support partial fallback image
                 if (imageType == 'multires') {
-                    faceImg.src = path.replace('%s', sides[s]) + '.' + image.extension;
+                    var extendedPath = image.extension ? path + '.' + image.extension : path;
+                    faceImg.src = extendedPath.replace('%s', sides[s]);
                 } else {
                     faceImg.src = image[s].src;
                 }
@@ -1131,7 +1132,8 @@ function Renderer(container) {
         } else {
             this.path = path.replace('%s', side).replace('%l', level).replace('%x', x).replace('%y', y);
         }
-        this.uri = encodeURI(this.path + '.' + image.extension);
+        var extendedPath = image.extension ? this.path + '.' + image.extension : this.path;
+        this.uri = encodeURI(extendedPath);
     }
 
     function getCornerTile(node, dx, dy) {
@@ -1940,7 +1942,8 @@ function Renderer(container) {
      * @param {MultiresNode} node - Input node.
      */
     function processNextTile(node) {
-        loadTexture(node, image.loader || node.path + '.' + image.extension, function (texture, loaded) {
+        var extendedPath = image.extension ? node.path + '.' + image.extension : node.path;
+        loadTexture(node, image.loader || extendedPath, function (texture, loaded) {
             node.texture = texture;
             node.textureLoaded = loaded ? 2 : 1;
 
