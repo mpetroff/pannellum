@@ -865,7 +865,12 @@ function Renderer(container) {
         this.level = level;
         this.x = x;
         this.y = y;
-        this.path = path.replace('%s',side).replace('%l',level).replace('%x',x).replace('%y',y);
+        if (!path) {
+            this.path = side + '_' + level + '_' + x + '_' + y;
+        } else {
+            this.path = path.replace('%s', side).replace('%l', level).replace('%x', x).replace('%y', y);
+        }
+        this.uri = encodeURI(this.path + '.' + image.extension);
     }
 
     /**
@@ -1127,12 +1132,16 @@ function Renderer(container) {
     /**
      * Processes a loaded texture image into a WebGL texture.
      * @private
-     * @param {Image} img - Input image.
+     * @param {Image | ImageBitmap | ImageData | HTMLCanvasElement} img - Input image.
      * @param {WebGLTexture} tex - Texture to bind image to.
      */
     function processLoadedTexture(img, tex) {
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+        if (img instanceof HTMLCanvasElement) {
+            var data = img.getContext('2d').getImageData(0, 0, img.width, img.height);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, data)
+        }else
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -1166,10 +1175,25 @@ function Renderer(container) {
             this.image.addEventListener('error', loadFn); // ignore missing tile file to support partial image, otherwise retry loop causes high CPU load
         }
 
-        TextureImageLoader.prototype.loadTexture = function(src, texture, callback) {
+        TextureImageLoader.prototype.loadTexture = function(node, src, texture, callback) {
             this.texture = texture;
             this.callback = callback;
-            this.image.src = src;
+            if (src instanceof Function) {
+                src(JSON.parse(JSON.stringify(node)), this.image, this.texture).then(img => {
+                    if (!img)
+                        this.callback(this.texture, false);
+                    else if (img != this.image) {
+                        processLoadedTexture(img, this.texture);
+                        this.callback(this.texture, true);
+                    }
+                    releaseTextureImageLoader(this);
+                }).catch(() => {
+                    this.callback(this.texture, false);
+                    releaseTextureImageLoader(this);
+                });
+            } else {
+                this.image.src = src;
+            }
         };
 
         function PendingTextureRequest(node, src, texture, callback) {
@@ -1182,7 +1206,7 @@ function Renderer(container) {
         function releaseTextureImageLoader(til) {
             if (pendingTextureRequests.length) {
                 var req = pendingTextureRequests.shift();
-                til.loadTexture(req.src, req.texture, req.callback);
+                til.loadTexture(req.node, req.src, req.texture, req.callback);
             } else
                 textureImageCache[cacheTop++] = til;
         }
@@ -1194,7 +1218,7 @@ function Renderer(container) {
             crossOrigin = _crossOrigin;
             var texture = gl.createTexture();
             if (cacheTop)
-                textureImageCache[--cacheTop].loadTexture(src, texture, callback);
+                textureImageCache[--cacheTop].loadTexture(node, src, texture, callback);
             else
                 pendingTextureRequests.push(new PendingTextureRequest(node, src, texture, callback));
             return texture;
@@ -1207,7 +1231,7 @@ function Renderer(container) {
      * @param {MultiresNode} node - Input node.
      */
     function processNextTile(node) {
-        loadTexture(node, node.path + '.' + image.extension, function(texture, loaded) {
+        loadTexture(node, image.loader || node.path + '.' + image.extension, function (texture, loaded) {
             node.texture = texture;
             node.textureLoaded = loaded ? 2 : 1;
         }, globalParams.crossOrigin);

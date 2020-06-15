@@ -40,6 +40,7 @@ var _this = this;
 var config,
     renderer,
     preview,
+    draggingHotSpot,
     isUserInteracting = false,
     latestInteraction = Date.now(),
     onPointerDownPointerX = 0,
@@ -101,6 +102,7 @@ var defaultConfig = {
     autoLoad: false,
     showControls: true,
     orientationOnByDefault: false,
+    orientationAlignNorth: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
     avoidShowingBackground: false,
@@ -255,7 +257,7 @@ controls.orientation.addEventListener('touchstart', function(e) {e.stopPropagati
 controls.orientation.addEventListener('pointerdown', function(e) {e.stopPropagation();});
 controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
 var orientationSupport = false;
-if (window.DeviceOrientationEvent && location.protocol == 'https:' &&
+    if (window.DeviceOrientationEvent && (location.protocol == 'https:' ||  navigator.userAgent.toLowerCase().indexOf('android')) && 
     navigator.userAgent.toLowerCase().indexOf('mobi') >= 0) {
     // This user agent check is here because there's no way to check if a
     // device has an inertia measurement unit. We used to be able to check if a
@@ -312,6 +314,7 @@ function init() {
         infoDisplay.load.lbar.style.display = 'none';
     } else if (config.type == 'multires') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
+        c.loader = config.multiRes.loader;
         // Avoid "undefined" in path, check (optional) multiRes.basePath, too
         // Use only multiRes.basePath if it's an absolute URL
         if (config.basePath && config.multiRes.basePath &&
@@ -378,8 +381,14 @@ function init() {
         
         if (config.dynamic !== true) {
             // Still image
+            if (config.panorama instanceof Image) {
+                panoImage = config.panorama;
+                onImageLoad();
+                return;
+            }
+
             p = absoluteURL(config.panorama) ? config.panorama : p + config.panorama;
-            
+
             panoImage.onload = function() {
                 window.URL.revokeObjectURL(this.src);  // Clean up
                 onImageLoad();
@@ -712,7 +721,7 @@ function onDocumentMouseDown(event) {
     container.focus();
     
     // Only do something if the panorama is loaded
-    if (!loaded || !config.draggable) {
+    if (!loaded || !config.draggable || config.draggingHotSpot) {
         return;
     }
     
@@ -797,7 +806,10 @@ function mouseEventToCoords(event) {
  * @param {MouseEvent} event - Document mouse move event.
  */
 function onDocumentMouseMove(event) {
-    if (isUserInteracting && loaded) {
+    if (draggingHotSpot) {
+        moveHotSpot(draggingHotSpot, event);
+    }
+    else if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         var canvas = renderer.getCanvas();
         var canvasWidth = canvas.clientWidth,
@@ -821,6 +833,10 @@ function onDocumentMouseMove(event) {
  * @private
  */
 function onDocumentMouseUp(event) {
+    if (draggingHotSpot && draggingHotSpot.dragHandlerFunc)
+        draggingHotSpot.dragHandlerFunc(event);
+    draggingHotSpot = null;
+
     if (!isUserInteracting) {
         return;
     }
@@ -845,7 +861,7 @@ function onDocumentMouseUp(event) {
  */
 function onDocumentTouchStart(event) {
     // Only do something if the panorama is loaded
-    if (!loaded || !config.draggable) {
+    if (!loaded || !config.draggable || draggingHotSpot) {
         return;
     }
 
@@ -936,6 +952,8 @@ function onDocumentTouchMove(event) {
  * @private
  */
 function onDocumentTouchEnd() {
+    draggingHotSpot = null;
+
     isUserInteracting = false;
     if (Date.now() - latestInteraction > 150) {
         speed.pitch = speed.yaw = 0;
@@ -973,6 +991,11 @@ function onDocumentPointerDown(event) {
  */
 function onDocumentPointerMove(event) {
     if (event.pointerType == 'touch') {
+        if (draggingHotSpot) {
+            moveHotSpot(draggingHotSpot, event);
+            return;
+        }
+
         if (!config.draggable)
             return;
         for (var i = 0; i < pointerIDs.length; i++) {
@@ -994,6 +1017,10 @@ function onDocumentPointerMove(event) {
  * @param {PointerEvent} event - Document pointer up event.
  */
 function onDocumentPointerUp(event) {
+    if (draggingHotSpot && draggingHotSpot.dragHandlerFunc)
+        draggingHotSpot.dragHandlerFunc(event);
+    draggingHotSpot = null;
+
     if (event.pointerType == 'touch') {
         var defined = false;
         for (var i = 0; i < pointerIDs.length; i++) {
@@ -1412,7 +1439,8 @@ function animate() {
     } else if (renderer && (renderer.isLoading() || (config.dynamic === true && update))) {
         requestAnimationFrame(animate);
     } else {
-        fireEvent('animatefinished', {pitch: _this.getPitch(), yaw: _this.getYaw(), hfov: _this.getHfov()});
+        if (_this.getPitch && _this.getYaw && _this.getHfov)
+            fireEvent('animatefinished', {pitch: _this.getPitch(), yaw: _this.getYaw(), hfov: _this.getHfov()});
         animating = false;
         prevTime = undefined;
         var autoRotateStartTime = config.autoRotateInactivityDelay -
@@ -1626,7 +1654,7 @@ function orientationListener(e) {
         orientation += 1;
     } else if (orientation === 10) {
         // Record starting yaw to prevent jumping
-        orientationYawOffset = q[2] / Math.PI * 180 + config.yaw;
+        orientationYawOffset = q[2] / Math.PI * 180 + (config.orientationAlignNorth ? (config.northOffset || 0) : config.yaw);
         orientation = true;
         requestAnimationFrame(animate);
     } else {
@@ -1813,8 +1841,45 @@ function createHotSpot(hs) {
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
     }
+    if (hs.draggable) {
+        // handle mouse by container event listeners
+        div.addEventListener('mousedown', (e) => {
+            draggingHotSpot = hs;
+        });
+
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            div.addEventListener('pointerdown', (e) => {
+                draggingHotSpot = hs;
+            });
+        }
+
+        // handle touch events by hotspot event listener
+        div.addEventListener('touchmove', (e) => {
+            moveHotSpot(hs, e.targetTouches[0]);
+        });
+        div.addEventListener('touchend', (e) => {
+            hs.dragHandlerFunc(event);
+            draggingHotSpot = null;
+        })
+    }
+    
     hs.div = div;
 }
+
+/**
+ *
+ * @param {hotspot} hs
+ * @param {MouseEvent} event
+ * @private
+ *
+ */
+function moveHotSpot(hs, event){
+    let coords = mouseEventToCoords(event);
+    hs.pitch = coords[0];
+    hs.yaw = coords[1];
+    renderHotSpot(hs);
+};
 
 /**
  * Creates hot spot elements for the current scene.
@@ -2216,7 +2281,7 @@ function zoomOut() {
 }
 
 /**
- * Clamps horzontal field of view to viewer's limits.
+ * Clamps horizontal field of view to viewer's limits.
  * @private
  * @param {number} hfov - Input horizontal field of view (in degrees)
  * @return {number} - Clamped horizontal field of view (in degrees)
@@ -2314,8 +2379,8 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
             fadeImg.onload = function() {
                 loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
             };
-            fadeImg.src = data;
             renderContainer.appendChild(fadeImg);
+            fadeImg.src = data;            
             renderer.fadeImg = fadeImg;
             return;
         }
@@ -2381,7 +2446,7 @@ function stopOrientation() {
 function startOrientation() {
     if (!orientationSupport)
         return;
-    if (typeof DeviceMotionEvent !== 'undefined' &&
+    if (typeof DeviceMotionEvent !== undefined &&
         typeof DeviceMotionEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(function(response) {
             if (response == 'granted') {
@@ -2865,6 +2930,18 @@ this.setUpdate = function(bool) {
         animateInit();
     return this;
 };
+
+/**
+ * Sets update flag for dynamic content.
+ * @memberof Viewer
+ * @instance
+ * @param {boolean} bool - Whether or not orientation is enabled by default
+ * @returns {Viewer} `this`
+ */
+this.setOrientationOnByDefault = function (bool) {
+    config.orientationOnByDefault = bool === true;
+    return this;
+}
 
 /**
  * Calculate panorama pitch and yaw from location of mouse event.

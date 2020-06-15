@@ -85,6 +85,12 @@ to be activated by pressing a button. Defaults to `false`. Note that a secure
 HTTPS connection is required for device orientation access in most browsers.
 
 
+### `orientationAlignNorth` (boolean)
+
+If set to `true` and device orientation control is used, the yaw of the panorama
+is set to the azimuth of the device. Defaults to `false`.
+
+
 ### `showZoomCtrl` (boolean)
 
 If set to `false`, the zoom controls will not be displayed. Defaults to `true`.
@@ -323,6 +329,15 @@ If `clickHandlerFunc` is specified, this function is added as an event handler
 for the hot spot's `click` event. The event object and the contents of
 `clickHandlerArgs` are passed to the function as arguments.
 
+#### `draggable`
+
+If specified, the hotspot can moved using the mouse or by touch.
+
+#### `dragHandlerFunc` (function)
+
+If `dragHandlerFunc` is specified, this function is added as an event handler
+when dragging of the hotspot starts and ends. The event object are passed to the function as arguments.
+
 #### `scale` (boolean)
 
 When `true`, the hot spot is scaled to match changes in the field of view,
@@ -429,6 +444,21 @@ to `multiRes.basePath`, which is relative to `basePath`. Format parameters are
 `%l` for the zoom level, `%s` for the cube face, `%x` for the x index, and
 `%y` for the y index. For each tile, `.extension` is appended.
 
+
+
+#### `loader` (function)
+
+Supply a loader function instead of an URL to load tiles.
+
+Input: node, HTMLImageElement. Output: Promise
+
+Node has the following properties: `x` (number), `y` (number),
+`level` (number), `vertices` ([[number]]) part of the full image 
+where the full image corresponds to [-1,1]², `path` (string) `path` parameter
+from config with %-parameters resolved, `uri` (string) `basePath` + `path` + `extension`.
+
+The Promise can be resolved with HTMLCanvasElement, ImageBitmap, HTMLImageElement. Alternatively,
+one can save ressources and load the content into the provided HTMLImageElement.
 
 #### `fallbackPath` (string)
 
