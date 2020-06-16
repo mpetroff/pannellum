@@ -2814,7 +2814,7 @@ this.startAutoRotate = function(speed, pitch, hfov) {
     pitch = pitch === undefined ? origPitch : pitch;
     hfov = hfov === undefined ? origHfov : hfov;
     config.autoRotate = speed;
-    _this.lookAt(pitch, undefined, origHfov, 3000);
+    _this.lookAt(pitch, undefined, hfov, 3000);
     animateInit();
     return this;
 };
