@@ -2806,13 +2806,15 @@ this.setHorizonPitch = function(pitch) {
  * @instance
  * @param {number} [speed] - Auto rotation speed / direction. If not specified, previous value is used.
  * @param {number} [pitch] - The pitch to rotate at. If not specified, inital pitch is used.
+ * @param {number} [hfov] - The hfov to rotate at. If not specified, inital hfov is used.
  * @returns {Viewer} `this`
  */
-this.startAutoRotate = function(speed, pitch) {
+this.startAutoRotate = function(speed, pitch, hfov) {
     speed = speed || autoRotateSpeed || 1;
     pitch = pitch === undefined ? origPitch : pitch;
+    hfov = hfov === undefined ? origHfov : hfov;
     config.autoRotate = speed;
-    _this.lookAt(pitch, undefined, origHfov, 3000);
+    _this.lookAt(pitch, undefined, hfov, 3000);
     animateInit();
     return this;
 };
