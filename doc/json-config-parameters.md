@@ -85,12 +85,6 @@ to be activated by pressing a button. Defaults to `false`. Note that a secure
 HTTPS connection is required for device orientation access in most browsers.
 
 
-### `orientationAlignNorth` (boolean)
-
-If set to `true` and device orientation control is used, the yaw of the panorama
-is set to the azimuth of the device. Defaults to `false`.
-
-
 ### `showZoomCtrl` (boolean)
 
 If set to `false`, the zoom controls will not be displayed. Defaults to `true`.

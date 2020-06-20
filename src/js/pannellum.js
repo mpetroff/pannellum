@@ -102,7 +102,6 @@ var defaultConfig = {
     autoLoad: false,
     showControls: true,
     orientationOnByDefault: false,
-    orientationAlignNorth: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
     avoidShowingBackground: false,
@@ -257,7 +256,7 @@ controls.orientation.addEventListener('touchstart', function(e) {e.stopPropagati
 controls.orientation.addEventListener('pointerdown', function(e) {e.stopPropagation();});
 controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
 var orientationSupport = false;
-    if (window.DeviceOrientationEvent && (location.protocol == 'https:' ||  navigator.userAgent.toLowerCase().indexOf('android')) && 
+if (window.DeviceOrientationEvent && location.protocol == 'https:' &&
     navigator.userAgent.toLowerCase().indexOf('mobi') >= 0) {
     // This user agent check is here because there's no way to check if a
     // device has an inertia measurement unit. We used to be able to check if a
@@ -1654,7 +1653,7 @@ function orientationListener(e) {
         orientation += 1;
     } else if (orientation === 10) {
         // Record starting yaw to prevent jumping
-        orientationYawOffset = q[2] / Math.PI * 180 + (config.orientationAlignNorth ? (config.northOffset || 0) : config.yaw);
+        orientationYawOffset = q[2] / Math.PI * 180 + config.yaw;
         orientation = true;
         requestAnimationFrame(animate);
     } else {
@@ -2379,8 +2378,8 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
             fadeImg.onload = function() {
                 loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
             };
+            fadeImg.src = data;
             renderContainer.appendChild(fadeImg);
-            fadeImg.src = data;            
             renderer.fadeImg = fadeImg;
             return;
         }
@@ -2446,7 +2445,7 @@ function stopOrientation() {
 function startOrientation() {
     if (!orientationSupport)
         return;
-    if (typeof DeviceMotionEvent !== undefined &&
+    if (typeof DeviceMotionEvent !== 'undefined' &&
         typeof DeviceMotionEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(function(response) {
             if (response == 'granted') {
@@ -2930,18 +2929,6 @@ this.setUpdate = function(bool) {
         animateInit();
     return this;
 };
-
-/**
- * Sets update flag for dynamic content.
- * @memberof Viewer
- * @instance
- * @param {boolean} bool - Whether or not orientation is enabled by default
- * @returns {Viewer} `this`
- */
-this.setOrientationOnByDefault = function (bool) {
-    config.orientationOnByDefault = bool === true;
-    return this;
-}
 
 /**
  * Calculate panorama pitch and yaw from location of mouse event.
