@@ -1842,23 +1842,28 @@ function createHotSpot(hs) {
     }
     if (hs.draggable) {
         // handle mouse by container event listeners
-        div.addEventListener('mousedown', (e) => {
+        div.addEventListener('mousedown', function (e) {
+            if (hs.dragHandlerFunc)
+                hs.dragHandlerFunc(e);
             draggingHotSpot = hs;
         });
 
         if (document.documentElement.style.pointerAction === '' &&
             document.documentElement.style.touchAction === '') {
-            div.addEventListener('pointerdown', (e) => {
+            div.addEventListener('pointerdown', function (e) {
+                if (hs.dragHandlerFunc)
+                    hs.dragHandlerFunc(e);
                 draggingHotSpot = hs;
             });
         }
 
         // handle touch events by hotspot event listener
-        div.addEventListener('touchmove', (e) => {
+        div.addEventListener('touchmove', function(e) {
             moveHotSpot(hs, e.targetTouches[0]);
         });
-        div.addEventListener('touchend', (e) => {
-            hs.dragHandlerFunc(event);
+        div.addEventListener('touchend', function (e) {
+            if (hs.dragHandlerFunc)
+                hs.dragHandlerFunc(e);
             draggingHotSpot = null;
         })
     }
@@ -1874,7 +1879,7 @@ function createHotSpot(hs) {
  *
  */
 function moveHotSpot(hs, event){
-    let coords = mouseEventToCoords(event);
+    var coords = mouseEventToCoords(event);
     hs.pitch = coords[0];
     hs.yaw = coords[1];
     renderHotSpot(hs);
