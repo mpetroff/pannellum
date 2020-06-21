@@ -90,7 +90,51 @@ viewer = pannellum.viewer('panorama', ﻿{
 					"dragHandlerFunc": console.log
                 }
 			]
-        }
+        },
+		
+		"multires-loader": {
+			"title": "multires title",
+            "type": "multires",
+            "hfov": 85,
+            "multiRes": {
+                "basePath": "../examples/multires",
+                "path": "/%l/%s%x%y",
+                "fallbackPath": "/fallback/%s",
+                "extension": "png",
+                "tileResolution": 256,
+                "maxLevel": 4,
+                "cubeResolution": 2048,
+				"loader": function(node){
+					var resolver;
+					var rejector;
+					var promise = {};
+					
+					promise.then = function(callback){
+						resolver = callback;
+						return promise;
+					}
+					
+					promise.catch = function(callback){
+						rejector = callback;
+						return promise;
+					}
+					
+					var img = document.createElement('img');
+					img.onload = function () {
+						if(resolver)
+							resolver(img);
+					}
+					img.onerror = function(err) {
+						if(rejector)
+							rejector(err);
+					}
+					
+					img.src = node.uri;
+					
+					return promise;
+				}
+            }
+		}
     }
 });
 </script>
