@@ -379,11 +379,12 @@ if this option is enabled.
 
 ## `equirectangular` specific options
 
-### `panorama` (string)
+### `panorama` (string or HTMLImageElement or ImageData or ImageBitmap)
 
-Sets the URL to the equirectangular panorama image. This is relative to
-`basePath` if it is set, else it is relative to the location of
+If a string is passed, it sets the URL to the equirectangular panorama image. 
+This is relative to `basePath` if it is set, else it is relative to the location of
 `pannellum.htm`. An absolute URL can also be used.
+Alternatively, an already loaded image can be passed.
 
 ### `haov` (number)
 
