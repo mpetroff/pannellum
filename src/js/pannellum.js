@@ -832,7 +832,7 @@ function onDocumentMouseMove(event) {
  */
 function onDocumentMouseUp(event) {
     if (draggingHotSpot && draggingHotSpot.dragHandlerFunc)
-        draggingHotSpot.dragHandlerFunc(event);
+        draggingHotSpot.dragHandlerFunc(event, draggingHotSpot.dragHandlerArgs);
     draggingHotSpot = null;
 
     if (!isUserInteracting) {
@@ -1016,7 +1016,7 @@ function onDocumentPointerMove(event) {
  */
 function onDocumentPointerUp(event) {
     if (draggingHotSpot && draggingHotSpot.dragHandlerFunc)
-        draggingHotSpot.dragHandlerFunc(event);
+        draggingHotSpot.dragHandlerFunc(event, draggingHotSpot.dragHandlerArgs);
     draggingHotSpot = null;
 
     if (event.pointerType == 'touch') {
@@ -1843,7 +1843,7 @@ function createHotSpot(hs) {
         // handle mouse by container event listeners
         div.addEventListener('mousedown', function (e) {
             if (hs.dragHandlerFunc)
-                hs.dragHandlerFunc(e);
+                hs.dragHandlerFunc(e, hs.dragHandlerArgs);
             draggingHotSpot = hs;
         });
 
@@ -1851,7 +1851,7 @@ function createHotSpot(hs) {
             document.documentElement.style.touchAction === '') {
             div.addEventListener('pointerdown', function (e) {
                 if (hs.dragHandlerFunc)
-                    hs.dragHandlerFunc(e);
+                    hs.dragHandlerFunc(e, hs.dragHandlerArgs);
                 draggingHotSpot = hs;
             });
         }
@@ -1862,7 +1862,7 @@ function createHotSpot(hs) {
         });
         div.addEventListener('touchend', function (e) {
             if (hs.dragHandlerFunc)
-                hs.dragHandlerFunc(e);
+                hs.dragHandlerFunc(e, hs.dragHandlerArgs);
             draggingHotSpot = null;
         })
     }

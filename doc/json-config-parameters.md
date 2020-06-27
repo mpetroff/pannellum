@@ -327,10 +327,13 @@ for the hot spot's `click` event. The event object and the contents of
 
 If specified, the hotspot can moved using the mouse or by touch.
 
-#### `dragHandlerFunc` (function)
+#### `dragHandlerFunc` (function) and `dragHandlerArgs` (object)
 
 If `dragHandlerFunc` is specified, this function is added as an event handler
-when dragging of the hotspot starts and ends. The event object are passed to the function as arguments.
+when dragging of the hotspot starts and ends. The event object and the contents of
+`dragHandlerArgs` are passed to the function as arguments. Possible types of the
+event object are: `mousedown`, `pointerdown`, `touchend`, `pointerup`, `pointerleave`, 
+`mouseup`, and `mouseleave`.
 
 #### `scale` (boolean)
 
