@@ -313,7 +313,6 @@ function init() {
         infoDisplay.load.lbar.style.display = 'none';
     } else if (config.type == 'multires') {
         var c = JSON.parse(JSON.stringify(config.multiRes));    // Deep copy
-        c.loader = config.multiRes.loader;
         // Avoid "undefined" in path, check (optional) multiRes.basePath, too
         // Use only multiRes.basePath if it's an absolute URL
         if (config.basePath && config.multiRes.basePath &&
