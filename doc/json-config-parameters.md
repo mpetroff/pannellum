@@ -442,21 +442,6 @@ to `multiRes.basePath`, which is relative to `basePath`. Format parameters are
 `%y` for the y index. For each tile, `.extension` is appended.
 
 
-
-#### `loader` (function)
-
-Supply a loader function instead of an URL to load tiles.
-
-Input: node, HTMLImageElement. Output: Promise
-
-Node has the following properties: `x` (number), `y` (number),
-`level` (number), `vertices` ([[number]]) part of the full image 
-where the full image corresponds to [-1,1]², `path` (string) `path` parameter
-from config with %-parameters resolved, `uri` (string) `basePath` + `path` + `extension`.
-
-The Promise can be resolved with HTMLCanvasElement, ImageBitmap, HTMLImageElement. Alternatively,
-one can save ressources and load the content into the provided HTMLImageElement.
-
 #### `fallbackPath` (string)
 
 This is a format string for the location of the fallback tiles for the CSS 3D
