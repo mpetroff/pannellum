@@ -30,7 +30,7 @@ window.pannellum = (function(window, document, undefined) {
  * @constructor
  * @param {HTMLElement|string} container - The container (div) element for the
  *      viewer, or its ID.
- * @param {Object} initialConfig - Inital configuration for viewer.
+ * @param {Object} initialConfig - Initial configuration for viewer.
  */
 function Viewer(container, initialConfig) {
 
@@ -518,7 +518,7 @@ function onImageLoad() {
     }
 
     renderInit();
-    setHfov(config.hfov); // possibly adapt hfov after configuration and canvas is complete; prevents empty space on top or bottom by zomming out too much
+    setHfov(config.hfov); // Possibly adapt HFOV after configuration and canvas is complete; prevents empty space on top or bottom by zooming out too much
     setTimeout(function(){isTimedOut = true;}, 500);
 }
 
@@ -1697,7 +1697,7 @@ function renderInit() {
 
 /**
  * Triggered when render initialization finishes. Handles fading between
- * scenes as well as showing the compass and hotspots and hiding the loading
+ * scenes as well as showing the compass and hot spots and hiding the loading
  * display.
  * @private
  */
@@ -1740,7 +1740,7 @@ function renderInitCallback() {
 /**
  * Creates hot spot element for the current scene.
  * @private
- * @param {Object} hs - The configuration for the hotspot
+ * @param {Object} hs - The configuration for the hot spot
  */
 function createHotSpot(hs) {
     // Make sure hot spot pitch and yaw are numbers
@@ -2532,7 +2532,7 @@ function unescape(html) {
 }
 
 /**
- * Removes possibility of XSS atacks with URLs for CSS.
+ * Removes possibility of XSS attacks with URLs for CSS.
  * The URL will be sanitized with `sanitizeURL()` and single quotes
  * and double quotes escaped.
  * @private
@@ -2745,7 +2745,7 @@ this.setHfov = function(hfov, animated, callback, callbackArgs) {
  * (in degrees).
  * @memberof Viewer
  * @instance
- * @returns {number[]} [minimum hfov, maximum hfov]
+ * @returns {number[]} [minimum HFOV, maximum HFOV]
  */
 this.getHfovBounds = function() {
     return [config.minHfov, config.maxHfov];
@@ -2755,7 +2755,7 @@ this.getHfovBounds = function() {
  * Set the minimum and maximum allowed horizontal fields of view (in degrees).
  * @memberof Viewer
  * @instance
- * @param {number[]} bounds - [minimum hfov, maximum hfov]
+ * @param {number[]} bounds - [minimum HFOV, maximum HFOV]
  * @returns {Viewer} `this`
  */
 this.setHfovBounds = function(bounds) {
@@ -2770,7 +2770,7 @@ this.setHfovBounds = function(bounds) {
  * @instance
  * @param {number} [pitch] - Target pitch
  * @param {number} [yaw] - Target yaw
- * @param {number} [hfov] - Target hfov
+ * @param {number} [hfov] - Target HFOV
  * @param {boolean|number} [animated=1000] - Animation duration in milliseconds or false for no animation
  * @param {function} [callback] - Function to call when animation finishes
  * @param {object} [callbackArgs] - Arguments to pass to callback function
@@ -2873,14 +2873,16 @@ this.setHorizonPitch = function(pitch) {
  * @memberof Viewer
  * @instance
  * @param {number} [speed] - Auto rotation speed / direction. If not specified, previous value is used.
- * @param {number} [pitch] - The pitch to rotate at. If not specified, inital pitch is used.
+ * @param {number} [pitch] - The pitch to rotate at. If not specified, initial pitch is used.
+ * @param {number} [hfov] - The HFOV to rotate at. If not specified, initial HFOV is used.
  * @returns {Viewer} `this`
  */
-this.startAutoRotate = function(speed, pitch) {
+this.startAutoRotate = function(speed, pitch, hfov) {
     speed = speed || autoRotateSpeed || 1;
     pitch = pitch === undefined ? origPitch : pitch;
+    hfov = hfov === undefined ? origHfov : hfov;
     config.autoRotate = speed;
-    _this.lookAt(pitch, undefined, origHfov, 3000);
+    _this.lookAt(pitch, undefined, hfov, 3000);
     animateInit();
     return this;
 };
