@@ -183,17 +183,6 @@ class PannellumTester(object):
         assert self.browser.execute_script("var hs = viewer.getConfig().hotSpots[0]; return Math.abs(hs.yaw) < 0.001 && Math.abs(hs.pitch) < 0.001")
         print("PASS: hot spot dragging")
 
-        # Check multires with external tile loading
-        self.browser.execute_script("viewer.loadScene('multires-loader')")
-        time.sleep(5)
-        if create_ref:
-            self.take_screenshot("panorama", "tests/multires.png")
-            subprocess.call(["optipng", "-o7", "-strip", "all", "tests/multires.png"])
-        else:
-            reference = Image.open("tests/multires.png")
-            comparator = self.take_screenshot("panorama")
-            self.equal_images(reference, comparator, "multires with external tile loading")
-
         self.httpd.server_close()
 
     def get_browser(self, name=None):
