@@ -40,6 +40,7 @@ var _this = this;
 var config,
     renderer,
     preview,
+    draggingHotSpot,
     isUserInteracting = false,
     latestInteraction = Date.now(),
     onPointerDownPointerX = 0,
@@ -378,8 +379,15 @@ function init() {
         
         if (config.dynamic !== true) {
             // Still image
+            if (config.panorama instanceof Image || config.panorama instanceof ImageData ||
+                config.panorama instanceof ImageBitmap) {
+                panoImage = config.panorama;
+                onImageLoad();
+                return;
+            }
+
             p = absoluteURL(config.panorama) ? config.panorama : p + config.panorama;
-            
+
             panoImage.onload = function() {
                 window.URL.revokeObjectURL(this.src);  // Clean up
                 onImageLoad();
@@ -712,7 +720,7 @@ function onDocumentMouseDown(event) {
     container.focus();
     
     // Only do something if the panorama is loaded
-    if (!loaded || !config.draggable) {
+    if (!loaded || !config.draggable || config.draggingHotSpot) {
         return;
     }
     
@@ -797,7 +805,9 @@ function mouseEventToCoords(event) {
  * @param {MouseEvent} event - Document mouse move event.
  */
 function onDocumentMouseMove(event) {
-    if (isUserInteracting && loaded) {
+    if (draggingHotSpot) {
+        moveHotSpot(draggingHotSpot, event);
+    } else if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         var canvas = renderer.getCanvas();
         var canvasWidth = canvas.clientWidth,
@@ -821,6 +831,10 @@ function onDocumentMouseMove(event) {
  * @private
  */
 function onDocumentMouseUp(event) {
+    if (draggingHotSpot && draggingHotSpot.dragHandlerFunc)
+        draggingHotSpot.dragHandlerFunc(event, draggingHotSpot.dragHandlerArgs);
+    draggingHotSpot = null;
+
     if (!isUserInteracting) {
         return;
     }
@@ -845,7 +859,7 @@ function onDocumentMouseUp(event) {
  */
 function onDocumentTouchStart(event) {
     // Only do something if the panorama is loaded
-    if (!loaded || !config.draggable) {
+    if (!loaded || !config.draggable || draggingHotSpot) {
         return;
     }
 
@@ -936,6 +950,8 @@ function onDocumentTouchMove(event) {
  * @private
  */
 function onDocumentTouchEnd() {
+    draggingHotSpot = null;
+
     isUserInteracting = false;
     if (Date.now() - latestInteraction > 150) {
         speed.pitch = speed.yaw = 0;
@@ -973,6 +989,11 @@ function onDocumentPointerDown(event) {
  */
 function onDocumentPointerMove(event) {
     if (event.pointerType == 'touch') {
+        if (draggingHotSpot) {
+            moveHotSpot(draggingHotSpot, event);
+            return;
+        }
+
         if (!config.draggable)
             return;
         for (var i = 0; i < pointerIDs.length; i++) {
@@ -994,6 +1015,10 @@ function onDocumentPointerMove(event) {
  * @param {PointerEvent} event - Document pointer up event.
  */
 function onDocumentPointerUp(event) {
+    if (draggingHotSpot && draggingHotSpot.dragHandlerFunc)
+        draggingHotSpot.dragHandlerFunc(event, draggingHotSpot.dragHandlerArgs);
+    draggingHotSpot = null;
+
     if (event.pointerType == 'touch') {
         var defined = false;
         for (var i = 0; i < pointerIDs.length; i++) {
@@ -1412,7 +1437,8 @@ function animate() {
     } else if (renderer && (renderer.isLoading() || (config.dynamic === true && update))) {
         requestAnimationFrame(animate);
     } else {
-        fireEvent('animatefinished', {pitch: _this.getPitch(), yaw: _this.getYaw(), hfov: _this.getHfov()});
+        if (_this.getPitch && _this.getYaw && _this.getHfov)
+            fireEvent('animatefinished', {pitch: _this.getPitch(), yaw: _this.getYaw(), hfov: _this.getHfov()});
         animating = false;
         prevTime = undefined;
         var autoRotateStartTime = config.autoRotateInactivityDelay -
@@ -1813,8 +1839,49 @@ function createHotSpot(hs) {
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
     }
+    if (hs.draggable) {
+        // Handle mouse by container event listeners
+        div.addEventListener('mousedown', function (e) {
+            if (hs.dragHandlerFunc)
+                hs.dragHandlerFunc(e, hs.dragHandlerArgs);
+            draggingHotSpot = hs;
+        });
+
+        if (document.documentElement.style.pointerAction === '' &&
+            document.documentElement.style.touchAction === '') {
+            div.addEventListener('pointerdown', function (e) {
+                if (hs.dragHandlerFunc)
+                    hs.dragHandlerFunc(e, hs.dragHandlerArgs);
+                draggingHotSpot = hs;
+            });
+        }
+
+        // Handle touch events by hotspot event listener
+        div.addEventListener('touchmove', function(e) {
+            moveHotSpot(hs, e.targetTouches[0]);
+        });
+        div.addEventListener('touchend', function (e) {
+            if (hs.dragHandlerFunc)
+                hs.dragHandlerFunc(e, hs.dragHandlerArgs);
+            draggingHotSpot = null;
+        })
+    }
+    
     hs.div = div;
 }
+
+/**
+ * Moves a curently displayed hot spot.
+ * @private
+ * @param {Object} hs - Hot spot to move.
+ * @param {MouseEvent} event - Mouse event to get coordinates from.
+ */
+function moveHotSpot(hs, event){
+    var coords = mouseEventToCoords(event);
+    hs.pitch = coords[0];
+    hs.yaw = coords[1];
+    renderHotSpot(hs);
+};
 
 /**
  * Creates hot spot elements for the current scene.
