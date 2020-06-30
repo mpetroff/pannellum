@@ -27,7 +27,7 @@ import numpy as np
 from PIL import Image, ImageChops
 from selenium.common.exceptions import TimeoutException
 from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains 
+from selenium.webdriver.common.action_chains import ActionChains
 
 
 class PannellumServer(SimpleHTTPRequestHandler):
@@ -155,7 +155,7 @@ class PannellumTester(object):
             reference = Image.open("tests/cube.png")
             comparator = self.take_screenshot("panorama")
             self.equal_images(reference, comparator, "cube")
-            
+
         # Check hot spot
         self.browser.find_element_by_class_name("pnlm-scene").click()
         time.sleep(5)
@@ -171,16 +171,19 @@ class PannellumTester(object):
             comparator = self.take_screenshot("panorama")
             self.equal_images(reference, comparator, "multires")
 
-
-        #Check hotspot dragging - move from (20,20) to (0,0)
+        # Check hotspot dragging - move from (20, 20) to (0, 0)
         action = ActionChains(self.browser)
         action.drag_and_drop(
-            self.browser.find_element_by_class_name('pnlm-hotspot'),
-            self.browser.find_element_by_class_name('pnlm-render-container') #drops in the middle of the element
+            self.browser.find_element_by_class_name("pnlm-hotspot"),
+            self.browser.find_element_by_class_name(
+                "pnlm-render-container"
+            ),  # drops in the middle of the element
         )
         action.perform()
         time.sleep(1)
-        assert self.browser.execute_script("var hs = viewer.getConfig().hotSpots[0]; return Math.abs(hs.yaw) < 0.001 && Math.abs(hs.pitch) < 0.001")
+        assert self.browser.execute_script(
+            "var hs = viewer.getConfig().hotSpots[0]; return Math.abs(hs.yaw) < 0.001 && Math.abs(hs.pitch) < 0.001"
+        )
         print("PASS: hot spot dragging")
 
         self.httpd.server_close()

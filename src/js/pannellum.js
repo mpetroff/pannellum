@@ -807,8 +807,7 @@ function mouseEventToCoords(event) {
 function onDocumentMouseMove(event) {
     if (draggingHotSpot) {
         moveHotSpot(draggingHotSpot, event);
-    }
-    else if (isUserInteracting && loaded) {
+    } else if (isUserInteracting && loaded) {
         latestInteraction = Date.now();
         var canvas = renderer.getCanvas();
         var canvasWidth = canvas.clientWidth,
@@ -1841,7 +1840,7 @@ function createHotSpot(hs) {
         span.className += ' pnlm-pointer';
     }
     if (hs.draggable) {
-        // handle mouse by container event listeners
+        // Handle mouse by container event listeners
         div.addEventListener('mousedown', function (e) {
             if (hs.dragHandlerFunc)
                 hs.dragHandlerFunc(e, hs.dragHandlerArgs);
@@ -1857,7 +1856,7 @@ function createHotSpot(hs) {
             });
         }
 
-        // handle touch events by hotspot event listener
+        // Handle touch events by hotspot event listener
         div.addEventListener('touchmove', function(e) {
             moveHotSpot(hs, e.targetTouches[0]);
         });
@@ -1872,11 +1871,10 @@ function createHotSpot(hs) {
 }
 
 /**
- *
- * @param {hotspot} hs
- * @param {MouseEvent} event
+ * Moves a curently displayed hot spot.
  * @private
- *
+ * @param {Object} hs - Hot spot to move.
+ * @param {MouseEvent} event - Mouse event to get coordinates from.
  */
 function moveHotSpot(hs, event){
     var coords = mouseEventToCoords(event);
