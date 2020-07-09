@@ -215,7 +215,7 @@ controls.container.className = 'pnlm-controls-container';
 uiContainer.appendChild(controls.container);
 
 // Load button
-controls.load = document.createElement('div');
+controls.load = document.createElement('button');
 controls.load.className = 'pnlm-load-button';
 controls.load.addEventListener('click', function() {
     processOptions();
@@ -2095,7 +2095,7 @@ function processOptions(isPreview) {
         infoDisplay.container.style.display = 'none';
 
     // Fill in load button label and loading box text
-    controls.load.innerHTML = '<p>' + config.strings.loadButtonLabel + '</p>';
+    controls.load.innerHTML = '<div><p>' + config.strings.loadButtonLabel + '</p></div>';
     infoDisplay.load.boxp.innerHTML = config.strings.loadingLabel;
 
     // Process other options

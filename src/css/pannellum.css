@@ -6,7 +6,6 @@
     cursor: default;
     width: 100%;
     height: 100%;
-    font-family: Helvetica, "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
     background: #f4f4f4 url('img/background.svg') repeat;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -17,6 +16,9 @@
     outline: 0;
     line-height: 1.4;
     contain: content;
+}
+.pnlm-container, .pnlm-load-button {
+    font-family: Helvetica, "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
 }
 
 .pnlm-container * {
@@ -254,15 +256,28 @@
     margin: -50px 0 0 -100px;
     background-color: rgba(0,0,0,.7);
     border-radius: 3px;
-    text-align: center;
     font-size: 20px;
-    display: table;
     color: #fff;
     cursor: pointer;
+    display: inline-block;
+    border: none;
+    padding: 0;
+    line-height: 1.4;
 }
 
 .pnlm-load-button:hover {
     background-color: rgba(0,0,0,.8);
+}
+
+.pnlm-load-button:focus {
+    outline: none;
+    box-shadow: 0px 0px 0px 1px #fff inset;
+}
+
+.pnlm-load-button div {
+    display: table;
+    text-align: center;
+    width: 100%;
 }
 
 .pnlm-load-button p {
