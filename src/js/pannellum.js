@@ -69,6 +69,7 @@ var config,
     specifiedPhotoSphereExcludes = [],
     update = false, // Should we update when still to render dynamic content
     eps = 1e-6,
+    resizeObserver,
     hotspotsCreated = false,
     destroyed = false;
 
@@ -493,8 +494,13 @@ function onImageLoad() {
         container.addEventListener('webkitfullscreenchange', onFullScreenChange, false);
         container.addEventListener('msfullscreenchange', onFullScreenChange, false);
         container.addEventListener('fullscreenchange', onFullScreenChange, false);
-        window.addEventListener('resize', onDocumentResize, false);
-        window.addEventListener('orientationchange', onDocumentResize, false);
+        if (typeof ResizeObserver === 'function') {
+            resizeObserver = new ResizeObserver(onDocumentResize);
+            resizeObserver.observe(container);
+        } else {
+            window.addEventListener('resize', onDocumentResize, false);
+            window.addEventListener('orientationchange', onDocumentResize, false);
+        }
         if (!config.disableKeyboardCtrl) {
             container.addEventListener('keydown', onDocumentKeyPress, false);
             container.addEventListener('keyup', onDocumentKeyUp, false);
@@ -3244,8 +3250,12 @@ this.destroy = function() {
         container.removeEventListener('webkitfullscreenchange', onFullScreenChange, false);
         container.removeEventListener('msfullscreenchange', onFullScreenChange, false);
         container.removeEventListener('fullscreenchange', onFullScreenChange, false);
-        window.removeEventListener('resize', onDocumentResize, false);
-        window.removeEventListener('orientationchange', onDocumentResize, false);
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+        } else {
+            window.removeEventListener('resize', onDocumentResize, false);
+            window.removeEventListener('orientationchange', onDocumentResize, false);
+        }
         container.removeEventListener('keydown', onDocumentKeyPress, false);
         container.removeEventListener('keyup', onDocumentKeyUp, false);
         container.removeEventListener('blur', clearKeys, false);
