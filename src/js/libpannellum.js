@@ -43,6 +43,7 @@ function Renderer(container) {
     var image, imageType, dynamic;
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
     var globalParams;
+    var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
 
     /**
      * Initialize renderer.
@@ -182,7 +183,6 @@ function Renderer(container) {
             } else {
                 path = image.fallbackPath;
             }
-            var sides = ['f', 'r', 'b', 'l', 'u', 'd'];
             var loaded = 0;
             var onLoad = function() {
                 // Draw image on canvas
@@ -491,10 +491,15 @@ function Renderer(container) {
             // Bind texture coordinate buffer and pass coordinates to WebGL
             gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertTexCoordBuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-            // Bind square index buffer and pass indicies to WebGL
+            // Bind square index buffer and pass indices to WebGL
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertIndBuf);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,0,2,3]), gl.STATIC_DRAW);
+
+            // Bind vertex buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
+            gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
 
             // Find uniforms
             program.perspUniform = gl.getUniformLocation(program, 'u_perspMatrix');
@@ -506,6 +511,7 @@ function Renderer(container) {
             program.currentNodes = [];
             program.nodeCache = [];
             program.nodeCacheTimestamp = 0;
+            program.textureLoads = [];
         }
 
         // Check if there was an error
@@ -696,8 +702,8 @@ function Renderer(container) {
             matrix = makeMatrix4(matrix);
             
             // Set matrix uniforms
-            gl.uniformMatrix4fv(program.perspUniform, false, new Float32Array(transposeMatrix4(perspMatrix)));
-            gl.uniformMatrix4fv(program.cubeUniform, false, new Float32Array(transposeMatrix4(matrix)));
+            gl.uniformMatrix4fv(program.perspUniform, false, transposeMatrix4(perspMatrix));
+            gl.uniformMatrix4fv(program.cubeUniform, false, transposeMatrix4(matrix));
             
             // Find current nodes
             var rotPersp = rotatePersp(perspMatrix, matrix);
@@ -713,9 +719,8 @@ function Renderer(container) {
             }
             program.currentNodes = [];
             
-            var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
             for (s = 0; s < 6; s++) {
-                var ntmp = new MultiresNode(vtmps[s], sides[s], 1, 0, 0, image.fullpath);
+                var ntmp = new MultiresNode(vtmps[s], sides[s], 1, 0, 0, image.fullpath, null);
                 testMultiresNode(rotPersp, ntmp, pitch, yaw, hfov);
             }
             
@@ -744,6 +749,12 @@ function Renderer(container) {
                 }
             }
             
+            // Process one pending image tile
+            // This is synchronized to rendering to avoid dropping frames due
+            // to texture loading happening at an inopportune time.
+            if (program.textureLoads.length > 0)
+                program.textureLoads.shift()();
+
             // Draw tiles
             multiresDraw();
         }
@@ -824,21 +835,22 @@ function Renderer(container) {
     function multiresDraw() {
         if (!program.drawInProgress) {
             program.drawInProgress = true;
+            // Clear canvas
             gl.clear(gl.COLOR_BUFFER_BIT);
-            for ( var i = 0; i < program.currentNodes.length; i++ ) {
-                if (program.currentNodes[i].textureLoaded > 1) {
+            // Determine tiles that need to be drawn
+            var node_paths = {};
+            for (var i = 0; i < program.currentNodes.length; i++)
+                node_paths[program.currentNodes[i].parentPath] |= !(program.currentNodes[i].textureLoaded > 1); // !(undefined > 1) != (undefined <= 1)
+            // Draw tiles
+            for (var i = 0; i < program.currentNodes.length; i++) {
+                if (program.currentNodes[i].textureLoaded > 1 &&
+                    node_paths[program.currentNodes[i].path] != 0) { // 1 or undefined
                     //var color = program.currentNodes[i].color;
                     //gl.uniform4f(program.colorUniform, color[0], color[1], color[2], 1.0);
                     
-                    // Bind vertex buffer and pass vertices to WebGL
-                    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(program.currentNodes[i].vertices), gl.STATIC_DRAW);
-                    gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
-                    
-                    // Prep for texture
-                    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertTexCoordBuf);
-                    gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
-                    
+                    // Pass vertices to WebGL
+                    gl.bufferData(gl.ARRAY_BUFFER, program.currentNodes[i].vertices, gl.STATIC_DRAW);
+
                     // Bind texture and draw tile
                     gl.bindTexture(gl.TEXTURE_2D, program.currentNodes[i].texture); // Bind program.currentNodes[i].texture to TEXTURE0
                     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
@@ -852,20 +864,22 @@ function Renderer(container) {
      * Creates new multires node.
      * @constructor
      * @private
-     * @param {number[]} vertices - Node's vertices.
+     * @param {Float32Array} vertices - Node's vertices.
      * @param {string} side - Node's cube face.
      * @param {number} level - Node's zoom level.
      * @param {number} x - Node's x position.
      * @param {number} y - Node's y position.
      * @param {string} path - Node's path.
+     * @param {string} parentPath - Node parent's path.
      */
-    function MultiresNode(vertices, side, level, x, y, path) {
+    function MultiresNode(vertices, side, level, x, y, path, parentPath) {
         this.vertices = vertices;
         this.side = side;
         this.level = level;
         this.x = x;
         this.y = y;
         this.path = path.replace('%s',side).replace('%l',level).replace('%x',x).replace('%y',y);
+        this.parentPath = parentPath;
     }
 
     /**
@@ -970,39 +984,43 @@ function Renderer(container) {
                     }
                 }
                 
-                vtmp = [           v[0],             v[1],             v[2],
+                vtmp = new Float32Array([
+                                   v[0],             v[1],             v[2],
                         v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
                         v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                           v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3
-                ];
-                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2, image.fullpath);
+                ]);
+                ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x * 2, node.y * 2, image.fullpath, node.path);
                 children.push(ntmp);
                 if (!(node.x == numTiles && doubleTileSize <= image.tileResolution)) {
-                    vtmp = [v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
+                    vtmp = new Float32Array([
+                            v[0]*f1+v[3]*i1,    v[1]*f+v[4]*i,  v[2]*f3+v[5]*i3,
                                        v[3],             v[4],             v[5],
                               v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
                             v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3
-                    ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2, image.fullpath);
+                    ]);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x * 2 + 1, node.y * 2, image.fullpath, node.path);
                     children.push(ntmp);
                 }
                 if (!(node.x == numTiles && doubleTileSize <= image.tileResolution) &&
                     !(node.y == numTiles && doubleTileSize <= image.tileResolution)) {
-                    vtmp = [v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
+                    vtmp = new Float32Array([
+                            v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                               v[3]*f+v[6]*i,  v[4]*f2+v[7]*i2,  v[5]*f3+v[8]*i3,
                                        v[6],             v[7],             v[8],
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3
-                    ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2+1, node.y*2+1, image.fullpath);
+                    ]);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x * 2 + 1, node.y * 2 + 1, image.fullpath, node.path);
                     children.push(ntmp);
                 }
                 if (!(node.y == numTiles && doubleTileSize <= image.tileResolution)) {
-                    vtmp = [  v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3,
+                    vtmp = new Float32Array([
+                              v[0]*f+v[9]*i, v[1]*f2+v[10]*i2, v[2]*f3+v[11]*i3,
                             v[0]*f1+v[6]*i1,  v[1]*f2+v[7]*i2,  v[2]*f3+v[8]*i3,
                             v[9]*f1+v[6]*i1,   v[10]*f+v[7]*i, v[11]*f3+v[8]*i3,
                                        v[9],            v[10],            v[11]
-                    ];
-                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x*2, node.y*2+1, image.fullpath);
+                    ]);
+                    ntmp = new MultiresNode(vtmp, node.side, node.level + 1, node.x * 2, node.y * 2 + 1, image.fullpath, node.path);
                     children.push(ntmp);
                 }
                 for (var j = 0; j < children.length; j++) {
@@ -1015,29 +1033,30 @@ function Renderer(container) {
     /**
      * Creates cube vertex array.
      * @private
-     * @returns {number[]} Cube vertex array.
+     * @returns {Float32Array} Cube vertex array.
      */
     function createCube() {
-        return [-1,  1, -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, // Front face
+        return new Float32Array([
+                -1,  1, -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, // Front face
                  1,  1,  1, -1,  1,  1, -1, -1,  1,  1, -1,  1, // Back face
                 -1,  1,  1,  1,  1,  1,  1,  1, -1, -1,  1, -1, // Up face
                 -1, -1, -1,  1, -1, -1,  1, -1,  1, -1, -1,  1, // Down face
                 -1,  1,  1, -1,  1, -1, -1, -1, -1, -1, -1,  1, // Left face
                  1,  1, -1,  1,  1,  1,  1, -1,  1,  1, -1, -1  // Right face
-        ];
+        ]);
     }
     
     /**
      * Creates 3x3 identity matrix.
      * @private
-     * @returns {number[]} Identity matrix.
+     * @returns {Float32Array} Identity matrix.
      */
     function identityMatrix3() {
-        return [
+        return new Float32Array([
             1, 0, 0,
             0, 1, 0,
             0, 0, 1
-        ];
+        ]);
     }
     
     /**
@@ -1046,31 +1065,31 @@ function Renderer(container) {
      * @param {number[]} m - Matrix to rotate.
      * @param {number[]} angle - Angle to rotate by in radians.
      * @param {string} axis - Axis to rotate about (`x`, `y`, or `z`).
-     * @returns {number[]} Rotated matrix.
+     * @returns {Float32Array} Rotated matrix.
      */
     function rotateMatrix(m, angle, axis) {
         var s = Math.sin(angle);
         var c = Math.cos(angle);
         if (axis == 'x') {
-            return [
+            return new Float32Array([
                 m[0], c*m[1] + s*m[2], c*m[2] - s*m[1],
                 m[3], c*m[4] + s*m[5], c*m[5] - s*m[4],
                 m[6], c*m[7] + s*m[8], c*m[8] - s*m[7]
-            ];
+            ]);
         }
         if (axis == 'y') {
-            return [
+            return new Float32Array([
                 c*m[0] - s*m[2], m[1], c*m[2] + s*m[0],
                 c*m[3] - s*m[5], m[4], c*m[5] + s*m[3],
                 c*m[6] - s*m[8], m[7], c*m[8] + s*m[6]
-            ];
+            ]);
         }
         if (axis == 'z') {
-            return [
+            return new Float32Array([
                 c*m[0] + s*m[1], c*m[1] - s*m[0], m[2],
                 c*m[3] + s*m[4], c*m[4] - s*m[3], m[5],
                 c*m[6] + s*m[7], c*m[7] - s*m[6], m[8]
-            ];
+            ]);
         }
     }
     
@@ -1078,30 +1097,30 @@ function Renderer(container) {
      * Turns a 3x3 matrix into a 4x4 matrix.
      * @private
      * @param {number[]} m - Input matrix.
-     * @returns {number[]} Expanded matrix.
+     * @returns {Float32Array} Expanded matrix.
      */
     function makeMatrix4(m) {
-        return [
+        return new Float32Array([
             m[0], m[1], m[2],    0,
             m[3], m[4], m[5],    0,
             m[6], m[7], m[8],    0,
                0,    0,    0,    1
-        ];
+        ]);
     }
     
     /**
      * Transposes a 4x4 matrix.
      * @private
      * @param {number[]} m - Input matrix.
-     * @returns {number[]} Transposed matrix.
+     * @returns {Float32Array} Transposed matrix.
      */
     function transposeMatrix4(m) {
-        return [
+        return new Float32Array([
             m[ 0], m[ 4], m[ 8], m[12],
             m[ 1], m[ 5], m[ 9], m[13],
             m[ 2], m[ 6], m[10], m[14],
             m[ 3], m[ 7], m[11], m[15]
-        ];
+        ]);
     }
     
     /**
@@ -1111,17 +1130,17 @@ function Renderer(container) {
      * @param {number} aspect - Desired aspect ratio.
      * @param {number} znear - Near distance.
      * @param {number} zfar - Far distance.
-     * @returns {number[]} Generated perspective matrix.
+     * @returns {Float32Array} Generated perspective matrix.
      */
     function makePersp(hfov, aspect, znear, zfar) {
         var fovy = 2 * Math.atan(Math.tan(hfov/2) * gl.drawingBufferHeight / gl.drawingBufferWidth);
         var f = 1 / Math.tan(fovy/2);
-        return [
+        return new Float32Array([
             f/aspect,   0,  0,  0,
                    0,   f,  0,  0,
                    0,   0,  (zfar+znear)/(znear-zfar), (2*zfar*znear)/(znear-zfar),
                    0,   0, -1,  0
-        ];
+        ]);
     }
     
     /**
@@ -1153,15 +1172,17 @@ function Renderer(container) {
             this.texture = this.callback = null;
             this.image = new Image();
             this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
-            var loadFn = (function() {
-                if (self.image.width > 0 && self.image.height > 0) { // Ignore missing tile to supporting partial image
-                    processLoadedTexture(self.image, self.texture);
-                    self.callback(self.texture, true);
-                } else {
-                    self.callback(self.texture, false);
-                }
-                releaseTextureImageLoader(self);
-            });
+            var loadFn = function() {
+                program.textureLoads.push(function() {
+                    if (self.image.width > 0 && self.image.height > 0) { // Ignore missing tile to support partial image
+                        processLoadedTexture(self.image, self.texture);
+                        self.callback(self.texture, true);
+                    } else {
+                        self.callback(self.texture, false);
+                    }
+                    releaseTextureImageLoader(self);
+                });
+            };
             this.image.addEventListener('load', loadFn);
             this.image.addEventListener('error', loadFn); // Ignore missing tile file to support partial image; otherwise retry loop causes high CPU load
         }
@@ -1236,15 +1257,15 @@ function Renderer(container) {
      * @private
      * @param {number[]} p - Perspective matrix.
      * @param {number[]} r - Rotation matrix.
-     * @returns {number[]} Rotated matrix.
+     * @returns {Float32Array} Rotated matrix.
      */
     function rotatePersp(p, r) {
-        return [
+        return new Float32Array([
             p[ 0]*r[0], p[ 0]*r[1], p[ 0]*r[ 2],     0,
             p[ 5]*r[4], p[ 5]*r[5], p[ 5]*r[ 6],     0,
             p[10]*r[8], p[10]*r[9], p[10]*r[10], p[11],
                  -r[8],      -r[9],      -r[10],     0
-        ];
+        ]);
     }
     
     /**
@@ -1253,15 +1274,15 @@ function Renderer(container) {
      * @private
      * @param {number[]} m - Rotated perspective matrix.
      * @param {number[]} v - Input 3-vector.
-     * @returns {number[]} Resulting 4-vector.
+     * @returns {Float32Array} Resulting 4-vector.
      */
     function applyRotPerspToVec(m, v) {
-        return [
+        return new Float32Array([
                     m[ 0]*v[0] + m[ 1]*v[1] + m[ 2]*v[2],
                     m[ 4]*v[0] + m[ 5]*v[1] + m[ 6]*v[2],
             m[11] + m[ 8]*v[0] + m[ 9]*v[1] + m[10]*v[2],
                  1/(m[12]*v[0] + m[13]*v[1] + m[14]*v[2])
-        ];
+        ]);
     }
     
     /**
