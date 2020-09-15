@@ -593,7 +593,7 @@ function Renderer(container) {
      * @param {number} hfov - Horizontal field of view to render with (in radians).
      * @param {Object} [params] - Extra configuration parameters. 
      * @param {number} [params.roll] - Camera roll (in radians).
-     * @param {boolean} [params.returnImage] - Return rendered image?
+     * @param {string} [params.returnImage] - Return rendered image? If specified, should be 'ImageBitmap', 'image/jpeg', or 'image/png'.
      */
     this.render = function(pitch, yaw, hfov, params) {
         var focal, i, s, roll = 0;
@@ -760,7 +760,14 @@ function Renderer(container) {
         }
         
         if (params.returnImage !== undefined) {
-            return canvas.toDataURL('image/png');
+            if (window.createImageBitmap && params.returnImage == 'ImageBitmap') {
+                return createImageBitmap(canvas);
+            } else {
+                if (params.returnImage.toString().indexOf('image/') == 0)
+                    return canvas.toDataURL(params.returnImage);
+                else
+                    return canvas.toDataURL('image/png'); // Old default
+            }
         }
     };
     

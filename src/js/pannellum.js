@@ -2377,17 +2377,29 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
     if (config.sceneFadeDuration && !fadeDone) {
-        var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {returnImage: true});
+        var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {returnImage: 'ImageBitmap'});
         if (data !== undefined) {
-            fadeImg = new Image();
+            if (data.then)
+                fadeImg = document.createElement('canvas');
+            else
+                fadeImg = new Image(); // ImageBitmap isn't supported
             fadeImg.className = 'pnlm-fade-img';
             fadeImg.style.transition = 'opacity ' + (config.sceneFadeDuration / 1000) + 's';
             fadeImg.style.width = '100%';
             fadeImg.style.height = '100%';
-            fadeImg.onload = function() {
-                loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
-            };
-            fadeImg.src = data;
+            if (data.then) {
+                data.then(function(img) {
+                    fadeImg.width = img.width;
+                    fadeImg.height = img.height;
+                    fadeImg.getContext('2d').drawImage(img, 0, 0);
+                    loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
+                });
+            } else {
+                fadeImg.onload = function() {
+                    loadScene(sceneId, targetPitch, targetYaw, targetHfov, true);
+                };
+                fadeImg.src = data;
+            }
             renderContainer.appendChild(fadeImg);
             renderer.fadeImg = fadeImg;
             return;
