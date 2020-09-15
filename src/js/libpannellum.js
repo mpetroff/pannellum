@@ -1166,7 +1166,6 @@ function Renderer(container) {
         var cacheTop = 4;   // Maximum number of concurrent loads
         var textureImageCache = {};
         var crossOrigin;
-
         function TextureImageLoader() {
             var self = this;
             this.texture = this.callback = null;
@@ -1227,13 +1226,65 @@ function Renderer(container) {
      * @private
      * @param {MultiresNode} node - Input node.
      */
-    function processNextTile(node) {
+    function processNextTileFallback(node) {
         loadTexture(node, node.path + '.' + image.extension, function(texture, loaded) {
             node.texture = texture;
             node.textureLoaded = loaded ? 2 : 1;
         }, globalParams.crossOrigin);
     }
-    
+
+    // Load images in separate thread when possible
+    var processNextTile;
+    if (window.Worker && window.createImageBitmap) {
+        function workerFunc() {
+            self.onmessage = function(e) {
+                var path = e.data[0],
+                    crossOrigin = e.data[1];
+                fetch(path, {
+                    mode: 'cors',
+                    credentials: crossOrigin == 'use-credentials' ? 'include' : 'same-origin'
+                }).then(function(response) {
+                    return response.blob();
+                }).then(function(blob) {
+                    return createImageBitmap(blob);
+                }).then(function(bitmap) {
+                    postMessage([path, true, bitmap], [bitmap]);
+                }).catch(function() {
+                    postMessage([path, false]);
+                });
+            };
+        }
+        var workerFuncBlob = new Blob(['(' + workerFunc.toString() + ')()'], {type: 'application/javascript'}),
+            worker = new Worker(URL.createObjectURL(workerFuncBlob)),
+            texturesLoading = {};
+        worker.onmessage = function(e) {
+            var path = e.data[0],
+                success = e.data[1],
+                bitmap = e.data[2];
+            program.textureLoads.push(function() {
+                var texture,
+                    loaded = false;
+                if (success) { // Ignore missing tile to support partial image
+                    texture = gl.createTexture();
+                    processLoadedTexture(bitmap, texture);
+                    loaded = true;
+                }
+                var node = texturesLoading[path];
+                delete texturesLoading[path];
+                node.texture = texture;
+                node.textureLoaded = loaded ? 2 : 1;
+            });
+        };
+        processNextTile = function(node) {
+            // Since web worker is created from a Blob, we need the absolute URL
+            var path = new URL(node.path + '.' + image.extension, window.location).href;
+            texturesLoading[path] = node;
+            worker.postMessage([path, globalParams.crossOrigin]);
+        };
+    } else {
+        processNextTile = processNextTileFallback;
+    }
+
     /**
      * Finds and applies optimal multires zoom level.
      * @private
