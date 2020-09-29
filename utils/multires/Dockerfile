@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # docker build -t generate-panorama .
 # docker run -it -v $PWD:/data generate-panorama /data/image.jpg
