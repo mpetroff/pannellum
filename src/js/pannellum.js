@@ -381,7 +381,7 @@ function init() {
         if (config.dynamic !== true) {
             // Still image
             if (config.panorama instanceof Image || config.panorama instanceof ImageData ||
-                config.panorama instanceof ImageBitmap) {
+                (window.ImageBitmap && config.panorama instanceof ImageBitmap)) {
                 panoImage = config.panorama;
                 onImageLoad();
                 return;
