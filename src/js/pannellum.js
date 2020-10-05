@@ -829,6 +829,8 @@ function onDocumentMouseMove(event) {
         var pitch = ((Math.atan(pos.y / canvasHeight * 2 - 1) - Math.atan(onPointerDownPointerY / canvasHeight * 2 - 1)) * 180 / Math.PI * vfov / 90) + onPointerDownPitch;
         speed.pitch = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
+
+        fireEvent('mousemove', event);
     }
 }
 
@@ -948,6 +950,8 @@ function onDocumentTouchMove(event) {
         var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
         speed.pitch = (pitch - config.pitch) * 0.2;
         config.pitch = pitch;
+
+        fireEvent('touchmove', event);
     }
 }
 
