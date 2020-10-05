@@ -608,14 +608,12 @@ function parseGPanoXMP(image, url) {
                         config.horizonRoll = xmp.horizonRoll;
                 }
                 
-                if (xmp.pitch != null && xmp.yaw != null && xmp.hfov != null) {
-                    if (specifiedPhotoSphereExcludes.indexOf('pitch') < 0)
-                        config.pitch = xmp.pitch;
-                    if (specifiedPhotoSphereExcludes.indexOf('yaw') < 0)
-                        config.yaw = xmp.yaw;
-                    if (specifiedPhotoSphereExcludes.indexOf('hfov') < 0)
-                        config.hfov = xmp.hfov;
-                }
+                if (xmp.pitch != null && specifiedPhotoSphereExcludes.indexOf('pitch') < 0)
+                    config.pitch = xmp.pitch;
+                if (xmp.yaw != null && specifiedPhotoSphereExcludes.indexOf('yaw') < 0)
+                    config.yaw = xmp.yaw;
+                if (xmp.hfov != null && specifiedPhotoSphereExcludes.indexOf('hfov') < 0)
+                    config.hfov = xmp.hfov;
             }
         }
         
