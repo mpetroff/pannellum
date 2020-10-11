@@ -577,7 +577,10 @@ function parseGPanoXMP(image, url) {
                 topPixels: getTag('GPano:CroppedAreaTopPixels'),
                 heading: getTag('GPano:PoseHeadingDegrees'),
                 horizonPitch: getTag('GPano:PosePitchDegrees'),
-                horizonRoll: getTag('GPano:PoseRollDegrees')
+                horizonRoll: getTag('GPano:PoseRollDegrees'),
+                pitch: getTag('GPano:InitialViewPitchDegrees'),
+                yaw: getTag('GPano:InitialViewHeadingDegrees'),
+                hfov: getTag('GPano:InitialHorizontalFOVDegrees')
             };
             
             if (xmp.fullWidth !== null && xmp.croppedWidth !== null &&
@@ -605,7 +608,12 @@ function parseGPanoXMP(image, url) {
                         config.horizonRoll = xmp.horizonRoll;
                 }
                 
-                // TODO: add support for initial view settings
+                if (xmp.pitch != null && specifiedPhotoSphereExcludes.indexOf('pitch') < 0)
+                    config.pitch = xmp.pitch;
+                if (xmp.yaw != null && specifiedPhotoSphereExcludes.indexOf('yaw') < 0)
+                    config.yaw = xmp.yaw;
+                if (xmp.hfov != null && specifiedPhotoSphereExcludes.indexOf('hfov') < 0)
+                    config.hfov = xmp.hfov;
             }
         }
         
