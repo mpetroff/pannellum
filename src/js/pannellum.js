@@ -1240,12 +1240,12 @@ function keyRepeat() {
     if (prevTime === undefined) {
         prevTime = newTime;
     }
-    var diff = (newTime - prevTime) * config.hfov / 1700;
-    diff = Math.min(diff, 1.0);
+    var diff = (newTime - prevTime) * config.hfov / 1200;
+    diff = Math.min(diff, 10.0); // Avoid jump if something goes wrong with time diff
     
     // If minus key is down
     if (keysDown[0] && config.keyboardZoom === true) {
-        setHfov(config.hfov + (speed.hfov * 0.8 + 0.5) * diff);
+        setHfov(config.hfov + (speed.hfov * 0.8 + 0.4) * diff);
         isKeyDown = true;
     }
     
