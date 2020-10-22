@@ -234,6 +234,14 @@ the configuration is provided via the URL; it defaults to `false` but can be
 set to `true` when using the API.
 
 
+### `targetBlank` (boolean)
+
+When `true`, `target="_blank"` is set on most hyperlinks to open them in new
+tabs. This is always `true` when using the standalone viewer since said viewer
+is often used in an `<iframe>`, where it doesn't make sense to open the link in
+the same place. Defaults to `false`.
+
+
 ### `crossOrigin` (string)
 
 This specifies the type of CORS request used and can be set to either

@@ -110,6 +110,7 @@ var defaultConfig = {
     draggable: true,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
+    targetBlank: false,
     touchPanSpeedCoeffFactor: 1,
     capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
     friction: 0.15
@@ -160,7 +161,13 @@ uiContainer.appendChild(dragFix);
 // Display about information on right click
 var aboutMsg = document.createElement('span');
 aboutMsg.className = 'pnlm-about-msg';
-aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank" rel="noopener">Pannellum</a>';
+var aboutMsgLink = document.createElement('a');
+aboutMsgLink.href = 'https://pannellum.org/';
+aboutMsgLink.textContent = 'Pannellum';
+aboutMsg.appendChild(aboutMsgLink);
+var aboutMsgVersion = document.createElement('span');
+// VERSION PLACEHOLDER FOR BUILD
+aboutMsg.appendChild(aboutMsgVersion);
 uiContainer.appendChild(aboutMsg);
 dragFix.addEventListener('contextmenu', aboutMessage);
 
@@ -1789,8 +1796,10 @@ function createHotSpot(hs) {
             imgp = config.basePath + imgp;
         a = document.createElement('a');
         a.href = sanitizeURL(hs.URL ? hs.URL : imgp, true);
-        a.target = '_blank';
-        a.rel = 'noopener';
+        if (config.targetBlank) {
+            a.target = '_blank';
+            a.rel = 'noopener';
+        }
         span.appendChild(a);
         var image = document.createElement('img');
         image.src = sanitizeURL(imgp);
@@ -1806,7 +1815,7 @@ function createHotSpot(hs) {
             for (var key in hs.attributes) {
                 a.setAttribute(key, hs.attributes[key]);
             }
-        } else {
+        } else if (config.targetBlank) {
             a.target = '_blank';
             a.rel = 'noopener';
         }
@@ -2109,6 +2118,10 @@ function processOptions(isPreview) {
         infoDisplay.author.innerHTML = '';
     if (!config.hasOwnProperty('title') && !config.hasOwnProperty('author'))
         infoDisplay.container.style.display = 'none';
+    if (config.targetBlank) {
+        aboutMsgLink.rel = 'noopener';
+        aboutMsgLink.target = '_blank';
+    }
 
     // Fill in load button label and loading box text
     controls.load.innerHTML = '<div><p>' + config.strings.loadButtonLabel + '</p></div>';
@@ -2128,8 +2141,10 @@ function processOptions(isPreview) {
                 if (config.authorURL) {
                     var authorLink = document.createElement('a');
                     authorLink.href = sanitizeURL(config['authorURL'], true);
-                    authorLink.target = '_blank';
-                    authorLink.rel = 'noopener';
+                    if (config.targetBlank) {
+                        authorLink.target = '_blank';
+                        authorLink.rel = 'noopener';
+                    }
                     authorLink.innerHTML = escapeHTML(config[key]);
                     authorText = authorLink.outerHTML;
                 }
@@ -2140,8 +2155,10 @@ function processOptions(isPreview) {
             case 'fallback':
                 var link = document.createElement('a');
                 link.href = sanitizeURL(config[key], true);
-                link.target = '_blank';
-                link.rel = 'noopener';
+                if (config.targetBlank) {
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                }
                 link.textContent = 'Click here to view this panorama in an alternative viewer.';
                 var message = document.createElement('p');
                 message.textContent = 'Your browser does not support WebGL.';
