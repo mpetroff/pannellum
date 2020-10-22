@@ -160,7 +160,7 @@ uiContainer.appendChild(dragFix);
 // Display about information on right click
 var aboutMsg = document.createElement('span');
 aboutMsg.className = 'pnlm-about-msg';
-aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
+aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank" rel="noopener">Pannellum</a>';
 uiContainer.appendChild(aboutMsg);
 dragFix.addEventListener('contextmenu', aboutMessage);
 
@@ -1790,6 +1790,7 @@ function createHotSpot(hs) {
         a = document.createElement('a');
         a.href = sanitizeURL(hs.URL ? hs.URL : imgp, true);
         a.target = '_blank';
+        a.rel = 'noopener';
         span.appendChild(a);
         var image = document.createElement('img');
         image.src = sanitizeURL(imgp);
@@ -1807,6 +1808,7 @@ function createHotSpot(hs) {
             }
         } else {
             a.target = '_blank';
+            a.rel = 'noopener';
         }
         renderContainer.appendChild(a);
         div.className += ' pnlm-pointer';
@@ -2127,6 +2129,7 @@ function processOptions(isPreview) {
                     var authorLink = document.createElement('a');
                     authorLink.href = sanitizeURL(config['authorURL'], true);
                     authorLink.target = '_blank';
+                    authorLink.rel = 'noopener';
                     authorLink.innerHTML = escapeHTML(config[key]);
                     authorText = authorLink.outerHTML;
                 }
@@ -2138,6 +2141,7 @@ function processOptions(isPreview) {
                 var link = document.createElement('a');
                 link.href = sanitizeURL(config[key], true);
                 link.target = '_blank';
+                link.rel = 'noopener';
                 link.textContent = 'Click here to view this panorama in an alternative viewer.';
                 var message = document.createElement('p');
                 message.textContent = 'Your browser does not support WebGL.';
