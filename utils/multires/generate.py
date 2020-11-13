@@ -5,7 +5,7 @@
 
 # generate.py - A multires tile set generator for Pannellum
 # Extensions to cylindrical input and partial panoramas by David von Oheimb
-# Copyright (c) 2014-2018 Matthew Petroff
+# Copyright (c) 2014-2020 Matthew Petroff
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -246,7 +246,7 @@ if vaov < 180:
     text.append('    "maxPitch": ' + str(+vaov/2+args.vOffset)+ ',')
 if colorTuple != (0, 0, 0):
     text.append('    "backgroundColor": "' + args.backgroundColor+ '",')
-if args.avoidbackground:
+if args.avoidbackground and (haov < 360 or vaov < 180):
     text.append('    "avoidShowingBackground": true,')
 if args.autoload:
     text.append('    "autoLoad": true,')

@@ -323,6 +323,18 @@ If `clickHandlerFunc` is specified, this function is added as an event handler
 for the hot spot's `click` event. The event object and the contents of
 `clickHandlerArgs` are passed to the function as arguments.
 
+#### `draggable`
+
+If specified, the hotspot can moved using the mouse or by touch.
+
+#### `dragHandlerFunc` (function) and `dragHandlerArgs` (object)
+
+If `dragHandlerFunc` is specified, this function is added as an event handler
+when dragging of the hotspot starts and ends. The event object and the contents of
+`dragHandlerArgs` are passed to the function as arguments. Possible types of the
+event object are: `mousedown`, `pointerdown`, `touchend`, `pointerup`, `pointerleave`, 
+`mouseup`, and `mouseleave`.
+
 #### `scale` (boolean)
 
 When `true`, the hot spot is scaled to match changes in the field of view,
@@ -361,16 +373,18 @@ by constraining the yaw and the field-of-view. Even at the corners and edges
 of the canvas only areas actually belonging to the image
 (i.e., within [`minYaw`, `maxYaw`] and [`minPitch`, `maxPitch`]) are shown,
 thus setting the `backgroundColor` option is not needed if this option is set.
-Defaults to `false`.
+Defaults to `false`. The `minPitch` and `maxPitch` parameters must be defined
+if this option is enabled.
 
 
 ## `equirectangular` specific options
 
-### `panorama` (string)
+### `panorama` (string or HTMLImageElement or ImageData or ImageBitmap)
 
-Sets the URL to the equirectangular panorama image. This is relative to
-`basePath` if it is set, else it is relative to the location of
+If a string is passed, it sets the URL to the equirectangular panorama image. 
+This is relative to `basePath` if it is set, else it is relative to the location of
 `pannellum.htm`. An absolute URL can also be used.
+Alternatively, an already loaded image can be passed.
 
 ### `haov` (number)
 
