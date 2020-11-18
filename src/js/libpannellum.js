@@ -1278,8 +1278,10 @@ function Renderer(container) {
                 }
                 var node = texturesLoading[path];
                 delete texturesLoading[path];
-                node.texture = texture;
-                node.textureLoaded = loaded ? 2 : 1;
+                if (node !== undefined) {
+                    node.texture = texture;
+                    node.textureLoaded = loaded ? 2 : 1;
+                }
             });
         };
         processNextTile = function(node) {
