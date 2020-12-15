@@ -36,7 +36,7 @@ import ast
 from distutils.spawn import find_executable
 import subprocess
 
-# Allow large images (this could lead to a denial of service attach if you're
+# Allow large images (this could lead to a denial of service attack if you're
 # running this script on user-submitted images.)
 Image.MAX_IMAGE_PIXELS = None
 
