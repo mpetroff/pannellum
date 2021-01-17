@@ -5,7 +5,7 @@
 
 # generate.py - A multires tile set generator for Pannellum
 # Extensions to cylindrical input and partial panoramas by David von Oheimb
-# Copyright (c) 2014-2020 Matthew Petroff
+# Copyright (c) 2014-2021 Matthew Petroff
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
