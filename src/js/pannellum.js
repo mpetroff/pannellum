@@ -1343,6 +1343,10 @@ function keyRepeat() {
         }
         // Zoom
         if (!keysDown[0] && !keysDown[1] && !animatedMove.hfov) {
+            if (config.hfov > 90) {
+                // Slow down faster for wider HFOV
+                slowDownFactor *= 1 - (config.hfov - 90) / 90;
+            }
             setHfov(config.hfov + speed.hfov * diff * slowDownFactor);
         }
     }
