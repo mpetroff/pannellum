@@ -5,7 +5,7 @@
 
 # generate.py - A multires tile set generator for Pannellum
 # Extensions to cylindrical input and partial panoramas by David von Oheimb
-# Copyright (c) 2014-2020 Matthew Petroff
+# Copyright (c) 2014-2021 Matthew Petroff
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ import ast
 from distutils.spawn import find_executable
 import subprocess
 
-# Allow large images (this could lead to a denial of service attach if you're
+# Allow large images (this could lead to a denial of service attack if you're
 # running this script on user-submitted images.)
 Image.MAX_IMAGE_PIXELS = None
 

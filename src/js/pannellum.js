@@ -1,6 +1,6 @@
 /*
  * Pannellum - An HTML5 based Panorama Viewer
- * Copyright (c) 2011-2020 Matthew Petroff
+ * Copyright (c) 2011-2021 Matthew Petroff
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -110,6 +110,7 @@ var defaultConfig = {
     draggable: true,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
+    targetBlank: false,
     touchPanSpeedCoeffFactor: 1,
     capturedKeyNumbers: [16, 17, 27, 37, 38, 39, 40, 61, 65, 68, 83, 87, 107, 109, 173, 187, 189],
     friction: 0.15
@@ -160,7 +161,13 @@ uiContainer.appendChild(dragFix);
 // Display about information on right click
 var aboutMsg = document.createElement('span');
 aboutMsg.className = 'pnlm-about-msg';
-aboutMsg.innerHTML = '<a href="https://pannellum.org/" target="_blank">Pannellum</a>';
+var aboutMsgLink = document.createElement('a');
+aboutMsgLink.href = 'https://pannellum.org/';
+aboutMsgLink.textContent = 'Pannellum';
+aboutMsg.appendChild(aboutMsgLink);
+var aboutMsgVersion = document.createElement('span');
+// VERSION PLACEHOLDER FOR BUILD
+aboutMsg.appendChild(aboutMsgVersion);
 uiContainer.appendChild(aboutMsg);
 dragFix.addEventListener('contextmenu', aboutMessage);
 
@@ -381,7 +388,7 @@ function init() {
         if (config.dynamic !== true) {
             // Still image
             if (config.panorama instanceof Image || config.panorama instanceof ImageData ||
-                config.panorama instanceof ImageBitmap) {
+                (window.ImageBitmap && config.panorama instanceof ImageBitmap)) {
                 panoImage = config.panorama;
                 onImageLoad();
                 return;
@@ -577,7 +584,10 @@ function parseGPanoXMP(image, url) {
                 topPixels: getTag('GPano:CroppedAreaTopPixels'),
                 heading: getTag('GPano:PoseHeadingDegrees'),
                 horizonPitch: getTag('GPano:PosePitchDegrees'),
-                horizonRoll: getTag('GPano:PoseRollDegrees')
+                horizonRoll: getTag('GPano:PoseRollDegrees'),
+                pitch: getTag('GPano:InitialViewPitchDegrees'),
+                yaw: getTag('GPano:InitialViewHeadingDegrees'),
+                hfov: getTag('GPano:InitialHorizontalFOVDegrees')
             };
             
             if (xmp.fullWidth !== null && xmp.croppedWidth !== null &&
@@ -605,7 +615,12 @@ function parseGPanoXMP(image, url) {
                         config.horizonRoll = xmp.horizonRoll;
                 }
                 
-                // TODO: add support for initial view settings
+                if (xmp.pitch != null && specifiedPhotoSphereExcludes.indexOf('pitch') < 0)
+                    config.pitch = xmp.pitch;
+                if (xmp.yaw != null && specifiedPhotoSphereExcludes.indexOf('yaw') < 0)
+                    config.yaw = xmp.yaw;
+                if (xmp.hfov != null && specifiedPhotoSphereExcludes.indexOf('hfov') < 0)
+                    config.hfov = xmp.hfov;
             }
         }
         
@@ -1232,12 +1247,12 @@ function keyRepeat() {
     if (prevTime === undefined) {
         prevTime = newTime;
     }
-    var diff = (newTime - prevTime) * config.hfov / 1700;
-    diff = Math.min(diff, 1.0);
+    var diff = (newTime - prevTime) * config.hfov / 1200;
+    diff = Math.min(diff, 10.0); // Avoid jump if something goes wrong with time diff
     
     // If minus key is down
     if (keysDown[0] && config.keyboardZoom === true) {
-        setHfov(config.hfov + (speed.hfov * 0.8 + 0.5) * diff);
+        setHfov(config.hfov + (speed.hfov * 0.8 + 0.4) * diff);
         isKeyDown = true;
     }
     
@@ -1328,6 +1343,10 @@ function keyRepeat() {
         }
         // Zoom
         if (!keysDown[0] && !keysDown[1] && !animatedMove.hfov) {
+            if (config.hfov > 90) {
+                // Slow down faster for wider HFOV
+                slowDownFactor *= 1 - (config.hfov - 90) / 90;
+            }
             setHfov(config.hfov + speed.hfov * diff * slowDownFactor);
         }
     }
@@ -1781,7 +1800,10 @@ function createHotSpot(hs) {
             imgp = config.basePath + imgp;
         a = document.createElement('a');
         a.href = sanitizeURL(hs.URL ? hs.URL : imgp, true);
-        a.target = '_blank';
+        if (config.targetBlank) {
+            a.target = '_blank';
+            a.rel = 'noopener';
+        }
         span.appendChild(a);
         var image = document.createElement('img');
         image.src = sanitizeURL(imgp);
@@ -1797,8 +1819,9 @@ function createHotSpot(hs) {
             for (var key in hs.attributes) {
                 a.setAttribute(key, hs.attributes[key]);
             }
-        } else {
+        } else if (config.targetBlank) {
             a.target = '_blank';
+            a.rel = 'noopener';
         }
         renderContainer.appendChild(a);
         div.className += ' pnlm-pointer';
@@ -2099,6 +2122,10 @@ function processOptions(isPreview) {
         infoDisplay.author.innerHTML = '';
     if (!config.hasOwnProperty('title') && !config.hasOwnProperty('author'))
         infoDisplay.container.style.display = 'none';
+    if (config.targetBlank) {
+        aboutMsgLink.rel = 'noopener';
+        aboutMsgLink.target = '_blank';
+    }
 
     // Fill in load button label and loading box text
     controls.load.innerHTML = '<div><p>' + config.strings.loadButtonLabel + '</p></div>';
@@ -2118,7 +2145,10 @@ function processOptions(isPreview) {
                 if (config.authorURL) {
                     var authorLink = document.createElement('a');
                     authorLink.href = sanitizeURL(config['authorURL'], true);
-                    authorLink.target = '_blank';
+                    if (config.targetBlank) {
+                        authorLink.target = '_blank';
+                        authorLink.rel = 'noopener';
+                    }
                     authorLink.innerHTML = escapeHTML(config[key]);
                     authorText = authorLink.outerHTML;
                 }
@@ -2129,7 +2159,10 @@ function processOptions(isPreview) {
             case 'fallback':
                 var link = document.createElement('a');
                 link.href = sanitizeURL(config[key], true);
-                link.target = '_blank';
+                if (config.targetBlank) {
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                }
                 link.textContent = 'Click here to view this panorama in an alternative viewer.';
                 var message = document.createElement('p');
                 message.textContent = 'Your browser does not support WebGL.';
@@ -2892,13 +2925,19 @@ this.setHorizonPitch = function(pitch) {
  * @param {number} [speed] - Auto rotation speed / direction. If not specified, previous value is used.
  * @param {number} [pitch] - The pitch to rotate at. If not specified, initial pitch is used.
  * @param {number} [hfov] - The HFOV to rotate at. If not specified, initial HFOV is used.
+ * @param {number} [inactivityDelay] - The delay, in milliseconds, after which
+ *      to automatically restart auto rotation if it is interupted by the user.
+ *      If not specified, auto rotation will not automatically restart after it
+ *      is stopped.
  * @returns {Viewer} `this`
  */
-this.startAutoRotate = function(speed, pitch, hfov) {
+this.startAutoRotate = function(speed, pitch, hfov, inactivityDelay) {
     speed = speed || autoRotateSpeed || 1;
     pitch = pitch === undefined ? origPitch : pitch;
     hfov = hfov === undefined ? origHfov : hfov;
     config.autoRotate = speed;
+    if (inactivityDelay !== undefined)
+        config.autoRotateInactivityDelay = inactivityDelay;
     _this.lookAt(pitch, undefined, hfov, 3000);
     animateInit();
     return this;

@@ -96,6 +96,7 @@ function parseURLParameters() {
 
     // Create viewer
     configFromURL.escapeHTML = true;
+    configFromURL.targetBlank = true;
     viewer = pannellum.viewer('container', configFromURL);
 }
 

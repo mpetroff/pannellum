@@ -104,7 +104,7 @@ def build(files, css, html, filename, release=False):
         else:
             print('No .git folder detected, setting version to testing')
             version = "testing"
-    js = js.replace('"_blank">Pannellum</a>','"_blank">Pannellum</a> ' + version)
+    js = js.replace('// VERSION PLACEHOLDER FOR BUILD', 'aboutMsgVersion.textContent = " ' + version + '";')
     with open('../../src/standalone/standalone.js', 'r') as f:
         standalone_js = f.read()
     standalone_js = JScompress(js + standalone_js)
