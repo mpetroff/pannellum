@@ -2925,13 +2925,19 @@ this.setHorizonPitch = function(pitch) {
  * @param {number} [speed] - Auto rotation speed / direction. If not specified, previous value is used.
  * @param {number} [pitch] - The pitch to rotate at. If not specified, initial pitch is used.
  * @param {number} [hfov] - The HFOV to rotate at. If not specified, initial HFOV is used.
+ * @param {number} [inactivityDelay] - The delay, in milliseconds, after which
+ *      to automatically restart auto rotation if it is interupted by the user.
+ *      If not specified, auto rotation will not automatically restart after it
+ *      is stopped.
  * @returns {Viewer} `this`
  */
-this.startAutoRotate = function(speed, pitch, hfov) {
+this.startAutoRotate = function(speed, pitch, hfov, inactivityDelay) {
     speed = speed || autoRotateSpeed || 1;
     pitch = pitch === undefined ? origPitch : pitch;
     hfov = hfov === undefined ? origHfov : hfov;
     config.autoRotate = speed;
+    if (inactivityDelay !== undefined)
+        config.autoRotateInactivityDelay = inactivityDelay;
     _this.lookAt(pitch, undefined, hfov, 3000);
     animateInit();
     return this;
