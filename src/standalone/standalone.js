@@ -1,8 +1,11 @@
-function anError(error) {
+function anError(error, showHTML) {
     var errorMsg = document.createElement('div');
     errorMsg.className = 'pnlm-info-box';
     var p = document.createElement('p');
-    p.textContent = error;
+    if (showHTML)
+        p.innerHTML = error;
+    else
+        p.textContent = error;
     errorMsg.appendChild(p);
     document.getElementById('container').appendChild(errorMsg);
 }
@@ -59,7 +62,7 @@ function parseURLParameters() {
                 var a = document.createElement('a');
                 a.href = configFromURL.config;
                 a.textContent = a.href;
-                anError('The file ' + a.outerHTML + ' could not be accessed.');
+                anError('The file ' + a.outerHTML + ' could not be accessed.', true);
                 return;
             }
 
