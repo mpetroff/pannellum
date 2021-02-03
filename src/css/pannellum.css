@@ -321,6 +321,9 @@
 .pnlm-interaction-msg {
     display: none;
 	pointer-events: none;
+	background: rgba(0,0,0,0.7);
+	opacity: 1;
+	transition: opacity 0.75s ease-out;
 }
 
 .pnlm-about-msg {

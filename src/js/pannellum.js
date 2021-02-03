@@ -108,7 +108,7 @@ var defaultConfig = {
     avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
-	dragConfirm: 'pitch',
+    dragConfirm: 'pitch',
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
     targetBlank: false,
@@ -140,9 +140,9 @@ defaultConfig.strings = {
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
     twoTouchActivate: 'Use two fingers to pan the panorama.',
-	twoTouchXActivate: 'Use two fingers together to yaw the panorama.',
-	twoTouchYActivate: 'Use two fingers together to pitch the panorama.',
-	ctrlZoomActivate: 'Hold down the Ctrl key while using the mouse wheel to change zoom.',
+    twoTouchXActivate: 'Use two fingers together to yaw the panorama.',
+    twoTouchYActivate: 'Use two fingers together to pitch the panorama.',
+    ctrlZoomActivate: 'Hold down the Ctrl key while using the mouse wheel to change zoom.',
 };
 
 // Initialize container
@@ -711,12 +711,20 @@ function clearError() {
  * @param {string} msg - Message to display.
  */
 function showInteractionMessage(interactionMsg) {
+    infoDisplay.interactionMsg.style.opacity = 1;
+
     infoDisplay.interactionMsg.innerHTML = '<p>' + interactionMsg + '</p>';
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'none';
     infoDisplay.interactionMsg.style.display = 'table';
-	// TODO: Hide message after a short period
-	fireEvent('messageshown');
+    fireEvent('messageshown');
+
+    clearTimeout(infoDisplay.t3);
+	infoDisplay.interactionMsg.removeEventListener('transitionend', clearInteractionMessage);
+    infoDisplay.t3 = setTimeout(function() {
+        infoDisplay.interactionMsg.style.opacity = 0;
+        infoDisplay.interactionMsg.addEventListener('transitionend', clearInteractionMessage);
+    }, 2000);
 }
 
 /**
@@ -724,8 +732,9 @@ function showInteractionMessage(interactionMsg) {
  * @private
  */
 function clearInteractionMessage() {
-	infoDisplay.interactionMsg.style.display = 'none';
-	fireEvent('messagecleared');
+    infoDisplay.interactionMsg.style.opacity = 0;
+    infoDisplay.interactionMsg.style.display = 'none';
+    fireEvent('messagecleared');
 }
 
 /**
@@ -989,32 +998,32 @@ function onDocumentTouchMove(event) {
         var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
 
-		if ((config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
-			if (onPointerDownPointerX != clientX) {
-				showInteractionMessage(config.strings.twoTouchXActivate);
-			}
-		} else {
-			var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
-			speed.yaw = (yaw - config.yaw) % 360 * 0.2;
-			config.yaw = yaw;
-		}
+        if ((config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
+            if (onPointerDownPointerX != clientX) {
+                showInteractionMessage(config.strings.twoTouchXActivate);
+            }
+        } else {
+            var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
+            speed.yaw = (yaw - config.yaw) % 360 * 0.2;
+            config.yaw = yaw;
+        }
 
 
-		if ((config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
-			if (onPointerDownPointerY != clientY) {
-				showInteractionMessage(config.strings.twoTouchYActivate);
-			}
-		} else {
-			var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
-			speed.pitch = (pitch - config.pitch) * 0.2;
-			config.pitch = pitch;
-		}
+        if ((config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
+            if (onPointerDownPointerY != clientY) {
+                showInteractionMessage(config.strings.twoTouchYActivate);
+            }
+        } else {
+            var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
+            speed.pitch = (pitch - config.pitch) * 0.2;
+            config.pitch = pitch;
+        }
 
 
-		if ((config.dragConfirm == 'yaw' || config.dragConfirm == 'pitch' || config.dragConfirm == 'both') && event.targetTouches.length == 2) {
-			clearInteractionMessage();
-			event.preventDefault();
-		}
+        if ((config.dragConfirm == 'yaw' || config.dragConfirm == 'pitch' || config.dragConfirm == 'both') && event.targetTouches.length == 2) {
+            clearInteractionMessage();
+            event.preventDefault();
+        }
 
     }
 }
@@ -1116,19 +1125,17 @@ function onDocumentPointerUp(event) {
  * @param {WheelEvent} event - Document mouse wheel event.
  */
 function onDocumentMouseWheel(event) {
-	console.log(event);
     // Only do something if the panorama is loaded and mouse wheel zoom is enabled
     if (!loaded || (config.mouseZoom == 'fullscreenonly' && !fullscreenActive)) {
         return;
     }
 
-	// Ctrl for zoom
-	console.log(keysDown);
-	if(config.mouseZoom == 'ctrl' && !event.ctrlKey) {
-		showInteractionMessage(config.strings.ctrlZoomActivate);
-		return;
-	}
-	clearInteractionMessage();
+    // Ctrl for zoom
+    if(config.mouseZoom == 'ctrl' && !event.ctrlKey) {
+        showInteractionMessage(config.strings.ctrlZoomActivate);
+        return;
+    }
+    clearInteractionMessage();
 
     event.preventDefault();
 
@@ -2449,7 +2456,7 @@ function load() {
     clearError();
     loaded = false;
 
-	clearInteractionMessage();
+    clearInteractionMessage();
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'inline';
     init();
