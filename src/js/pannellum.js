@@ -98,7 +98,7 @@ var defaultConfig = {
     dynamicUpdate: false,
     doubleClickZoom: true,
     keyboardZoom: true,
-    mouseZoom: true,
+    mouseZoom: 'ctrl',
     showZoomCtrl: true,
     autoLoad: false,
     showControls: true,
@@ -108,6 +108,7 @@ var defaultConfig = {
     avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
+	dragConfirm: 'pitch',
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
     targetBlank: false,
@@ -138,6 +139,10 @@ defaultConfig.strings = {
                 '%spx wide. Try another device.' +
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
+    twoTouchActivate: 'Use two fingers to pan the panorama.',
+	twoTouchXActivate: 'Use two fingers together to yaw the panorama.',
+	twoTouchYActivate: 'Use two fingers together to pitch the panorama.',
+	ctrlZoomActivate: 'Hold down the Ctrl key while using the mouse wheel to change zoom.',
 };
 
 // Initialize container
@@ -215,6 +220,11 @@ uiContainer.appendChild(infoDisplay.load.box);
 infoDisplay.errorMsg = document.createElement('div');
 infoDisplay.errorMsg.className = 'pnlm-error-msg pnlm-info-box';
 uiContainer.appendChild(infoDisplay.errorMsg);
+
+// Interaction message
+infoDisplay.interactionMsg = document.createElement('p');
+infoDisplay.interactionMsg.className = 'pnlm-interaction-msg pnlm-info-box';
+uiContainer.appendChild(infoDisplay.interactionMsg);
 
 // Create controls
 var controls = {};
@@ -696,6 +706,29 @@ function clearError() {
 }
 
 /**
+ * Displays an interaction message.
+ * @private
+ * @param {string} msg - Message to display.
+ */
+function showInteractionMessage(interactionMsg) {
+    infoDisplay.interactionMsg.innerHTML = '<p>' + interactionMsg + '</p>';
+    controls.load.style.display = 'none';
+    infoDisplay.load.box.style.display = 'none';
+    infoDisplay.interactionMsg.style.display = 'table';
+	// TODO: Hide message after a short period
+	fireEvent('messageshown');
+}
+
+/**
+ * Hides interaction message display.
+ * @private
+ */
+function clearInteractionMessage() {
+	infoDisplay.interactionMsg.style.display = 'none';
+	fireEvent('messagecleared');
+}
+
+/**
  * Displays about message.
  * @private
  * @param {MouseEvent} event - Right click location
@@ -928,7 +961,6 @@ function onDocumentTouchMove(event) {
     }
 
     // Override default action
-    event.preventDefault();
     if (loaded) {
         latestInteraction = Date.now();
     }
@@ -936,7 +968,7 @@ function onDocumentTouchMove(event) {
         var pos0 = mousePosition(event.targetTouches[0]);
         var clientX = pos0.x;
         var clientY = pos0.y;
-        
+
         if (event.targetTouches.length == 2 && onPointerDownPointerDist != -1) {
             var pos1 = mousePosition(event.targetTouches[1]);
             clientX += (pos1.x - pos0.x) * 0.5;
@@ -956,13 +988,34 @@ function onDocumentTouchMove(event) {
         // the user's finger while panning regardless of zoom level / config.hfov value.
         var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
-        var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
-        speed.yaw = (yaw - config.yaw) % 360 * 0.2;
-        config.yaw = yaw;
 
-        var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
-        speed.pitch = (pitch - config.pitch) * 0.2;
-        config.pitch = pitch;
+		if ((config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
+			if (onPointerDownPointerX != clientX) {
+				showInteractionMessage(config.strings.twoTouchXActivate);
+			}
+		} else {
+			var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
+			speed.yaw = (yaw - config.yaw) % 360 * 0.2;
+			config.yaw = yaw;
+		}
+
+
+		if ((config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
+			if (onPointerDownPointerY != clientY) {
+				showInteractionMessage(config.strings.twoTouchYActivate);
+			}
+		} else {
+			var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
+			speed.pitch = (pitch - config.pitch) * 0.2;
+			config.pitch = pitch;
+		}
+
+
+		if ((config.dragConfirm == 'yaw' || config.dragConfirm == 'pitch' || config.dragConfirm == 'both') && event.targetTouches.length == 2) {
+			clearInteractionMessage();
+			event.preventDefault();
+		}
+
     }
 }
 
@@ -1063,10 +1116,19 @@ function onDocumentPointerUp(event) {
  * @param {WheelEvent} event - Document mouse wheel event.
  */
 function onDocumentMouseWheel(event) {
+	console.log(event);
     // Only do something if the panorama is loaded and mouse wheel zoom is enabled
     if (!loaded || (config.mouseZoom == 'fullscreenonly' && !fullscreenActive)) {
         return;
     }
+
+	// Ctrl for zoom
+	console.log(keysDown);
+	if(config.mouseZoom == 'ctrl' && !event.ctrlKey) {
+		showInteractionMessage(config.strings.ctrlZoomActivate);
+		return;
+	}
+	clearInteractionMessage();
 
     event.preventDefault();
 
@@ -2387,6 +2449,7 @@ function load() {
     clearError();
     loaded = false;
 
+	clearInteractionMessage();
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'inline';
     init();

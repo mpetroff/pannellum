@@ -318,6 +318,11 @@
     display: none;
 }
 
+.pnlm-interaction-msg {
+    display: none;
+	pointer-events: none;
+}
+
 .pnlm-about-msg {
     font-size: 11px;
     line-height: 11px;
