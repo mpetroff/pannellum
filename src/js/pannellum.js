@@ -998,7 +998,7 @@ function onDocumentTouchMove(event) {
         var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
 
-        if ((config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
+        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
             if (onPointerDownPointerX != clientX) {
                 showInteractionMessage(config.strings.twoTouchXActivate);
             }
@@ -1009,7 +1009,7 @@ function onDocumentTouchMove(event) {
         }
 
 
-        if ((config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
+        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
             if (onPointerDownPointerY != clientY) {
                 showInteractionMessage(config.strings.twoTouchYActivate);
             }
@@ -1131,7 +1131,7 @@ function onDocumentMouseWheel(event) {
     }
 
     // Ctrl for zoom
-    if(config.mouseZoom == 'ctrl' && !event.ctrlKey) {
+    if (!fullscreenActive && config.mouseZoom == 'ctrl' && !event.ctrlKey) {
         showInteractionMessage(config.strings.ctrlZoomActivate);
         return;
     }
