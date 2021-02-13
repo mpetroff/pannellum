@@ -713,14 +713,12 @@ function showInteractionMessage(interactionMsg) {
     infoDisplay.interactionMsg.style.opacity = 1;
 
     infoDisplay.interactionMsg.innerHTML = '<p>' + interactionMsg + '</p>';
-    controls.load.style.display = 'none';
-    infoDisplay.load.box.style.display = 'none';
     infoDisplay.interactionMsg.style.display = 'table';
     fireEvent('messageshown');
 
-    clearTimeout(infoDisplay.t3);
+    clearTimeout(infoDisplay.interactionMsg.timeout);
     infoDisplay.interactionMsg.removeEventListener('transitionend', clearInteractionMessage);
-    infoDisplay.t3 = setTimeout(function() {
+    infoDisplay.interactionMsg.timeout = setTimeout(function() {
         infoDisplay.interactionMsg.style.opacity = 0;
         infoDisplay.interactionMsg.addEventListener('transitionend', clearInteractionMessage);
     }, 2000);
