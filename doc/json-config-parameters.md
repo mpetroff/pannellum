@@ -114,10 +114,6 @@ disabled. Defaults to `true`.
 ### `draggable` (boolean)
 
 If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
-Can also be set to `pitch`, `yaw`, or `both`. If set to `pitch` or `both`, two
-fingers need to be used to pan vertically (except while the viewer is
-fullscreen). If set to `yaw` or `both`, two fingers need to be used to pan
-horizontally (except while the viewer is fullscreen).
 
 
 ### `dragConfirm` (boolean or string)
