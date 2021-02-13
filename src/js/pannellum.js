@@ -108,6 +108,7 @@ var defaultConfig = {
     avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
+    dragConfirm: false,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
     targetBlank: false,
@@ -138,6 +139,10 @@ defaultConfig.strings = {
                 '%spx wide. Try another device.' +
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
+    twoTouchActivate: 'Use two fingers together to pan the panorama.',
+    twoTouchXActivate: 'Use two fingers together to pan the panorama horizontally.',
+    twoTouchYActivate: 'Use two fingers together to pan the panorama vertically.',
+    ctrlZoomActivate: 'Use %s + scroll to zoom the panorama.',  // One substitution: key name
 };
 
 // Initialize container
@@ -215,6 +220,11 @@ uiContainer.appendChild(infoDisplay.load.box);
 infoDisplay.errorMsg = document.createElement('div');
 infoDisplay.errorMsg.className = 'pnlm-error-msg pnlm-info-box';
 uiContainer.appendChild(infoDisplay.errorMsg);
+
+// Interaction message
+infoDisplay.interactionMsg = document.createElement('div');
+infoDisplay.interactionMsg.className = 'pnlm-interaction-msg pnlm-info-box';
+uiContainer.appendChild(infoDisplay.interactionMsg);
 
 // Create controls
 var controls = {};
@@ -696,6 +706,36 @@ function clearError() {
 }
 
 /**
+ * Displays an interaction message.
+ * @private
+ * @param {string} msg - Message to display.
+ */
+function showInteractionMessage(interactionMsg) {
+    infoDisplay.interactionMsg.style.opacity = 1;
+
+    infoDisplay.interactionMsg.innerHTML = '<p>' + interactionMsg + '</p>';
+    infoDisplay.interactionMsg.style.display = 'table';
+    fireEvent('messageshown');
+
+    clearTimeout(infoDisplay.interactionMsg.timeout);
+    infoDisplay.interactionMsg.removeEventListener('transitionend', clearInteractionMessage);
+    infoDisplay.interactionMsg.timeout = setTimeout(function() {
+        infoDisplay.interactionMsg.style.opacity = 0;
+        infoDisplay.interactionMsg.addEventListener('transitionend', clearInteractionMessage);
+    }, 2000);
+}
+
+/**
+ * Hides interaction message display.
+ * @private
+ */
+function clearInteractionMessage() {
+    infoDisplay.interactionMsg.style.opacity = 0;
+    infoDisplay.interactionMsg.style.display = 'none';
+    fireEvent('messagecleared');
+}
+
+/**
  * Displays about message.
  * @private
  * @param {MouseEvent} event - Right click location
@@ -928,7 +968,8 @@ function onDocumentTouchMove(event) {
     }
 
     // Override default action
-    event.preventDefault();
+    if (!config.dragConfirm)
+        event.preventDefault();
     if (loaded) {
         latestInteraction = Date.now();
     }
@@ -936,7 +977,7 @@ function onDocumentTouchMove(event) {
         var pos0 = mousePosition(event.targetTouches[0]);
         var clientX = pos0.x;
         var clientY = pos0.y;
-        
+
         if (event.targetTouches.length == 2 && onPointerDownPointerDist != -1) {
             var pos1 = mousePosition(event.targetTouches[1]);
             clientX += (pos1.x - pos0.x) * 0.5;
@@ -956,13 +997,40 @@ function onDocumentTouchMove(event) {
         // the user's finger while panning regardless of zoom level / config.hfov value.
         var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
-        var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
-        speed.yaw = (yaw - config.yaw) % 360 * 0.2;
-        config.yaw = yaw;
 
-        var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
-        speed.pitch = (pitch - config.pitch) * 0.2;
-        config.pitch = pitch;
+        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
+            if (onPointerDownPointerX != clientX) {
+                if (config.dragConfirm == 'yaw')
+                    showInteractionMessage(config.strings.twoTouchXActivate);
+                else
+                    showInteractionMessage(config.strings.twoTouchActivate);
+            }
+        } else {
+            var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
+            speed.yaw = (yaw - config.yaw) % 360 * 0.2;
+            config.yaw = yaw;
+        }
+
+
+        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
+            if (onPointerDownPointerY != clientY) {
+                if (config.dragConfirm == 'pitch')
+                    showInteractionMessage(config.strings.twoTouchYActivate);
+                else
+                    showInteractionMessage(config.strings.twoTouchActivate);
+            }
+        } else {
+            var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
+            speed.pitch = (pitch - config.pitch) * 0.2;
+            config.pitch = pitch;
+        }
+
+
+        if ((config.dragConfirm == 'yaw' || config.dragConfirm == 'pitch' || config.dragConfirm == 'both') && event.targetTouches.length == 2) {
+            clearInteractionMessage();
+            event.preventDefault();
+        }
+
     }
 }
 
@@ -1068,6 +1136,14 @@ function onDocumentMouseWheel(event) {
         return;
     }
 
+    // Ctrl for zoom
+    if (!fullscreenActive && config.mouseZoom == 'ctrl' && !event.ctrlKey) {
+        var keyname = navigator.platform.indexOf('Mac') != -1 ? 'control' : 'ctrl';
+        showInteractionMessage(config.strings.ctrlZoomActivate.replace('%s', '<kbd class="pnlm-outline">' + keyname + '</kbd>'));
+        return;
+    }
+    clearInteractionMessage();
+
     event.preventDefault();
 
     // Turn off auto-rotation if enabled
@@ -1108,6 +1184,10 @@ function onDocumentKeyPress(event) {
 
     // Override default action for keys that are used
     if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
+        return;
+    if (!fullscreenActive && (keynumber == 16 || keynumber == 17) && config.mouseZoom == 'ctrl')
+        // Disable ctrl / shift zoom when holding the ctrl key is required for
+        // scroll wheel zooming
         return;
     event.preventDefault();
     
@@ -2387,6 +2467,7 @@ function load() {
     clearError();
     loaded = false;
 
+    clearInteractionMessage();
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'inline';
     init();

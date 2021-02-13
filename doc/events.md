@@ -63,3 +63,12 @@ Fired when a touch starts. Passes `TouchEvent` to handler.
 
 Fired when a touch ends. Passes `TouchEvent` to handler.
 
+
+## `messageshown`
+
+Fired when a message, e.g., for needing `ctrl` + scroll to zoom, is shown.
+
+
+## `messagecleared`
+
+Fired when a previously shown message is cleared.
