@@ -221,7 +221,7 @@ infoDisplay.errorMsg.className = 'pnlm-error-msg pnlm-info-box';
 uiContainer.appendChild(infoDisplay.errorMsg);
 
 // Interaction message
-infoDisplay.interactionMsg = document.createElement('p');
+infoDisplay.interactionMsg = document.createElement('div');
 infoDisplay.interactionMsg.className = 'pnlm-interaction-msg pnlm-info-box';
 uiContainer.appendChild(infoDisplay.interactionMsg);
 
