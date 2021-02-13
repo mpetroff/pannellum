@@ -111,9 +111,18 @@ If set to `false`, the zoom to click location on double click function will be
 disabled. Defaults to `true`.
 
 
-### `draggable` (boolean or string)
+### `draggable` (boolean)
 
 If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
+Can also be set to `pitch`, `yaw`, or `both`. If set to `pitch` or `both`, two
+fingers need to be used to pan vertically (except while the viewer is
+fullscreen). If set to `yaw` or `both`, two fingers need to be used to pan
+horizontally (except while the viewer is fullscreen).
+
+
+### `dragConfirm` (boolean or string)
+
+If set to `false`, one finger can be used to pan viewer. Defaults to `false`.
 Can also be set to `pitch`, `yaw`, or `both`. If set to `pitch` or `both`, two
 fingers need to be used to pan vertically (except while the viewer is
 fullscreen). If set to `yaw` or `both`, two fingers need to be used to pan

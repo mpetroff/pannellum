@@ -108,6 +108,7 @@ var defaultConfig = {
     avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
+    dragConfirm: false,
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
     targetBlank: false,
@@ -138,7 +139,7 @@ defaultConfig.strings = {
                 '%spx wide. Try another device.' +
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
-    twoTouchActivate: 'Use two fingers to pan the panorama.',
+    twoTouchActivate: 'Use two fingers together to pan the panorama.',
     twoTouchXActivate: 'Use two fingers together to pan the panorama horizontally.',
     twoTouchYActivate: 'Use two fingers together to pan the panorama vertically.',
     ctrlZoomActivate: 'Use %s + scroll to zoom the panorama.',  // One substitution: key name
@@ -967,6 +968,8 @@ function onDocumentTouchMove(event) {
     }
 
     // Override default action
+    if (!config.dragConfirm)
+        event.preventDefault();
     if (loaded) {
         latestInteraction = Date.now();
     }
@@ -995,9 +998,12 @@ function onDocumentTouchMove(event) {
         var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
 
-        if (!fullscreenActive && (config.draggable == 'both' || config.draggable == 'yaw') && event.targetTouches.length != 2) {
+        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
             if (onPointerDownPointerX != clientX) {
-                showInteractionMessage(config.strings.twoTouchXActivate);
+                if (config.dragConfirm == 'yaw')
+                    showInteractionMessage(config.strings.twoTouchXActivate);
+                else
+                    showInteractionMessage(config.strings.twoTouchActivate);
             }
         } else {
             var yaw = (onPointerDownPointerX - clientX) * touchmovePanSpeedCoeff + onPointerDownYaw;
@@ -1006,9 +1012,12 @@ function onDocumentTouchMove(event) {
         }
 
 
-        if (!fullscreenActive && (config.draggable == 'both' || config.draggable == 'pitch') && event.targetTouches.length != 2) {
+        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
             if (onPointerDownPointerY != clientY) {
-                showInteractionMessage(config.strings.twoTouchYActivate);
+                if (config.dragConfirm == 'pitch')
+                    showInteractionMessage(config.strings.twoTouchYActivate);
+                else
+                    showInteractionMessage(config.strings.twoTouchActivate);
             }
         } else {
             var pitch = (clientY - onPointerDownPointerY) * touchmovePanSpeedCoeff + onPointerDownPitch;
@@ -1017,7 +1026,7 @@ function onDocumentTouchMove(event) {
         }
 
 
-        if ((config.draggable == 'yaw' || config.draggable == 'pitch' || config.draggable == 'both') && event.targetTouches.length == 2) {
+        if ((config.dragConfirm == 'yaw' || config.dragConfirm == 'pitch' || config.dragConfirm == 'both') && event.targetTouches.length == 2) {
             clearInteractionMessage();
             event.preventDefault();
         }
