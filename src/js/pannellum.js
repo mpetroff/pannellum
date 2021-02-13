@@ -98,7 +98,7 @@ var defaultConfig = {
     dynamicUpdate: false,
     doubleClickZoom: true,
     keyboardZoom: true,
-    mouseZoom: 'ctrl',
+    mouseZoom: true,
     showZoomCtrl: true,
     autoLoad: false,
     showControls: true,
@@ -108,7 +108,6 @@ var defaultConfig = {
     avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
-    dragConfirm: 'pitch',
     disableKeyboardCtrl: false,
     crossOrigin: 'anonymous',
     targetBlank: false,
@@ -140,8 +139,8 @@ defaultConfig.strings = {
                 ' (If you\'re the author, try scaling down the image.)',    // Two substitutions: image width, max image width
     unknownError: 'Unknown error. Check developer console.',
     twoTouchActivate: 'Use two fingers to pan the panorama.',
-    twoTouchXActivate: 'Use two fingers together to yaw the panorama.',
-    twoTouchYActivate: 'Use two fingers together to pitch the panorama.',
+    twoTouchXActivate: 'Use two fingers together to pan the panorama horizontally.',
+    twoTouchYActivate: 'Use two fingers together to pan the panorama vertically.',
     ctrlZoomActivate: 'Use ctrl + scroll to zoom the panorama.',
 };
 
@@ -998,7 +997,7 @@ function onDocumentTouchMove(event) {
         var touchmovePanSpeedCoeff = (config.hfov / 360) * config.touchPanSpeedCoeffFactor;
 
 
-        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'yaw') && event.targetTouches.length != 2) {
+        if (!fullscreenActive && (config.draggable == 'both' || config.draggable == 'yaw') && event.targetTouches.length != 2) {
             if (onPointerDownPointerX != clientX) {
                 showInteractionMessage(config.strings.twoTouchXActivate);
             }
@@ -1009,7 +1008,7 @@ function onDocumentTouchMove(event) {
         }
 
 
-        if (!fullscreenActive && (config.dragConfirm == 'both' || config.dragConfirm == 'pitch') && event.targetTouches.length != 2) {
+        if (!fullscreenActive && (config.draggable == 'both' || config.draggable == 'pitch') && event.targetTouches.length != 2) {
             if (onPointerDownPointerY != clientY) {
                 showInteractionMessage(config.strings.twoTouchYActivate);
             }
@@ -1020,7 +1019,7 @@ function onDocumentTouchMove(event) {
         }
 
 
-        if ((config.dragConfirm == 'yaw' || config.dragConfirm == 'pitch' || config.dragConfirm == 'both') && event.targetTouches.length == 2) {
+        if ((config.draggable == 'yaw' || config.draggable == 'pitch' || config.draggable == 'both') && event.targetTouches.length == 2) {
             clearInteractionMessage();
             event.preventDefault();
         }

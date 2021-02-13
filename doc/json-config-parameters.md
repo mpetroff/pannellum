@@ -99,7 +99,9 @@ If set to `false`, zooming with keyboard will be disabled. Defaults to `true`.
 
 If set to `false`, zooming with mouse wheel will be disabled. Defaults to `true`.
 Can also be set to `fullscreenonly`, in which case it is only enabled when the
-viewer is fullscreen.
+viewer is fullscreen. Can also be set to `ctrl`, in which case the `ctrl` key
+must be held down to zoom with the mouse wheel (except while the viewer is
+fullscreen).
 
 
 ### `doubleClickZoom` (boolean)
@@ -108,9 +110,13 @@ If set to `false`, the zoom to click location on double click function will be
 disabled. Defaults to `true`.
 
 
-### `draggable` (boolean)
+### `draggable` (boolean or string)
 
 If set to `false`, mouse and touch dragging is disabled. Defaults to `true`.
+Can also be set to `pitch`, `yaw`, or `both`. If set to `pitch` or `both`, two
+fingers need to be used to pan vertically (except while the viewer is
+fullscreen). If set to `yaw` or `both`, two fingers need to be used to pan
+horizontally (except while the viewer is fullscreen).
 
 
 ### `friction` (number)
