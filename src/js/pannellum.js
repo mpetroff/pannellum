@@ -141,7 +141,7 @@ defaultConfig.strings = {
     twoTouchActivate: 'Use two fingers to pan the panorama.',
     twoTouchXActivate: 'Use two fingers together to pan the panorama horizontally.',
     twoTouchYActivate: 'Use two fingers together to pan the panorama vertically.',
-    ctrlZoomActivate: 'Use ctrl + scroll to zoom the panorama.',
+    ctrlZoomActivate: 'Use %s + scroll to zoom the panorama.',  // One substitution: key name
 };
 
 // Initialize container
@@ -1131,7 +1131,8 @@ function onDocumentMouseWheel(event) {
 
     // Ctrl for zoom
     if (!fullscreenActive && config.mouseZoom == 'ctrl' && !event.ctrlKey) {
-        showInteractionMessage(config.strings.ctrlZoomActivate);
+        var keyname = navigator.platform.indexOf('Mac') != -1 ? 'control' : 'ctrl';
+        showInteractionMessage(config.strings.ctrlZoomActivate.replace('%s', '<kbd class="pnlm-outline">' + keyname + '</kbd>'));
         return;
     }
     clearInteractionMessage();
