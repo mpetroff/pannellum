@@ -1872,7 +1872,7 @@ function createHotSpot(hs) {
         video.src = sanitizeURL(vidp);
         video.controls = true;
         video.style.width = hs.width + 'px';
-        renderContainer.appendChild(div);
+        uiContainer.appendChild(div);
         span.appendChild(video);
     } else if (hs.image) {
         var imgp = hs.image;
@@ -1889,7 +1889,7 @@ function createHotSpot(hs) {
         image.src = sanitizeURL(imgp);
         image.style.width = hs.width + 'px';
         image.style.paddingTop = '5px';
-        renderContainer.appendChild(div);
+        uiContainer.appendChild(div);
         a.appendChild(image);
         span.style.maxWidth = 'initial';
     } else if (hs.URL) {
@@ -1903,7 +1903,7 @@ function createHotSpot(hs) {
             a.target = '_blank';
             a.rel = 'noopener';
         }
-        renderContainer.appendChild(a);
+        uiContainer.appendChild(a);
         div.className += ' pnlm-pointer';
         span.className += ' pnlm-pointer';
         a.appendChild(div);
@@ -1919,7 +1919,7 @@ function createHotSpot(hs) {
             div.className += ' pnlm-pointer';
             span.className += ' pnlm-pointer';
         }
-        renderContainer.appendChild(div);
+        uiContainer.appendChild(div);
     }
 
     if (hs.createTooltipFunc) {
@@ -2024,10 +2024,10 @@ function destroyHotSpots() {
         for (var i = 0; i < hs.length; i++) {
             var current = hs[i].div;
             if (current) {
-                while (current.parentNode && current.parentNode != renderContainer) {
+                while (current.parentNode && current.parentNode != uiContainer) {
                     current = current.parentNode;
                 }
-                renderContainer.removeChild(current);
+                uiContainer.removeChild(current);
             }
             delete hs[i].div;
         }
@@ -3221,9 +3221,9 @@ this.removeHotSpot = function(hotSpotId, sceneId) {
                 config.hotSpots[i].id === hotSpotId) {
                 // Delete hot spot DOM elements
                 var current = config.hotSpots[i].div;
-                while (current.parentNode != renderContainer)
+                while (current.parentNode != uiContainer)
                     current = current.parentNode;
-                renderContainer.removeChild(current);
+                uiContainer.removeChild(current);
                 delete config.hotSpots[i].div;
                 // Remove hot spot from configuration
                 config.hotSpots.splice(i, 1);

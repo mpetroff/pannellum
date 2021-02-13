@@ -300,6 +300,7 @@
     text-align: center;
     color: #fff;
     table-layout: fixed;
+    z-index: 1;
 }
 
 .pnlm-info-box a, .pnlm-author-box a {
@@ -371,7 +372,7 @@
     cursor: default;
     vertical-align: middle;
     top: 0;
-    z-index: 1;
+    z-index: 0;
 }
 .pnlm-hotspot {
     height: 26px;
