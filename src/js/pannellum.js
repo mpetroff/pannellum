@@ -142,7 +142,7 @@ defaultConfig.strings = {
     twoTouchActivate: 'Use two fingers to pan the panorama.',
     twoTouchXActivate: 'Use two fingers together to yaw the panorama.',
     twoTouchYActivate: 'Use two fingers together to pitch the panorama.',
-    ctrlZoomActivate: 'Hold down the Ctrl key while using the mouse wheel to change zoom.',
+    ctrlZoomActivate: 'Use ctrl + scroll to zoom the panorama.',
 };
 
 // Initialize container
@@ -720,7 +720,7 @@ function showInteractionMessage(interactionMsg) {
     fireEvent('messageshown');
 
     clearTimeout(infoDisplay.t3);
-	infoDisplay.interactionMsg.removeEventListener('transitionend', clearInteractionMessage);
+    infoDisplay.interactionMsg.removeEventListener('transitionend', clearInteractionMessage);
     infoDisplay.t3 = setTimeout(function() {
         infoDisplay.interactionMsg.style.opacity = 0;
         infoDisplay.interactionMsg.addEventListener('transitionend', clearInteractionMessage);

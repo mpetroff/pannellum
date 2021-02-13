@@ -320,10 +320,15 @@
 
 .pnlm-interaction-msg {
     display: none;
-	pointer-events: none;
-	background: rgba(0,0,0,0.7);
-	opacity: 1;
-	transition: opacity 0.75s ease-out;
+    pointer-events: none;
+    background: rgba(0,0,0,0.7);
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    top: 0;
+    left: 0;
 }
 
 .pnlm-about-msg {
