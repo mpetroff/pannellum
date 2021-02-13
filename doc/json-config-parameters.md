@@ -101,7 +101,8 @@ If set to `false`, zooming with mouse wheel will be disabled. Defaults to `true`
 Can also be set to `fullscreenonly`, in which case it is only enabled when the
 viewer is fullscreen. Can also be set to `ctrl`, in which case the `ctrl` key
 must be held down to zoom with the mouse wheel (except while the viewer is
-fullscreen).
+fullscreen); when the `ctrl` key is required for mouse wheel zooming, the use
+of `ctrl` / `shift` for zoom control is disabled.
 
 
 ### `doubleClickZoom` (boolean)

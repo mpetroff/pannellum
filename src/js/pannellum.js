@@ -1177,6 +1177,10 @@ function onDocumentKeyPress(event) {
     // Override default action for keys that are used
     if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
         return;
+    if (!fullscreenActive && (keynumber == 16 || keynumber == 17) && config.mouseZoom == 'ctrl')
+        // Disable ctrl / shift zoom when holding the ctrl key is required for
+        // scroll wheel zooming
+        return;
     event.preventDefault();
     
     // If escape key is pressed
