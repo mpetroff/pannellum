@@ -3259,16 +3259,6 @@ this.resize = function() {
 };
 
 /**
- * Check if a panorama is loaded.
- * @memberof Viewer
- * @instance
- * @returns {boolean} True if a panorama is loaded, else false
- */
-this.isLoaded = function() {
-    return loaded;
-};
-
-/**
  * Check if device orientation control is supported.
  * @memberof Viewer
  * @instance
