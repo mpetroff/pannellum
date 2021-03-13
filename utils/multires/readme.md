@@ -80,12 +80,12 @@ $ python3 -m http.server
 
 A generated tileset and configuration in `utils/multires/output` can then be viewed by navigating a browser to:
 
-[http://localhost:8000/src/standalone/pannellum.htm?config=../../utils/multires/output/config.json](http://localhost:8000/src/standalone/pannellum.htm?config=../../utils/multires/output/config.json)
+[http://localhost:8000/src/standalone/pannellum.htm#config=../../utils/multires/output/config.json](http://localhost:8000/src/standalone/pannellum.htm#config=../../utils/multires/output/config.json)
 
 When the page is loaded, the console will output a logging stream corresponding to the HTTP requests:
 
 ```bash
-127.0.0.1 - - [09/Aug/2019 09:41:24] "GET /src/standalone/pannellum.htm?config=../../utils/multires/output/config.json HTTP/1.1" 200 -
+127.0.0.1 - - [09/Aug/2019 09:41:24] "GET /src/standalone/pannellum.htm HTTP/1.1" 200 -
 127.0.0.1 - - [09/Aug/2019 09:41:24] "GET /src/css/pannellum.css HTTP/1.1" 200 -
 127.0.0.1 - - [09/Aug/2019 09:41:24] "GET /src/standalone/standalone.css HTTP/1.1" 200 -
 127.0.0.1 - - [09/Aug/2019 09:41:24] "GET /src/js/libpannellum.js HTTP/1.1" 200 -

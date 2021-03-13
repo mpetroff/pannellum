@@ -28,7 +28,7 @@ If you would like to locally test or self-host Pannellum, continue to the _How t
 2. Use the included multi-resolution generator (`utils/multires/generate.py`), the configuration tool (`utils/config/configuration.htm`), or create a configuration from scratch or based on an [example](https://pannellum.org/documentation/examples/simple-example/).
 3. Insert the generated `<iframe>` code into a page, or create a more advanced configuration with [JSON](https://pannellum.org/documentation/reference) or the [API](https://pannellum.org/documentation/api/).
 
-Configuration parameters are documented in the `doc/json-config-parameters.md` file, which is also available at [pannellum.org/documentation/reference/](https://pannellum.org/documentation/reference). API methods are documented inline with [JSDoc](https://jsdoc.app/) comments, and generated documentation is available at [pannellum.org/documentation/api/](https://pannellum.org/documentation/api/).
+Configuration parameters are documented in the `doc/json-config-parameters.md` file, which is also available at [pannellum.org/documentation/reference/](https://pannellum.org/documentation/reference). API methods are documented inline with [JSDoc](https://jsdoc.app/) comments, and generated documentation is available at [pannellum.org/documentation/api/](https://pannellum.org/documentation/api/). For the standalone viewer, configuration parameters are preferably specified using a location hash instead of a location search query, e.g., `pannellum.htm#panorama=...` instead of `pannellum.htm?panorama=...`, since this does not unnecessarily send the query parameters to the server.
 
 ### Using a minified copy
 
@@ -68,7 +68,7 @@ $ cd ../..
 $ python3 -m http.server
 ```
 
-This goes back to the root directory of the repository and starts a local development web server. Then open http://localhost:8000/src/standalone/pannellum.htm?config=../../utils/multires/output/config.json in your web browser of choice.
+This goes back to the root directory of the repository and starts a local development web server. Then open http://localhost:8000/src/standalone/pannellum.htm#config=../../utils/multires/output/config.json in your web browser of choice.
 
 
 ## Bundled examples
