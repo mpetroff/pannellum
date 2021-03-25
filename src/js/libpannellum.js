@@ -374,7 +374,7 @@ function Renderer(container) {
         program.drawInProgress = false;
 
         // Set background clear color (does not apply to cubemap/fallback image)
-        var color = params.z ? params.backgroundColor : [0, 0, 0];
+        var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
         gl.clearColor(color[0], color[1], color[2], 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
