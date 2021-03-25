@@ -374,7 +374,7 @@ function Renderer(container) {
         program.drawInProgress = false;
 
         // Set background clear color (does not apply to cubemap/fallback image)
-        var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+        var color = params.z ? params.backgroundColor : [0, 0, 0];
         gl.clearColor(color[0], color[1], color[2], 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -394,7 +394,7 @@ function Renderer(container) {
             program.aspectRatio = gl.getUniformLocation(program, 'u_aspectRatio');
             gl.uniform1f(program.aspectRatio, gl.drawingBufferWidth / gl.drawingBufferHeight);
 
-            // Locate psi, theta, focal length, horizontal extent, vertical extent, and vertical offset
+            // Locate psi, theta, focal length, horizontal extent, vertical extent, vertical offset, roll, and vertical texture range
             program.psi = gl.getUniformLocation(program, 'u_psi');
             program.theta = gl.getUniformLocation(program, 'u_theta');
             program.f = gl.getUniformLocation(program, 'u_f');
@@ -402,11 +402,13 @@ function Renderer(container) {
             program.v = gl.getUniformLocation(program, 'u_v');
             program.vo = gl.getUniformLocation(program, 'u_vo');
             program.rot = gl.getUniformLocation(program, 'u_rot');
+            program.tv = gl.getUniformLocation(program, 'u_tv');
 
             // Pass horizontal extent, vertical extent, and vertical offset
             gl.uniform1f(program.h, haov / (Math.PI * 2.0));
             gl.uniform1f(program.v, vaov / Math.PI);
             gl.uniform1f(program.vo, voffset / Math.PI * 2);
+            gl.uniform1f(program.tv, params.textureRange ? params.textureRange : 1.0);
 
             // Set background color
             if (imageType == 'equirectangular') {
@@ -1456,6 +1458,8 @@ var fragEquiCubeBase = [
 'uniform float u_vo;',
 'uniform float u_rot;',
 
+'uniform float u_tv;',
+
 'const float PI = 3.14159265358979323846264;',
 
 // Texture
@@ -1514,7 +1518,7 @@ var fragEquirectangular = fragEquiCubeBase + [
             'else',
                 'gl_FragColor = texture2D(u_image1, vec2((coord.x + u_h) / u_h - 1.0, (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
         '} else {',
-            'gl_FragColor = texture2D(u_image0, vec2((coord.x + u_h) / (u_h * 2.0), (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
+            'gl_FragColor = texture2D(u_image0, vec2((coord.x + u_h) / (u_h * 2.0), u_tv * (-coord.y + u_v + u_vo) / (u_v * 2.0)));',
         '}',
     '}',
 '}'

@@ -105,6 +105,7 @@ var defaultConfig = {
     orientationOnByDefault: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
+    stereoTopBottom: false,
     avoidShowingBackground: false,
     animationTimingFunction: timingFunction,
     draggable: true,
@@ -1780,6 +1781,8 @@ function renderInit() {
             params.horizonRoll = config.horizonRoll * Math.PI / 180;
         if (config.backgroundColor !== undefined)
             params.backgroundColor = config.backgroundColor;
+        if (config.stereoTopBottom)
+            params.textureRange = 0.5;
         renderer.init(panoImage, config.type, config.dynamic, config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback, params);
         if (config.dynamic !== true) {
             // Allow image to be garbage collected
