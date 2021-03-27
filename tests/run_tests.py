@@ -156,6 +156,16 @@ class PannellumTester(object):
             comparator = self.take_screenshot("panorama")
             self.equal_images(reference, comparator, "cube")
 
+        # Check to make sure hotspots are below controls
+        self.browser.execute_script("viewer.setPitch(-35)")
+        self.browser.execute_script("viewer.setYaw(32)")
+        time.sleep(2)
+        action = ActionChains(self.browser)
+        elem = self.browser.find_element_by_class_name("pnlm-zoom-in")
+        action.move_to_element(elem).move_by_offset(1, 1).click().perform()
+        assert self.browser.execute_script("return viewer.getHfov() == 95")
+        print("PASS: hot spots below UI")
+
         # Check hot spot
         self.browser.find_element_by_class_name("pnlm-scene").click()
         time.sleep(5)
