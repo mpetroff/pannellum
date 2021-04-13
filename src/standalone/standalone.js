@@ -77,6 +77,18 @@ function parseURLParameters() {
                 if (configFromURL.hasOwnProperty(key)) {
                     continue;
                 }
+                
+                // Handle function handlers in hotspots
+                if(key === "hotSpots") {
+                    responseMap[key].forEach((arr) => {
+                        for (var hkey in arr) {
+                            if(hkey.endsWith("Func")) {
+                                arr[hkey] = window[arr[hkey]];
+                            }
+                        }
+                    });
+                }
+                
                 configFromURL[key] = responseMap[key];
             }
 
