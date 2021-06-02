@@ -885,7 +885,7 @@ function Renderer(container) {
         this.level = level;
         this.x = x;
         this.y = y;
-        this.path = path.replace('%s',side).replace('%l',level).replace('%x',x).replace('%y',y);
+        this.path = path.replace('%s',side).replace('%l0',level-1).replace('%l',level).replace('%x',x).replace('%y',y);
         this.parentPath = parentPath;
     }
 
