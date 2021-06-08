@@ -382,6 +382,7 @@ function Renderer(container) {
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
 
+        const promises = [];
         if (imageType != 'multires') {
             // Provide texture coordinates for rectangle
             if (!texCoordBuffer)
@@ -421,42 +422,28 @@ function Renderer(container) {
             // Upload images to texture depending on type
             if (imageType == 'cubemap') {
                 // Load all six sides of the cube map
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[1]);
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[3]);
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[4]);
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[5]);
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[0]);
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image[2]);
+                promises.push(fetch(image[1].src).then(res => res.blob()).then(blob => createImageBitmap(blob)).then(bitmap => gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)).finally(() => URL.revokeObjectURL(image[1].src)));
+                promises.push(fetch(image[3].src).then(res => res.blob()).then(blob => createImageBitmap(blob)).then(bitmap => gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)).finally(() => URL.revokeObjectURL(image[3].src)));
+                promises.push(fetch(image[4].src).then(res => res.blob()).then(blob => createImageBitmap(blob)).then(bitmap => gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)).finally(() => URL.revokeObjectURL(image[4].src)));
+                promises.push(fetch(image[5].src).then(res => res.blob()).then(blob => createImageBitmap(blob)).then(bitmap => gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)).finally(() => URL.revokeObjectURL(image[5].src)));
+                promises.push(fetch(image[0].src).then(res => res.blob()).then(blob => createImageBitmap(blob)).then(bitmap => gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)).finally(() => URL.revokeObjectURL(image[0].src)));
+                promises.push(fetch(image[2].src).then(res => res.blob()).then(blob => createImageBitmap(blob)).then(bitmap => gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)).finally(() => URL.revokeObjectURL(image[2].src)));
             } else {
-                if (image.width <= maxWidth) {
-                    gl.uniform1i(gl.getUniformLocation(program, 'u_splitImage'), 0);
-                    // Upload image to the texture
-                    gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-                } else {
-                    // Image needs to be split into two parts due to texture size limits
-                    gl.uniform1i(gl.getUniformLocation(program, 'u_splitImage'), 1);
+                const blobPromise = fetch(image.src).then(res => res.blob());
+                blobPromise.finally(() => URL.revokeObjectURL(image.src));
 
-                    // Draw image on canvas
-                    var cropCanvas = document.createElement('canvas');
-                    cropCanvas.width = image.width / 2;
-                    cropCanvas.height = image.height;
-                    var cropContext = cropCanvas.getContext('2d');
-                    cropContext.drawImage(image, 0, 0);
+                // Split the image into two parts to split the blocking time of the main thread
+                gl.uniform1i(gl.getUniformLocation(program, 'u_splitImage'), 1);
+                // Upload first half of image to the texture
+                promises.push(blobPromise.then(blob => createImageBitmap(blob, 0, 0, image.width / 2, image.height)).then(bitmap => gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap)));
 
-                    // Upload first half of image to the texture
-                    var cropImage = cropContext.getImageData(0, 0, image.width / 2, image.height);
-                    gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cropImage);
-
+                // Upload second half of image to the texture
+                promises.push(blobPromise.then(blob => createImageBitmap(blob, image.width / 2, 0, image.width / 2, image.height)).then(bitmap => {
                     // Create and bind texture for second half of image
                     program.texture2 = gl.createTexture();
                     gl.activeTexture(gl.TEXTURE1);
                     gl.bindTexture(glBindType, program.texture2);
                     gl.uniform1i(gl.getUniformLocation(program, 'u_image1'), 1);
-
-                    // Upload second half of image to the texture
-                    cropContext.drawImage(image, -image.width / 2, 0);
-                    cropImage = cropContext.getImageData(0, 0, image.width / 2, image.height);
-                    gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cropImage);
 
                     // Set parameters for rendering any size
                     gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -464,9 +451,11 @@ function Renderer(container) {
                     gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                     gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
+                    gl.texImage2D(glBindType, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, bitmap);
+
                     // Reactivate first texture unit
                     gl.activeTexture(gl.TEXTURE0);
-                }
+                }));
             }
 
             // Set parameters for rendering any size
@@ -521,7 +510,7 @@ function Renderer(container) {
             throw {type: 'webgl error'};
         }
 
-        callback();
+        Promise.all(promises).then(() => callback());
      };
 
     /**
