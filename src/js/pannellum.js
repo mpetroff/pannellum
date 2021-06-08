@@ -407,7 +407,6 @@ function init() {
             p = absoluteURL(config.panorama) ? config.panorama : p + config.panorama;
 
             panoImage.onload = function() {
-                window.URL.revokeObjectURL(this.src);  // Clean up
                 onImageLoad();
             };
             
