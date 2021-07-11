@@ -35,7 +35,7 @@ Configuration parameters are documented in the `doc/json-config-parameters.md` f
 For final deployment, it is recommended that one use a minified copy of Pannellum instead of using the source files in `src` directly. The easiest method is to download the most recent [release](https://github.com/mpetroff/pannellum/releases) and use the pre-built copy of either `pannellum.htm` or `pannellum.js` & `pannellum.css`. If you wish to make changes to Pannellum or use the latest development copy of the code, follow the instructions in the _Building_ section below to create `build/pannellum.htm`, `build/pannellum.js`, and `build/pannellum.css`.
 
 ### Using `generate.py` to create multires panoramas
-To be able to create multiresolution panoramas, you need to have the `nona` program installed, which is available as part of [Hugin](http://hugin.sourceforge.net/), as well as Python with the [Pillow](https://pillow.readthedocs.org/) package. Then, run
+To be able to create multiresolution panoramas, you need to have the `nona` program installed, which is available as part of [Hugin](http://hugin.sourceforge.net/), as well as Python 3 with the [Pillow](https://pillow.readthedocs.org/) and [NumPy](https://numpy.org/) packages. The [pyshtools](https://shtools.github.io/SHTOOLS/) Python package is also recommended. Then, run
 
 ```
 python3 generate.py pano_image.jpg

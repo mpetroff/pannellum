@@ -36,6 +36,7 @@ function Renderer(container) {
     container.appendChild(canvas);
 
     var program, gl, vs, fs;
+    var previewProgram, previewVs, previewFs;
     var fallbackImgSize;
     var world;
     var vtmps;
@@ -98,6 +99,18 @@ function Renderer(container) {
                     gl.deleteTexture(program.nodeCache[i].texture);
             gl.deleteProgram(program);
             program = undefined;
+        }
+        if (previewProgram) {
+            if (previewVs) {
+                gl.detachShader(previewProgram, previewVs);
+                gl.deleteShader(previewVs);
+            }
+            if (previewFs) {
+                gl.detachShader(previewProgram, previewFs);
+                gl.deleteShader(previewFs);
+            }
+            gl.deleteProgram(previewProgram);
+            previewProgram = undefined;
         }
         pose = undefined;
 
@@ -470,7 +483,10 @@ function Renderer(container) {
             }
 
             // Set parameters for rendering any size
-            gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            if (imageType != "cubemap" && image.width <= maxWidth && haov == 2 * Math.PI)
+                gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            else
+                gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(glBindType, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -512,6 +528,124 @@ function Renderer(container) {
             program.nodeCache = [];
             program.nodeCacheTimestamp = 0;
             program.textureLoads = [];
+
+            if (image.shtHash || image.equirectangularThumbnail) {
+                // Create vertex shader
+                previewVs = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(previewVs, v);
+                gl.compileShader(previewVs);
+
+                // Create fragment shader
+                previewFs = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(previewFs, fragEquirectangular);
+                gl.compileShader(previewFs);
+
+                // Link WebGL program
+                previewProgram = gl.createProgram();
+                gl.attachShader(previewProgram, previewVs);
+                gl.attachShader(previewProgram, previewFs);
+                gl.linkProgram(previewProgram);
+
+                // Log errors
+                if (!gl.getShaderParameter(previewVs, gl.COMPILE_STATUS))
+                    console.log(gl.getShaderInfoLog(previewVs));
+                if (!gl.getShaderParameter(previewFs, gl.COMPILE_STATUS))
+                    console.log(gl.getShaderInfoLog(previewFs));
+                if (!gl.getProgramParameter(previewProgram, gl.LINK_STATUS))
+                    console.log(gl.getProgramInfoLog(previewProgram));
+
+                // Use WebGL program
+                gl.useProgram(previewProgram);
+
+                // Look up texture coordinates location
+                previewProgram.texCoordLocation = gl.getAttribLocation(previewProgram, 'a_texCoord');
+                gl.enableVertexAttribArray(previewProgram.texCoordLocation);
+
+                // Provide texture coordinates for rectangle
+                if (!texCoordBuffer)
+                    texCoordBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1,1,1,1,-1,-1,1,1,-1,-1,-1]), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(previewProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+                // Pass aspect ratio
+                previewProgram.aspectRatio = gl.getUniformLocation(previewProgram, 'u_aspectRatio');
+                gl.uniform1f(previewProgram.aspectRatio, gl.drawingBufferWidth / gl.drawingBufferHeight);
+
+                // Locate psi, theta, focal length, horizontal extent, vertical extent, and vertical offset
+                previewProgram.psi = gl.getUniformLocation(previewProgram, 'u_psi');
+                previewProgram.theta = gl.getUniformLocation(previewProgram, 'u_theta');
+                previewProgram.f = gl.getUniformLocation(previewProgram, 'u_f');
+                previewProgram.h = gl.getUniformLocation(previewProgram, 'u_h');
+                previewProgram.v = gl.getUniformLocation(previewProgram, 'u_v');
+                previewProgram.vo = gl.getUniformLocation(previewProgram, 'u_vo');
+                previewProgram.rot = gl.getUniformLocation(previewProgram, 'u_rot');
+
+                // Pass horizontal extent
+                gl.uniform1f(previewProgram.h, 1.0);
+
+                // Create texture
+                previewProgram.texture = gl.createTexture();
+                gl.bindTexture(glBindType, previewProgram.texture);
+
+                // Upload preview image to the texture
+                var previewImage, vext, voff;
+                var uploadPreview = function() {
+                    gl.useProgram(previewProgram);
+
+                    gl.uniform1i(gl.getUniformLocation(previewProgram, 'u_splitImage'), 0);
+                    gl.texImage2D(glBindType, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, previewImage);
+
+                    // Set parameters for rendering any size
+                    gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                    gl.texParameteri(glBindType, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(glBindType, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    gl.texParameteri(glBindType, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+                    // Pass vertical extent and vertical offset
+                    gl.uniform1f(previewProgram.v, vext);
+                    gl.uniform1f(previewProgram.vo, voff);
+
+                    gl.useProgram(program);
+                };
+                if (image.shtHash) {
+                    previewImage = shtDecodeImage(image.shtHash);
+                    // Vertical extent & offset are chosen to set the top and bottom
+                    // pixels in the preview image to be exactly at the zenith and
+                    // nadir, respectively, which matches the pre-calculated Ylm
+                    vext = (2 + 1 / 31) / 2;
+                    voff = 1 - (2 + 1 / 31) / 2;
+                    uploadPreview();
+                }
+                if (image.equirectangularThumbnail) {
+                    if (typeof image.equirectangularThumbnail === 'string') {
+                        if (image.equirectangularThumbnail.slice(0, 5) == 'data:') {
+                            // Data URI
+                            previewImage = new Image();
+                            previewImage.onload = function() {
+                                vext = 1;
+                                voff = 0;
+                                uploadPreview();
+                            };
+                            previewImage.src = image.equirectangularThumbnail;
+                        } else {
+                            console.log('Error: thumbnail string is not a data URI!');
+                            throw {type: 'config error'};
+                        }
+                    } else {
+                        // ImageData / ImageBitmap / HTMLImageElement / HTMLCanvasElement
+                        previewImage = image.equirectangularThumbnail;
+                        vext = 1;
+                        voff = 0;
+                        uploadPreview();
+                    }
+                }
+
+                // Reactivate main program
+                gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
+                gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
+                gl.useProgram(program);
+            }
         }
 
         // Check if there was an error
@@ -562,6 +696,10 @@ function Renderer(container) {
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
             if (imageType != 'multires') {
                 gl.uniform1f(program.aspectRatio, canvas.clientWidth / canvas.clientHeight);
+            } else if (image.shtHash) {
+                gl.useProgram(previewProgram);
+                gl.uniform1f(previewProgram.aspectRatio, canvas.clientWidth / canvas.clientHeight);
+                gl.useProgram(program);
             }
         }
     };
@@ -688,6 +826,41 @@ function Renderer(container) {
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         
         } else {
+            // Draw SHT hash preview, if needed
+            var drawPreview = typeof image.shtHash !== 'undefined'
+            if (drawPreview && program.currentNodes.length >= 6) {
+                drawPreview = false;
+                for (var i = 0; i < 6; i++) {
+                    if (!program.currentNodes[i].textureLoaded) {
+                        drawPreview = true;
+                        break;
+                    }
+                }
+            }
+            if (drawPreview) {
+                gl.useProgram(previewProgram);
+                gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+                gl.vertexAttribPointer(previewProgram.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+                gl.bindTexture(gl.TEXTURE_2D, previewProgram.texture);
+
+                // Calculate focal length from vertical field of view
+                var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
+                focal = 1 / Math.tan(vfov * 0.5);
+
+                // Pass psi, theta, roll, and focal length
+                gl.uniform1f(previewProgram.psi, yaw);
+                gl.uniform1f(previewProgram.theta, pitch);
+                gl.uniform1f(previewProgram.rot, roll);
+                gl.uniform1f(previewProgram.f, focal);
+
+                // Draw using current buffer
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
+                gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
+                gl.useProgram(program);
+            }
+
             // Create perspective matrix
             var perspMatrix = makePersp(hfov, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
             
@@ -756,7 +929,7 @@ function Renderer(container) {
                 program.textureLoads.shift()();
 
             // Draw tiles
-            multiresDraw();
+            multiresDraw(!image.shtHash);
         }
         
         if (params.returnImage !== undefined) {
@@ -837,13 +1010,15 @@ function Renderer(container) {
     
     /**
      * Draws multires nodes.
+     * @param {bool} clear - Whether or not to clear canvas.
      * @private
      */
-    function multiresDraw() {
+    function multiresDraw(clear) {
         if (!program.drawInProgress) {
             program.drawInProgress = true;
             // Clear canvas
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            if (clear)
+                gl.clear(gl.COLOR_BUFFER_BIT);
             // Determine tiles that need to be drawn
             var node_paths = {};
             for (var i = 0; i < program.currentNodes.length; i++)
@@ -1407,6 +1582,153 @@ function Renderer(container) {
         console.log('Reducing canvas size due to error 1286!');
         canvas.width = Math.round(canvas.width / 2);
         canvas.height = Math.round(canvas.height / 2);
+    }
+
+    // Data for rendering SHT hashes
+    var shtB83chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~',
+        shtYlmStr = 'Bf[ff4fff|ffff0fffffBo@Ri5xag{Jmdf2+WiefCs@Ll7+Vi]Btag6' +
+        '[NmdgCv=Ho9;Qk;7zWiF_GsahDy:ErE?Mn$5+SkS_AyWiD#-CuJ[Iqp6;Nnx?7*SlE$' +
+        '*BxR@FtPA?Jq+%7:NnF*zAzn?CwIG@Ft-Y9?IrG+vA%w:AzGR?Cx*IF@EuI,nA+$*9%' +
+        'Gu:A#xCR?ByJ-VB-*wA+J**9*ZBv:9%L.QD.*aB.O.v9-MF+$8,O:MG:*OD;a:UB:IO' +
+        ':n9:Q:KJ;#IG=u-KE=Hs:MC?T:IO=wEL?#%FJ@K**FI@Y;HV=pDU?*sCS@S.uCR[m;H' +
+        'p=VDq?*SCs@s.QCt[r:Iw=OEz?#IF$@#*HF%@u:K$;KI+=uEK-=*sCM:?w:M+:HO.;a' +
+        'CU;:%OCn?:z.Q..Ha;.ODv?-yFG$@,$-V;-Hw=+JH*?*lBP:?%%,n=+J*?%GQ:=#NCt' +
+        '?;y++v=%O:=zGt?:xHI,@-u,*z=zX?:wI+@,tEY??%r-$*;xt@,tP=?$qG%[:xn.#-:' +
+        'u$[%qp];xnN?[*sl.y:-r-?yn$^+sks_=yoi:v=*o?;uk;[zoi,_+skh:s@zl[+pi];' +
+        'tkg][xmhg;o@ti^xkg{$mhf|+oigf;f[ff_fff|ffff~fffff',
+        shtMaxYlm = 3.317,
+        shtYlm = [];
+
+    /**
+     * Decodes an integer-encoded float.
+     * @private
+     * @param {number} i - Integer-encoded float.
+     * @param {number} maxVal - Maximum value of decoded float.
+     * @returns {number} Decoded float.
+     */
+    function shtDecodeFloat(i, maxVal) {
+        return Math.pow(((Math.abs(i) - maxVal) / maxVal), 2) * (i - maxVal > 0 ? 1 : -1);
+    }
+
+    /**
+     * Decodes encoded spherical harmonic transform coefficients.
+     * @private
+     * @param {number} val - Encoded coefficient.
+     * @param {number} maxVal - Maximum value of coefficients.
+     * @returns {number[]} Decoded coefficients; one per color channel [r, g, b].
+     */
+    function shtDecodeCoeff(val, maxVal) {
+        var quantR = Math.floor(val / (19 * 19)),
+            quantG = Math.floor(val / 19) % 19,
+            quantB = val % 19;
+        var r = shtDecodeFloat(quantR, 9) * maxVal,
+            g = shtDecodeFloat(quantG, 9) * maxVal,
+            b = shtDecodeFloat(quantB, 9) * maxVal;
+        return [r, g, b];
+    }
+
+    /**
+     * Decodes base83-encoded string to integers.
+     * @private
+     * @param {string} b83str - Encoded string.
+     * @param {number} length - Number of characters per integer.
+     * @returns {number[]} Decoded integers.
+     */
+    function shtB83decode(b83str, length) {
+        var cnt = Math.floor(b83str.length / length),
+            vals = [];
+        for (var i = 0; i < cnt; i++) {
+            var val = 0;
+            for (var j = 0; j < length; j++) {
+                val = val * 83 + shtB83chars.indexOf(b83str[i * length + j]);
+            }
+            vals.push(val);
+        }
+        return vals;
+    }
+
+    /**
+     * Renders pixel from spherical harmonic transform coefficients.
+     * @private
+     * @param {number[]} flm - Real spherical harmonic transform coefficients.
+     * @param {number[]} Ylm - 4pi-normalized spherical harmonics evaluated for ell, m, and lat.
+     * @param {number} lon - Longitude (radians).
+     * @returns {number} Pixel value.
+     */
+    function shtFlm2pixel(flm, Ylm, lon) {
+        var lmax = Math.floor(Math.sqrt(flm.length)) - 1
+
+        // Precalculate sine and cosine coefficients
+        var cosm = Array(lmax + 1),
+            sinm = Array(lmax + 1);
+        sinm[0] = 0;
+        cosm[0] = 1;
+        sinm[1] = Math.sin(lon);
+        cosm[1] = Math.cos(lon);
+        for (var m = 2; m <= lmax; m++) {
+            sinm[m] = 2 * sinm[m - 1] * cosm[1] - sinm[m - 2];
+            cosm[m] = 2 * cosm[m - 1] * cosm[1] - cosm[m - 2];
+        }
+
+        // Calculate value at pixel
+        var expand = 0,
+            cosidx = 0;
+        for (var i = 1; i <= lmax + 1; i++)
+            cosidx += i;
+        for (var l = lmax; l >= 0; l--) {
+            var idx = Math.floor((l + 1) * l / 2);
+            // First coefficient is 1 when using 4pi normalization
+            expand += idx != 0 ? flm[idx] * Ylm[idx - 1] : flm[idx];
+            for (var m = 1; m <= l; m++)
+                expand += (flm[++idx] * cosm[m] + flm[idx + cosidx - l - 1] * sinm[m]) * Ylm[idx - 1];
+        }
+
+        return Math.round(expand);
+    }
+
+    /**
+     * Renders image from spherical harmonic transform (SHT) hash.
+     * @private
+     * @param {string} shtHash - SHT hash.
+     * @returns {ImageData} Rendered image.
+     */
+    function shtDecodeImage(shtHash) {
+        if (shtYlm.length < 1) {
+            // Decode Ylm if they're not already decoded
+            var ylmLen = shtYlmStr.length / 32;
+            for (var i = 0; i < 32; i++) {
+                shtYlm.push([]);
+                for (var j = 0; j < ylmLen; j++)
+                    shtYlm[i].push(shtDecodeFloat(shtB83decode(shtYlmStr[i * ylmLen + j], 1), 41) * shtMaxYlm);
+            }
+        }
+
+        // Decode SHT hash
+        var lmax = shtB83decode(shtHash[0], 1)[0],
+            maxVal = (shtDecodeFloat(shtB83decode(shtHash[1], 1), 41) + 1) * 255 / 2,
+            vals = shtB83decode(shtHash.slice(2), 2),
+            rVals = [],
+            gVals = [],
+            bVals = [];
+        for (var i = 0; i < vals.length; i++) {
+            var v = shtDecodeCoeff(vals[i], maxVal);
+            rVals.push(v[0]);
+            gVals.push(v[1]);
+            bVals.push(v[2]);
+        }
+
+        // Render image
+        var lonStep = 0.03125 * Math.PI;
+        var img = [];
+        for (var i = 31; i >= 0; i--) {
+            for (var j = 0; j < 64; j++) {
+                img.push(shtFlm2pixel(rVals, shtYlm[i], (j + 0.5) * lonStep));
+                img.push(shtFlm2pixel(gVals, shtYlm[i], (j + 0.5) * lonStep));
+                img.push(shtFlm2pixel(bVals, shtYlm[i], (j + 0.5) * lonStep));
+                img.push(255);
+            }
+        }
+        return new ImageData(new Uint8ClampedArray(img), 64, 32);
     }
 }
 

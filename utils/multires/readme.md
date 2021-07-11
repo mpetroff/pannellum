@@ -16,11 +16,14 @@ or [Docker](https://www.docker.com/) can be used to avoid this installation.
 ### Option 1: with local dependencies
 
 The `generate.py` script depends on `nona` (from [Hugin](http://hugin.sourceforge.net/)),
-as well as Python with the [Pillow](https://pillow.readthedocs.org/) package. On Ubuntu,
-these dependencies can be installed by running:
+as well as Python 3 with the [Pillow](https://pillow.readthedocs.org/) and
+[NumPy](https://numpy.org/) packages. The [pyshtools](https://shtools.github.io/SHTOOLS/)
+Python package is also recommended. On Ubuntu, these dependencies can be
+installed by running:
 
 ```bash
-$ sudo apt install python3 python3-pil hugin-tools
+$ sudo apt install python3 python3-pil python3-numpy python3-pip hugin-tools
+$ pip3 install --user pyshtools
 ```
 
 Once the dependencies are installed, a tileset can generated with:

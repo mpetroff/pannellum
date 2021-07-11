@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-# Requires Python 3.2+ (or Python 2.7), the Python Pillow package,
-# and nona (from Hugin)
+# Requires Python 3.2+, the Python Pillow and NumPy packages, and
+# nona (from Hugin). The Python pyshtools package is also needed for creating
+# spherical-harmonic-transform previews (which are recommended).
 
 # generate.py - A multires tile set generator for Pannellum
 # Extensions to cylindrical input and partial panoramas by David von Oheimb
@@ -35,6 +36,9 @@ import math
 import ast
 from distutils.spawn import find_executable
 import subprocess
+import base64
+import io
+import numpy as np
 
 # Allow large images (this could lead to a denial of service attack if you're
 # running this script on user-submitted images.)
@@ -46,6 +50,57 @@ try:
 except KeyError:
     # Handle case of PATH not being set
     nona = None
+
+
+genPreview = False
+try:
+    import pyshtools as pysh
+    genPreview = True
+except:
+    sys.stderr.write("Unable to import pyshtools. Not generating SHT preview.\n")
+
+def img2shtHash(img, lmax=5):
+    '''
+    Create spherical harmonic transform (SHT) hash preview.
+    '''
+    def encodeFloat(f, maxVal):
+        return np.maximum(0, np.minimum(2 * maxVal, np.round(np.sign(f) * np.sqrt(np.abs(f)) * maxVal + maxVal))).astype(int)
+
+    def encodeCoeff(r, g, b, maxVal):
+        quantR = encodeFloat(r / maxVal, 9)
+        quantG = encodeFloat(g / maxVal, 9)
+        quantB = encodeFloat(b / maxVal, 9)
+        return quantR * 19 ** 2 + quantG * 19 + quantB
+
+    b83chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#$%*+,-.:;=?@[]^_{|}~"
+
+    def b83encode(vals, length):
+        result = ""
+        for val in vals:
+            for i in range(1, length + 1):
+                result += b83chars[int(val // (83 ** (length - i))) % 83]
+        return result
+
+    # Calculate SHT coefficients
+    r = pysh.expand.SHExpandDH(img[..., 0], sampling=2, lmax_calc=lmax)
+    g = pysh.expand.SHExpandDH(img[..., 1], sampling=2, lmax_calc=lmax)
+    b = pysh.expand.SHExpandDH(img[..., 2], sampling=2, lmax_calc=lmax)
+
+    # Remove values above diagonal for both sine and cosine components
+    # Also remove first row and column for sine component
+    # These values are always zero
+    r = np.append(r[0][np.tril_indices(lmax + 1)], r[1, 1:, 1:][np.tril_indices(lmax)])
+    g = np.append(g[0][np.tril_indices(lmax + 1)], g[1, 1:, 1:][np.tril_indices(lmax)])
+    b = np.append(b[0][np.tril_indices(lmax + 1)], b[1, 1:, 1:][np.tril_indices(lmax)])
+
+    # Encode as string
+    maxVal = np.max([np.max(r), np.max(b), np.max(g)])
+    vals = encodeCoeff(r, g, b, maxVal).flatten()
+    asstr = b83encode(vals, 2)
+    lmaxStr = b83encode([lmax], 1)
+    maxValStr = b83encode(encodeFloat([2 * maxVal / 255 - 1], 41), 1)
+    return lmaxStr + maxValStr + asstr
+
 
 # Subclass parser to add explaination for semi-option nona flag
 class GenParser(argparse.ArgumentParser):
@@ -90,6 +145,8 @@ parser.add_argument('-q', '--quality', dest='quality', default=75, type=int,
                     help='output JPEG quality 0-100')
 parser.add_argument('--png', action='store_true',
                     help='output PNG tiles instead of JPEG tiles')
+parser.add_argument('--thumbnailsize', dest='thumbnailSize', default=0, type=int,
+                    help='width of equirectangular thumbnail preview (defaults to no thumbnail; >512 not recommended)')
 parser.add_argument('-n', '--nona', default=nona, required=nona is None,
                     metavar='EXECUTABLE',
                     help='location of the nona executable to use')
@@ -98,6 +155,7 @@ parser.add_argument('-G', '--gpu', action='store_true',
 parser.add_argument('-d', '--debug', action='store_true',
                     help='debug mode (print status info and keep intermediate files)')
 args = parser.parse_args()
+
 
 # Create output directory
 if os.path.exists(args.output):
@@ -229,6 +287,22 @@ if not args.debug:
         if os.path.exists(os.path.join(args.output, face)):
             os.remove(os.path.join(args.output, face))
 
+# Generate preview (but not for partial panoramas)
+if haov < 360 or vaov < 180:
+    genPreview = False
+if genPreview:
+    # Generate SHT-hash preview
+    shtHash = img2shtHash(np.array(Image.open(args.inputFile)))
+if args.thumbnailSize > 0:
+    # Create low-resolution base64-encoded equirectangular preview image
+    img = Image.open(args.inputFile)
+    img = img.resize((args.thumbnailSize, args.thumbnailSize // 2))
+    buf = io.BytesIO()
+    img.save(buf, format='JPEG', quality=75, optimize=True)
+    equiPreview = bytes('data:image/jpeg;base64,', encoding='utf-8')
+    equiPreview += base64.b64encode(buf.getvalue())
+    equiPreview = equiPreview.decode()
+
 # Generate config file
 text = []
 text.append('{')
@@ -252,6 +326,10 @@ if args.autoload:
     text.append('    "autoLoad": true,')
 text.append('    "type": "multires",')
 text.append('    "multiRes": {')
+if genPreview:
+    text.append('        "shtHash": "' + shtHash + '",')
+if args.thumbnailSize > 0:
+    text.append('        "equirectangularThumbnail": "' + equiPreview + '",')
 text.append('        "path": "/%l/%s%y_%x",')
 text.append('        "fallbackPath": "/fallback/%s",')
 text.append('        "extension": "' + extension[1:] + '",')

@@ -492,6 +492,23 @@ This specifies the size in pixels of the full resolution cube faces the image
 tiles were created from.
 
 
+#### `shtHash` (string)
+
+Specifies the spherical-harmonic-transform-based preview hash. This is rendered
+instead of the background color before the base set of cube faces are loaded.
+
+
+#### `equirectangularThumbnail` (string or HTMLImageElement or ImageData or ImageBitmap)
+
+Specifies a equirectangular preview thumbnail to be rendered instead of the
+background color or SHT hash before the base set of cube faces are loaded. This
+image can either be specified as a Base64-encoded string or as an object that
+can be directly uploaded to a WebGL texture, e.g., `ImageData`, `ImageBitmap`,
+`HTMLImageElement`, `HTMLCanvasElement` objects. If a Base64-encoded string is
+used, the image size should be kept small, since it needs to be loaded with the
+configuration parameters.
+
+
 
 ## Dynamic content specific options
 
