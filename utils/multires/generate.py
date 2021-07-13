@@ -146,7 +146,7 @@ parser.add_argument('-q', '--quality', dest='quality', default=75, type=int,
 parser.add_argument('--png', action='store_true',
                     help='output PNG tiles instead of JPEG tiles')
 parser.add_argument('--thumbnailsize', dest='thumbnailSize', default=0, type=int,
-                    help='width of equirectangular thumbnail preview (defaults to no thumbnail; >512 not recommended)')
+                    help='width of equirectangular thumbnail preview (defaults to no thumbnail; must be power of two; >512 not recommended)')
 parser.add_argument('-n', '--nona', default=nona, required=nona is None,
                     metavar='EXECUTABLE',
                     help='location of the nona executable to use')
@@ -156,6 +156,12 @@ parser.add_argument('-d', '--debug', action='store_true',
                     help='debug mode (print status info and keep intermediate files)')
 args = parser.parse_args()
 
+
+# Check argument
+if args.thumbnailSize > 0:
+    if args.thumbnailSize & (args.thumbnailSize - 1) != 0:
+        print('Thumbnail size, if specified, must be a power of two')
+        sys.exit(1)
 
 # Create output directory
 if os.path.exists(args.output):
