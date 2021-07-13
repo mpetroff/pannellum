@@ -827,8 +827,10 @@ function Renderer(container) {
         
         } else {
             // Draw SHT hash preview, if needed
-            var drawPreview = typeof image.shtHash !== 'undefined'
-            if (drawPreview && program.currentNodes.length >= 6) {
+            var isPreview = (typeof image.shtHash !== 'undefined') ||
+                (typeof image.equirectangularThumbnail !== 'undefined');
+            var drawPreview = isPreview;
+            if (isPreview && program.currentNodes.length >= 6) {
                 drawPreview = false;
                 for (var i = 0; i < 6; i++) {
                     if (!program.currentNodes[i].textureLoaded) {
@@ -929,7 +931,7 @@ function Renderer(container) {
                 program.textureLoads.shift()();
 
             // Draw tiles
-            multiresDraw(!image.shtHash);
+            multiresDraw(!isPreview);
         }
         
         if (params.returnImage !== undefined) {
