@@ -483,8 +483,9 @@ function Renderer(container) {
             }
 
             // Set parameters for rendering any size
-            if (imageType != "cubemap" && image.width <= maxWidth && haov == 2 * Math.PI)
-                gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            if (imageType != "cubemap" && image.width <= maxWidth &&
+                haov == 2 * Math.PI && (image.width & (image.width - 1)) == 0)
+                gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.REPEAT); // Only supported for power-of-two images in WebGL 1
             else
                 gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(glBindType, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
