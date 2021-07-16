@@ -413,7 +413,7 @@ function init() {
             
             var xhr = new XMLHttpRequest();
             xhr.onloadend = function() {
-                if (xhr.status != 200) {
+                if (xhr.status != 200 && xhr.status != 0) {
                     // Display error if image can't be loaded
                     var a = document.createElement('a');
                     a.href = p;

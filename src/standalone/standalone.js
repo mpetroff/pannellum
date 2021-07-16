@@ -57,7 +57,7 @@ function parseURLParameters() {
         // Get JSON configuration file
         request = new XMLHttpRequest();
         request.onload = function() {
-            if (request.status != 200) {
+            if (request.status != 200 && request.status != 0) {
                 // Display error if JSON can't be loaded
                 var a = document.createElement('a');
                 a.href = configFromURL.config;
@@ -88,6 +88,14 @@ function parseURLParameters() {
             configFromURL.escapeHTML = true;
             viewer = pannellum.viewer('container', configFromURL);
         };
+        request.onerror = function(e) {
+            // Display error if opened from local file
+            if (window.location.protocol == 'file:')
+                anError('Due to browser security restrictions, loading Pannellum files from the local filesystem has been denied; ' +
+                        'use the Chrome/Opera command-line option "--allow-file-access-from-files" or some sort of local web server.');
+            else
+                anError("Error loading "+configFromURL.config);
+        }
         request.open('GET', configFromURL.config);
         request.send();
         return;
@@ -103,11 +111,5 @@ function parseURLParameters() {
     viewer = pannellum.viewer('container', configFromURL);
 }
 
-// Display error if opened from local file
-if (window.location.protocol == 'file:') {
-    anError('Due to browser security restrictions, Pannellum can\'t be run ' +
-        'from the local filesystem; some sort of web server must be used.');
-} else {
-    // Initialize viewer
-    parseURLParameters();
-}
+// Initialize viewer
+parseURLParameters();
