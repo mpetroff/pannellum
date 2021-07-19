@@ -298,7 +298,7 @@ if haov < 360 or vaov < 180:
     genPreview = False
 if genPreview:
     # Generate SHT-hash preview
-    shtHash = img2shtHash(np.array(Image.open(args.inputFile)))
+    shtHash = img2shtHash(np.array(Image.open(args.inputFile).resize((1024, 512))))
 if args.thumbnailSize > 0:
     # Create low-resolution base64-encoded equirectangular preview image
     img = Image.open(args.inputFile)
