@@ -26,6 +26,11 @@ $ sudo apt install python3 python3-pil python3-numpy python3-pip hugin-tools
 $ pip3 install --user pyshtools
 ```
 
+If you have issues installing `pyshtools`, you may be on an architecture for
+which PyPI does not have pre-built binaries. In this case, you might need to
+install the dependencies described in the
+[pyshtools build-from-source directions](https://shtools.github.io/SHTOOLS/python-installing.html#build-from-source).
+
 Once the dependencies are installed, a tileset can generated with:
 
 ```bash
