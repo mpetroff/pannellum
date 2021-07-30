@@ -26,6 +26,14 @@ $ sudo apt install python3 python3-pil python3-numpy python3-pip hugin-tools
 $ pip3 install --user pyshtools
 ```
 
+> **Note:** If `pip3 install --user pyshtools` does not work because of *fttw libraries not found* error or *numpy.distutils.system_info.LapackNotFoundError*  
+> Run:
+> ```shell
+> $ sudo apt install fttw 
+> $ sudo apt install gfortran libopenblas-dev liblapack-dev
+> ```
+
+
 Once the dependencies are installed, a tileset can generated with:
 
 ```bash
