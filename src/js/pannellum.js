@@ -3115,7 +3115,7 @@ this.getScene = function() {
  * @memberof Viewer
  * @instance
  * @param {string} sceneId - The ID of the new scene
- * @param {string} config - The configuration of the new scene
+ * @param {Object} config - The configuration of the new scene
  * @returns {Viewer} `this`
  */
 this.addScene = function(sceneId, config) {
