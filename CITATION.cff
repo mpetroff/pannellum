@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: Pannellum
+authors:
+- family-names: Petroff
+  given-names: Matthew
+  orcid: "https://orcid.org/0000-0002-4436-4215"
+doi: 10.5281/zenodo.3334433
+repository-code: "https://github.com/mpetroff/pannellum"
+message: "If you use this software, please cite it as below."
+preferred-citation:
+  type: article
+  authors:
+  - family-names: Petroff
+    given-names: Matthew A.
+    orcid: "https://orcid.org/0000-0002-4436-4215"
+  doi: 10.21105/joss.01628
+  journal: "Journal of Open Source Software"
+  start: 1628
+  title: "Pannellum: a lightweight web-based panorama viewer"
+  volume: 4
+  issue: 40
+  year: 2019
