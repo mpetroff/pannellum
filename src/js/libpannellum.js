@@ -97,6 +97,11 @@ function Renderer(container) {
             if (program.nodeCache)
                 for (var i = 0; i < program.nodeCache.length; i++)
                     gl.deleteTexture(program.nodeCache[i].texture);
+            if (program.textureLoads) {
+                pendingTextureRequests = [];
+                while (program.textureLoads.length > 0)
+                    program.textureLoads.shift()(false);
+            }
             gl.deleteProgram(program);
             program = undefined;
         }
@@ -929,7 +934,7 @@ function Renderer(container) {
             // This is synchronized to rendering to avoid dropping frames due
             // to texture loading happening at an inopportune time.
             if (program.textureLoads.length > 0)
-                program.textureLoads.shift()();
+                program.textureLoads.shift()(true);
 
             // Draw tiles
             multiresDraw(!isPreview);
@@ -1357,12 +1362,14 @@ function Renderer(container) {
             this.image = new Image();
             this.image.crossOrigin = crossOrigin ? crossOrigin : 'anonymous';
             var loadFn = function() {
-                program.textureLoads.push(function() {
-                    if (self.image.width > 0 && self.image.height > 0) { // Ignore missing tile to support partial image
-                        processLoadedTexture(self.image, self.texture);
-                        self.callback(self.texture, true);
-                    } else {
-                        self.callback(self.texture, false);
+                program.textureLoads.push(function(execute) {
+                    if (execute) {
+                        if (self.image.width > 0 && self.image.height > 0) { // Ignore missing tile to support partial image
+                            processLoadedTexture(self.image, self.texture);
+                            self.callback(self.texture, true);
+                        } else {
+                            self.callback(self.texture, false);
+                        }
                     }
                     releaseTextureImageLoader(self);
                 });
@@ -1446,10 +1453,10 @@ function Renderer(container) {
             var path = e.data[0],
                 success = e.data[1],
                 bitmap = e.data[2];
-            program.textureLoads.push(function() {
+            program.textureLoads.push(function(execute) {
                 var texture,
                     loaded = false;
-                if (success) { // Ignore missing tile to support partial image
+                if (success && execute) { // Ignore missing tile to support partial image
                     texture = gl.createTexture();
                     processLoadedTexture(bitmap, texture);
                     loaded = true;
