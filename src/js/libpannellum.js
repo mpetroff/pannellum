@@ -45,6 +45,7 @@ function Renderer(container) {
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
     var globalParams;
     var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
+    var fallbackSides = ['f', 'r', 'b', 'l', 'u', 'd'];
 
     /**
      * Initialize renderer.
@@ -205,7 +206,7 @@ function Renderer(container) {
             var onLoad = function() {
                 // Draw image on canvas
                 var faceCanvas = document.createElement('canvas');
-                faceCanvas.className = 'pnlm-face pnlm-' + sides[this.side] + 'face';
+                faceCanvas.className = 'pnlm-face pnlm-' + fallbackSides[this.side] + 'face';
                 world.appendChild(faceCanvas);
                 var faceContext = faceCanvas.getContext('2d');
                 faceCanvas.style.width = this.width + 4 + 'px';
@@ -284,7 +285,7 @@ function Renderer(container) {
                 faceImg.onload = onLoad;
                 faceImg.onerror = incLoaded; // ignore missing face to support partial fallback image
                 if (imageType == 'multires') {
-                    faceImg.src = path.replace('%s', sides[s]) + '.' + image.extension;
+                    faceImg.src = path.replace('%s', fallbackSides[s]) + '.' + image.extension;
                 } else {
                     faceImg.src = image[s].src;
                 }
