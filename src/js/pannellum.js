@@ -2236,22 +2236,6 @@ function processOptions(isPreview) {
                 infoDisplay.container.style.display = 'inline';
                 break;
             
-            case 'fallback':
-                var link = document.createElement('a');
-                link.href = sanitizeURL(config[key], true);
-                if (config.targetBlank) {
-                    link.target = '_blank';
-                    link.rel = 'noopener';
-                }
-                link.textContent = 'Click here to view this panorama in an alternative viewer.';
-                var message = document.createElement('p');
-                message.textContent = 'Your browser does not support WebGL.';
-                message.appendChild(document.createElement('br'));
-                message.appendChild(link);
-                infoDisplay.errorMsg.innerHTML = ''; // Removes all children nodes
-                infoDisplay.errorMsg.appendChild(message);
-                break;
-            
             case 'hfov':
                 setHfov(Number(config[key]));
                 break;

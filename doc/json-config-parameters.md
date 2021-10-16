@@ -70,13 +70,6 @@ after it is loaded. This parameter only has an effect if the `autoRotate`
 parameter is set.
 
 
-### `fallback` (string)
-
-If set, the value is used as a URL for a fallback viewer in case Pannellum is
-not supported by the user's device. The user will be given the option to click
-a link and visit this URL if Pannellum fails to work.
-
-
 ### `orientationOnByDefault` (boolean)
 
 If set to `true`, device orientation control will be used when the panorama is
