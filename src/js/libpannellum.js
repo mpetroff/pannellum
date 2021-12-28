@@ -292,7 +292,7 @@ function Renderer(container, context) {
                 faceImg.onload = onLoad;
                 faceImg.onerror = incLoaded; // ignore missing face to support partial fallback image
                 if (imageType == 'multires') {
-                    faceImg.src = path.replace('%s', fallbackSides[s]) + '.' + image.extension;
+                    faceImg.src = path.replace('%s', fallbackSides[s]) + (image.extension ? '.' + image.extension : '');
                 } else {
                     faceImg.src = image[s].src;
                 }
@@ -1453,7 +1453,7 @@ function Renderer(container, context) {
      * @param {MultiresNode} node - Input node.
      */
     function processNextTileFallback(node) {
-        loadTexture(node, node.path + '.' + image.extension, function(texture, loaded) {
+        loadTexture(node, node.path + (image.extension ? '.' + image.extension : ''), function(texture, loaded) {
             node.texture = texture;
             node.textureLoaded = loaded ? 2 : 1;
         }, globalParams.crossOrigin);
@@ -1505,7 +1505,7 @@ function Renderer(container, context) {
         };
         processNextTile = function(node) {
             // Since web worker is created from a Blob, we need the absolute URL
-            var path = new URL(node.path + '.' + image.extension, window.location).href;
+            var path = new URL(node.path + (image.extension ? '.' + image.extension : ''), window.location).href;
             texturesLoading[path] = node;
             worker.postMessage([path, globalParams.crossOrigin]);
         };
