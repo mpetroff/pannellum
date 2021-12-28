@@ -984,7 +984,25 @@ function Renderer(container, context) {
         }
         return false;
     };
-    
+
+    /**
+     * Check if base image tiles are loaded.
+     * @memberof Renderer
+     * @instance
+     * @returns {boolean} Whether or not base image tiles are loaded.
+     */
+    this.isBaseLoaded = function() {
+        if (program.currentNodes.length >= 6) {
+            for (var i = 0; i < 6; i++) {
+                if (!program.currentNodes[i].textureLoaded) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Retrieve renderer's canvas.
      * @memberof Renderer
