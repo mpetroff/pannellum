@@ -29,11 +29,15 @@ window.libpannellum = (function(window, document, undefined) {
  * Creates a new panorama renderer.
  * @constructor
  * @param {HTMLElement} container - The container element for the renderer.
+ * @param {WebGLRenderingContext} [context] - Existing WebGL context (instead of container).
  */
-function Renderer(container) {
-    var canvas = document.createElement('canvas');
-    canvas.style.width = canvas.style.height = '100%';
-    container.appendChild(canvas);
+function Renderer(container, context) {
+    var canvas;
+    if (container) {
+        canvas = document.createElement('canvas');
+        canvas.style.width = canvas.style.height = '100%';
+        container.appendChild(canvas);
+    }
 
     var program, gl, vs, fs;
     var previewProgram, previewVs, previewFs;
@@ -46,6 +50,9 @@ function Renderer(container) {
     var globalParams;
     var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
     var fallbackSides = ['f', 'r', 'b', 'l', 'u', 'd'];
+
+    if (context)
+        gl = context;
 
     /**
      * Initialize renderer.
@@ -393,9 +400,11 @@ function Renderer(container) {
         program.drawInProgress = false;
 
         // Set background clear color (does not apply to cubemap/fallback image)
-        var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
-        gl.clearColor(color[0], color[1], color[2], 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        if (params.backgroundColor !== null) {
+            var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+            gl.clearColor(color[0], color[1], color[2], 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+        }
 
         // Look up texture coordinates location
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
@@ -711,7 +720,8 @@ function Renderer(container) {
         }
     };
     // Initialize canvas size
-    this.resize();
+    if (canvas)
+        this.resize();
 
     /**
      * Set renderer horizon pitch and roll.
@@ -739,6 +749,7 @@ function Renderer(container) {
      * @param {Object} [params] - Extra configuration parameters. 
      * @param {number} [params.roll] - Camera roll (in radians).
      * @param {string} [params.returnImage] - Return rendered image? If specified, should be 'ImageBitmap', 'image/jpeg', or 'image/png'.
+     * @param {function} [params.hook] - Hook for executing arbitrary function in this environment.
      */
     this.render = function(pitch, yaw, hfov, params) {
         var focal, i, s, roll = 0;
@@ -780,6 +791,10 @@ function Renderer(container) {
                 roll_adj = 2 * Math.PI - roll_adj;
             roll += roll_adj;
         }
+
+        // Execute function hook
+        if (params.hook)
+            params.hook(this);
 
         // If no WebGL
         if (!gl && (imageType == 'multires' || imageType == 'cubemap')) {

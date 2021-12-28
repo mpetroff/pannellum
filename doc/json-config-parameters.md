@@ -377,7 +377,8 @@ Specifies an array containing RGB values [0, 1] that sets the background color
 for areas where no image data is available. Defaults to `[0, 0, 0]` (black).
 For partial `equirectangular` panoramas this applies to areas past the edges of
 the defined rectangle. For `multires` and `cubemap` (including fallback) panoramas
-this applies to areas corresponding to missing tiles or faces.
+this applies to areas corresponding to missing tiles or faces. If set to `null`,
+the background is not cleared.
 
 ### `avoidShowingBackground` (boolean)
 
