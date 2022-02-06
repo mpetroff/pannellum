@@ -132,7 +132,7 @@ parser.add_argument('-o', '--output', dest='output', default='./output',
 parser.add_argument('-s', '--tilesize', dest='tileSize', default=512, type=int,
                     help='tile size in pixels')
 parser.add_argument('-f', '--fallbacksize', dest='fallbackSize', default=1024, type=int,
-                    help='fallback tile size in pixels (defaults to 1024)')
+                    help='fallback tile size in pixels (defaults to 1024, set to 0 to skip)')
 parser.add_argument('-c', '--cubesize', dest='cubeSize', default=0, type=int,
                     help='cube size in pixels, or 0 to retain all details')
 parser.add_argument('-b', '--backgroundcolor', dest='backgroundColor', default="[0.0, 0.0, 0.0]", type=str,
@@ -273,18 +273,19 @@ for f in range(0, 6):
             size = int(size / 2)
 
 # Generate fallback tiles
-print('Generating fallback tiles...')
-for f in range(0, 6):
-    if not os.path.exists(os.path.join(args.output, 'fallback')):
-        os.makedirs(os.path.join(args.output, 'fallback'))
-    if os.path.exists(os.path.join(args.output, faces[f])):
-        face = Image.open(os.path.join(args.output, faces[f]))
-        if face.mode in ('RGBA', 'LA'):
-            background = Image.new(face.mode[:-1], face.size, colorTuple)
-            background.paste(face, face.split()[-1])
-            face = background
-        face = face.resize([args.fallbackSize, args.fallbackSize], Image.ANTIALIAS)
-        face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension), quality = args.quality)
+if args.fallbackSize > 0:
+    print('Generating fallback tiles...')
+    for f in range(0, 6):
+        if not os.path.exists(os.path.join(args.output, 'fallback')):
+            os.makedirs(os.path.join(args.output, 'fallback'))
+        if os.path.exists(os.path.join(args.output, faces[f])):
+            face = Image.open(os.path.join(args.output, faces[f]))
+            if face.mode in ('RGBA', 'LA'):
+                background = Image.new(face.mode[:-1], face.size, colorTuple)
+                background.paste(face, face.split()[-1])
+                face = background
+            face = face.resize([args.fallbackSize, args.fallbackSize], Image.ANTIALIAS)
+            face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension), quality = args.quality)
 
 # Clean up temporary files
 if not args.debug:
@@ -337,7 +338,8 @@ if genPreview:
 if args.thumbnailSize > 0:
     text.append('        "equirectangularThumbnail": "' + equiPreview + '",')
 text.append('        "path": "/%l/%s%y_%x",')
-text.append('        "fallbackPath": "/fallback/%s",')
+if args.fallbackSize > 0:
+    text.append('        "fallbackPath": "/fallback/%s",')
 text.append('        "extension": "' + extension[1:] + '",')
 text.append('        "tileResolution": ' + str(tileSize) + ',')
 text.append('        "maxLevel": ' + str(levels) + ',')
