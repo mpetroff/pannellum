@@ -71,6 +71,7 @@ var config,
     eps = 1e-6,
     resizeObserver,
     hotspotsCreated = false,
+    xhr,
     destroyed = false;
 
 var defaultConfig = {
@@ -411,7 +412,7 @@ function init() {
                 onImageLoad();
             };
             
-            var xhr = new XMLHttpRequest();
+            xhr = new XMLHttpRequest();
             xhr.onloadend = function() {
                 if (xhr.status != 200) {
                     // Display error if image can't be loaded
@@ -419,6 +420,7 @@ function init() {
                     a.href = p;
                     a.textContent = a.href;
                     anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
+                    return;
                 }
                 var img = this.response;
                 parseGPanoXMP(img, p);
@@ -3347,6 +3349,12 @@ this.destroy = function() {
     destroyed = true;
     clearTimeout(autoRotateStart);
 
+    if (xhr)
+        xhr.abort();
+    if (Array.isArray(panoImage)) {
+        for (var i = 0; i < 6; i++)
+            panoImage[i].src = '';
+    }
     if (renderer)
         renderer.destroy();
     if (listenersAdded) {
