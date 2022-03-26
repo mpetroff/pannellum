@@ -1115,7 +1115,10 @@ function Renderer(container, context) {
         this.level = level;
         this.x = x;
         this.y = y;
-        this.path = path.replace('%s',side).replace('%l0',level-1).replace('%l',level).replace('%x',x).replace('%y',y);
+        // Use tile key if paths need to be looked up in a dictionary, which needs a `tileKey` entry
+        var p = typeof path === 'object' ? path.tileKey : path;
+        p = p.replace('%s',side).replace('%l0',level-1).replace('%l',level).replace('%x',x).replace('%y',y);
+        this.path = typeof path === 'object' ? path[p] : p;
         this.parentPath = parentPath;
     }
 
