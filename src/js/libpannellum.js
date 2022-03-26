@@ -747,6 +747,7 @@ function Renderer(container, context) {
      * @param {Object} [params] - Extra configuration parameters. 
      * @param {number} [params.roll] - Camera roll (in radians).
      * @param {string} [params.returnImage] - Return rendered image? If specified, should be 'ImageBitmap', 'image/jpeg', or 'image/png'.
+     * @param {function} [params.hook] - Hook for executing arbitrary function in this environment.
      */
     this.render = function(pitch, yaw, hfov, params) {
         var focal, i, s, roll = 0;
@@ -787,6 +788,20 @@ function Renderer(container, context) {
             if (v[2] < 0)
                 roll_adj = 2 * Math.PI - roll_adj;
             roll += roll_adj;
+        }
+
+        // Execute function hook
+        if (params.hook) {
+            params.hook({
+                gl: gl,
+                program: program,
+                previewProgram: previewProgram,
+                imageType: imageType,
+                texCoordBuffer: texCoordBuffer,
+                cubeVertBuf: cubeVertBuf,
+                cubeVertTexCoordBuf: cubeVertTexCoordBuf,
+                cubeVertIndBuf: cubeVertIndBuf
+            });
         }
 
         // If no WebGL
