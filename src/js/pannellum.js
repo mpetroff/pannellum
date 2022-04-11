@@ -3117,7 +3117,7 @@ this.addScene = function(sceneId, config) {
  * @returns {boolean} False if the scene is the current scene or if the scene doesn't exists, else true
  */
 this.removeScene = function(sceneId) {
-    if (config.scene === sceneId || !initialConfig.scenes.hasOwnProperty(sceneId))
+    if (config.scene == sceneId || !initialConfig.scenes.hasOwnProperty(sceneId))
         return false;
     delete initialConfig.scenes[sceneId];
     return true;
@@ -3204,7 +3204,7 @@ this.removeHotSpot = function(hotSpotId, sceneId) {
             return false;
         for (var i = 0; i < config.hotSpots.length; i++) {
             if (config.hotSpots[i].hasOwnProperty('id') &&
-                config.hotSpots[i].id === hotSpotId) {
+                config.hotSpots[i].id == hotSpotId) {
                 // Delete hot spot DOM elements
                 var current = config.hotSpots[i].div;
                 while (current.parentNode != uiContainer)
@@ -3222,7 +3222,7 @@ this.removeHotSpot = function(hotSpotId, sceneId) {
                 return false;
             for (var j = 0; j < initialConfig.scenes[sceneId].hotSpots.length; j++) {
                 if (initialConfig.scenes[sceneId].hotSpots[j].hasOwnProperty('id') &&
-                    initialConfig.scenes[sceneId].hotSpots[j].id === hotSpotId) {
+                    initialConfig.scenes[sceneId].hotSpots[j].id == hotSpotId) {
                     // Remove hot spot from configuration
                     initialConfig.scenes[sceneId].hotSpots.splice(j, 1);
                     return true;

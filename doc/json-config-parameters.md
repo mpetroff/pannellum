@@ -315,7 +315,7 @@ Specifies the HFOV of the target scene, in degrees. Can also be set to `same`,
 which uses the current HFOV of the current scene as the initial HFOV of the
 target scene.
 
-#### `id`
+#### `id` (string)
 
 Specifies hot spot ID, for use with API's `removeHotSpot` function.
 
