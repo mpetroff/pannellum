@@ -276,7 +276,8 @@ controls.orientation.addEventListener('pointerdown', function(e) {e.stopPropagat
 controls.orientation.className = 'pnlm-orientation-button pnlm-orientation-button-inactive pnlm-sprite pnlm-controls pnlm-control';
 var orientationSupport = false;
 if (window.DeviceOrientationEvent && location.protocol == 'https:' &&
-    navigator.userAgent.toLowerCase().indexOf('mobi') >= 0) {
+    (navigator.userAgent.toLowerCase().indexOf('mobi') >= 0 ||
+    (/* iPad */ navigator.userAgent.indexOf("Mac") >= 0 && navigator.maxTouchPoints && navigator.maxTouchPoints > 0))) {
     // This user agent check is here because there's no way to check if a
     // device has an inertia measurement unit. We used to be able to check if a
     // DeviceOrientationEvent had non-null values, but with iOS 13 requiring a
