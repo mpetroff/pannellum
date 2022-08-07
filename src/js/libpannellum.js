@@ -1153,6 +1153,17 @@ function Renderer(container, context) {
                 numCornersInView += cornersInView[i];
             }
 
+            var cubeSize = image.cubeResolution * Math.pow(2, node.level - image.maxLevel);
+            var numTiles = Math.ceil(cubeSize * image.invTileResolution) - 1;
+            var doubleTileSize = cubeSize % image.tileResolution * 2;
+            var lastTileSize = (cubeSize * 2) % image.tileResolution;
+            if (lastTileSize === 0) {
+                lastTileSize = image.tileResolution;
+            }
+            if (doubleTileSize === 0) {
+                doubleTileSize = image.tileResolution * 2;
+            }
+
             // Tiles should always be loaded if they're base tiles, in the
             // extremely-wide FOV edge case when a node corner is behind the
             // camera, and when no node corners are in the viewport. In other
@@ -1165,7 +1176,20 @@ function Renderer(container, context) {
                     if (cornersInView[i] || cornersInView[j]) {
                         var diffX = (cornersWinX[j] - cornersWinX[i]) * gl.drawingBufferWidth / 2,
                             diffY = (cornersWinY[j] - cornersWinY[i]) * gl.drawingBufferHeight / 2;
-                        // TODO: should non-square tiles have special handling?
+                        // Handle edge tiles
+                        if (lastTileSize < image.tileResolution) {
+                            if (node.x == numTiles)
+                                diffX *= image.tileResolution / lastTileSize;
+                            else if (node.y == numTiles)
+                                diffY *= image.tileResolution / lastTileSize;
+                        }
+                        // Handle small tiles that have fewer than four children
+                        if (doubleTileSize <= image.tileResolution) {
+                            if (node.x == numTiles)
+                                diffX *= 2;
+                            if (node.y == numTiles)
+                                diffY *= 2;
+                        }
                         maxSide = Math.max(maxSide, Math.sqrt(diffX * diffX + diffY * diffY));
                     }
                 }
@@ -1209,16 +1233,6 @@ function Renderer(container, context) {
 
             // Create child nodes
             if (node.level < image.maxLevel) {
-                var cubeSize = image.cubeResolution * Math.pow(2, node.level - image.maxLevel);
-                var numTiles = Math.ceil(cubeSize * image.invTileResolution) - 1;
-                var doubleTileSize = cubeSize % image.tileResolution * 2;
-                var lastTileSize = (cubeSize * 2) % image.tileResolution;
-                if (lastTileSize === 0) {
-                    lastTileSize = image.tileResolution;
-                }
-                if (doubleTileSize === 0) {
-                    doubleTileSize = image.tileResolution * 2;
-                }
                 var f = 0.5;
                 if (node.x == numTiles || node.y == numTiles) {
                     f = 1.0 - image.tileResolution / (image.tileResolution + lastTileSize);
