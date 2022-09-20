@@ -251,7 +251,7 @@ for f in range(0, 6):
                 os.makedirs(os.path.join(args.output, str(level)))
             tiles = int(math.ceil(float(size) / tileSize))
             if (level < levels):
-                face = face.resize([size, size], Image.ANTIALIAS)
+                face = face.resize([size, size], Image.LANCZOS)
             for i in range(0, tiles):
                 for j in range(0, tiles):
                     left = j * tileSize
@@ -284,7 +284,7 @@ if args.fallbackSize > 0:
                 background = Image.new(face.mode[:-1], face.size, colorTuple)
                 background.paste(face, face.split()[-1])
                 face = background
-            face = face.resize([args.fallbackSize, args.fallbackSize], Image.ANTIALIAS)
+            face = face.resize([args.fallbackSize, args.fallbackSize], Image.LANCZOS)
             face.save(os.path.join(args.output, 'fallback', faceLetters[f] + extension), quality = args.quality)
 
 # Clean up temporary files
