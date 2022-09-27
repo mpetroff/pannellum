@@ -32,16 +32,40 @@ function parseURLParameters() {
         if (value == '')
             continue; // Skip options with empty values in URL config
         switch(option) {
-            case 'hfov': case 'pitch': case 'yaw': case 'haov': case 'vaov':
-            case 'minHfov': case 'maxHfov': case 'minPitch': case 'maxPitch':
-            case 'minYaw': case 'maxYaw': case 'vOffset': case 'autoRotate':
+            case 'hfov':
+            case 'pitch':
+            case 'yaw':
+            case 'haov':
+            case 'vaov':
+            case 'minHfov':
+            case 'maxHfov':
+            case 'minPitch':
+            case 'maxPitch':
+            case 'minYaw':
+            case 'maxYaw':
+            case 'vOffset':
+            case 'autoRotate':
                 configFromURL[option] = Number(value);
                 break;
-            case 'autoLoad': case 'ignoreGPanoXMP':
+            case 'autoLoad': 
+            case 'ignoreGPanoXMP': 
+            case 'compass':
+            case 'showFullscreenCtrl':
+            case 'showZoomCtrl':
+            case 'keyboardZoom':
+            case 'mouseZoom':
+            case 'draggable':
+            case 'showControls':
                 configFromURL[option] = JSON.parse(value);
                 break;
-            case 'author': case 'title': case 'firstScene': case 'fallback':
-            case 'preview': case 'panorama': case 'config':
+            case 'type':
+            case 'author':
+            case 'title':
+            case 'firstScene':
+            case 'fallback':
+            case 'preview':
+            case 'panorama':
+            case 'config':
                 configFromURL[option] = decodeURIComponent(value);
                 break;
             default:
