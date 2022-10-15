@@ -58,7 +58,6 @@ function parseURLParameters() {
             case 'showControls':
                 configFromURL[option] = JSON.parse(value);
                 break;
-            case 'type':
             case 'author':
             case 'title':
             case 'firstScene':
