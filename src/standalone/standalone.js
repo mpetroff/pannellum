@@ -54,8 +54,11 @@ function parseURLParameters() {
             case 'showZoomCtrl':
             case 'keyboardZoom':
             case 'mouseZoom':
+            case 'doubleClickZoom':
+            case 'disableKeyboardCtrl':
             case 'draggable':
             case 'showControls':
+            case 'dragConfirm':
                 configFromURL[option] = JSON.parse(value);
                 break;
             case 'author':

@@ -17,4 +17,6 @@ A subset of the JSON configuration file options can be used as URL parameters.
 These include `panorama`, `config`, `author`, `title`, `hfov`, `minHfov`, `maxHfov`,
 `pitch`, `minPitch`, `maxPitch`, `yaw`, `minYaw`, `maxYaw`,
 `haov`, `vaov`, `vOffset`, `autoLoad`, `autoRotate`, `firstScene`,
-`ignoreGPanoXMP`, `preview`, and `fallback`.
+`ignoreGPanoXMP`, `preview`, `fallback`, `compass`, `showFullscreenCtrl`,
+`showZoomCtrl`, `keyboardZoom`, `mouseZoom`, `doubleClickZoom`,
+`disableKeyboardCtrl`, `draggable`, `showControls`, and `dragConfirm`.
