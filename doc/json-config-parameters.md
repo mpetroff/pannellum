@@ -76,6 +76,8 @@ If set to `true`, device orientation control will be used when the panorama is
 loaded, if the device supports it. If false, device orientation control needs
 to be activated by pressing a button. Defaults to `false`. Note that a secure
 HTTPS connection is required for device orientation access in most browsers.
+Additionally, this feature does not work in combination with `autoLoad: true`
+in most browsers, since a user interaction is required to prompt for permission.
 
 
 ### `showZoomCtrl` (boolean)
