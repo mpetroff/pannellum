@@ -103,6 +103,7 @@ var defaultConfig = {
     showZoomCtrl: true,
     autoLoad: false,
     showControls: true,
+    workaroundFullscreen: true,
     orientationOnByDefault: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
@@ -259,7 +260,7 @@ controls.container.appendChild(controls.zoom);
 controls.fullscreen = document.createElement('div');
 controls.fullscreen.addEventListener('click', toggleFullscreen);
 controls.fullscreen.className = 'pnlm-fullscreen-toggle-button pnlm-sprite pnlm-fullscreen-toggle-button-inactive pnlm-controls pnlm-control';
-if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled)
+if (document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled || config.workaroundFullscreen))
     controls.container.appendChild(controls.fullscreen);
 
 // Device orientation toggle
@@ -2266,8 +2267,8 @@ function processOptions(isPreview) {
                 break;
 
             case 'showFullscreenCtrl':
-                if (config[key] && config.showControls != false && ('fullscreen' in document || 'mozFullScreen' in document ||
-                    'webkitIsFullScreen' in document || 'msFullscreenElement' in document)) {
+                if (config[key] && config.showControls != false && (('fullscreen' in document || 'mozFullScreen' in document ||
+                    'webkitIsFullScreen' in document || 'msFullscreenElement' in document) || config.workaroundFullscreen) ) {
                     
                     // Show fullscreen control
                     controls.fullscreen.style.display = 'block';
@@ -2319,6 +2320,13 @@ function processOptions(isPreview) {
  */
 function toggleFullscreen() {
     if (loaded && !error) {
+        
+        if (container.classList.contains("pnlm-workaroundfullscreen")) {
+            container.classList.remove("pnlm-workaroundfullscreen");
+        } else {
+            container.classList.add("pnlm-workaroundfullscreen");
+        }
+        
         if (!fullscreenActive) {
             try {
                 if (container.requestFullscreen) {
