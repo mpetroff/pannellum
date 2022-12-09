@@ -103,7 +103,7 @@ var defaultConfig = {
     showZoomCtrl: true,
     autoLoad: false,
     showControls: true,
-    workaroundFullscreen: true,
+    workaroundFullscreen: true, //set true if fullscreen api is not supported
     orientationOnByDefault: false,
     hotSpotDebug: false,
     backgroundColor: [0, 0, 0],
