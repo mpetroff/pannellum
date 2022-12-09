@@ -1863,6 +1863,23 @@ function createHotSpot(hs) {
     else
         div.className += ' pnlm-hotspot pnlm-sprite pnlm-' + escapeHTML(hs.type);
 
+        if ( 'thumbnail' in hs ) {
+            let thumbnail = hs.thumbnail;
+            div.addEventListener("mouseenter",function(){
+            div.style.backgroundImage = `url(${thumbnail})`; 
+            div.style.border = "solid";
+            div.style.backgroundPosition = "center";
+            div.style.backgroundSize = "contain";
+            })
+
+            div.addEventListener("mouseleave",function(){   
+            div.style.backgroundImage = "";
+            div.style.border = "";
+            div.style.backgroundPosition = "";
+            div.style.backgroundSize = "";
+            })
+        }
+
     var span = document.createElement('span');
     if (hs.text)
         span.innerHTML = escapeHTML(hs.text);
