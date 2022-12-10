@@ -335,8 +335,8 @@ spot tooltip DOM instead of the default function. The contents of
 #### `clickHandlerFunc` (function) and `clickHandlerArgs` (object)
 
 If `clickHandlerFunc` is specified, this function is added as an event handler
-for the hot spot's `click` event. The event object and the contents of
-`clickHandlerArgs` are passed to the function as arguments.
+for the hot spot's `click`, `pointerup`, and `touchend` events. The event object
+and the contents of `clickHandlerArgs` are passed to the function as arguments.
 
 #### `draggable`
 
