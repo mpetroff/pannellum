@@ -45,7 +45,7 @@ function Renderer(container, context) {
     var world;
     var vtmps;
     var pose;
-    var image, imageType, dynamic;
+    var image, imageType;
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
     var globalParams;
     var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
@@ -65,14 +65,13 @@ function Renderer(container, context) {
      *      configuration object.
      * @param {string} imageType - The type of the image: `equirectangular`,
      *      `cubemap`, or `multires`.
-     * @param {boolean} dynamic - Whether or not the image is dynamic (e.g., video).
      * @param {number} haov - Initial horizontal angle of view.
      * @param {number} vaov - Initial vertical angle of view.
      * @param {number} voffset - Initial vertical offset angle.
      * @param {function} callback - Load callback function.
      * @param {Object} [params] - Other configuration parameters (`horizonPitch`, `horizonRoll`, `backgroundColor`).
      */
-    this.init = function(_image, _imageType, _dynamic, haov, vaov, voffset, callback, params) {
+    this.init = function(_image, _imageType, haov, vaov, voffset, callback, params) {
         // Default argument for image type
         if (_imageType === undefined)
             _imageType = 'equirectangular';
@@ -85,7 +84,6 @@ function Renderer(container, context) {
 
         imageType = _imageType;
         image = _image;
-        dynamic = _dynamic;
         globalParams = params || {};
 
         // Clear old data
@@ -498,7 +496,7 @@ function Renderer(container, context) {
             }
 
             // Set parameters for rendering any size
-            if (imageType != "cubemap" && image.width <= maxWidth &&
+            if (imageType != "cubemap" && image.width && image.width <= maxWidth &&
                 haov == 2 * Math.PI && (image.width & (image.width - 1)) == 0)
                 gl.texParameteri(glBindType, gl.TEXTURE_WRAP_S, gl.REPEAT); // Only supported for power-of-two images in WebGL 1
             else
@@ -748,6 +746,7 @@ function Renderer(container, context) {
      * @param {number} [params.roll] - Camera roll (in radians).
      * @param {string} [params.returnImage] - Return rendered image? If specified, should be 'ImageBitmap', 'image/jpeg', or 'image/png'.
      * @param {function} [params.hook] - Hook for executing arbitrary function in this environment.
+     * @param {boolean} [params.dynamic] - Whether or not the image is dynamic (e.g., video) and should be updated.
      */
     this.render = function(pitch, yaw, hfov, params) {
         var focal, i, s, roll = 0;
@@ -755,6 +754,8 @@ function Renderer(container, context) {
             params = {};
         if (params.roll)
             roll = params.roll;
+        if (params.dynamic)
+            var dynamic = params.dynamic;
 
         // Apply pitch and roll transformation if applicable
         if (pose !== undefined) {
@@ -1952,8 +1953,8 @@ var fragMulti = [
 ].join('');
 
 return {
-    renderer: function(container, image, imagetype, dynamic) {
-        return new Renderer(container, image, imagetype, dynamic);
+    renderer: function(container, image, imagetype) {
+        return new Renderer(container, image, imagetype);
     }
 };
 
