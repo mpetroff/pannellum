@@ -68,6 +68,7 @@ var config,
     externalEventListeners = {},
     specifiedPhotoSphereExcludes = [],
     update = false, // Should we update when still to render dynamic content
+    updateOnce = false,
     eps = 1e-6,
     resizeObserver,
     hotspotsCreated = false,
@@ -1651,6 +1652,8 @@ function render() {
         config.pitch = Math.max(minPitch, Math.min(maxPitch, config.pitch));
         
         renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {roll: config.roll * Math.PI / 180, dynamic: update});
+        if (updateOnce)
+            updateOnce = update = false;
         
         renderHotSpots();
         
@@ -3054,10 +3057,24 @@ this.getRenderer = function() {
  */
 this.setUpdate = function(bool) {
     update = bool === true;
-    if (renderer === undefined)
-        onImageLoad();
-    else
-        animateInit();
+    if (update) {
+        if (renderer === undefined)
+            onImageLoad();
+        else
+            animateInit();
+    }
+    return this;
+};
+
+/**
+ * Sets update flag for dynamic content for one frame.
+ * @memberof Viewer
+ * @instance
+ * @returns {Viewer} `this`
+ */
+this.updateOnce = function() {
+    updateOnce = true;
+    this.setUpdate(true);
     return this;
 };
 
