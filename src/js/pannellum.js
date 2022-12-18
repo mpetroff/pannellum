@@ -3058,6 +3058,7 @@ this.getRenderer = function() {
 this.setUpdate = function(bool) {
     update = bool === true;
     if (update) {
+        updateOnce = false;
         if (renderer === undefined)
             onImageLoad();
         else
