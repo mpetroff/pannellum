@@ -3075,7 +3075,10 @@ this.setUpdate = function(bool) {
  */
 this.updateOnce = function() {
     updateOnce = true;
-    this.setUpdate(true);
+    if (renderer === undefined)
+        onImageLoad();
+    else
+        animateInit();
     return this;
 };
 
