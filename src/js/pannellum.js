@@ -3074,7 +3074,7 @@ this.setUpdate = function(bool) {
  * @returns {Viewer} `this`
  */
 this.updateOnce = function() {
-    updateOnce = true;
+    update = updateOnce = true;
     if (renderer === undefined)
         onImageLoad();
     else
