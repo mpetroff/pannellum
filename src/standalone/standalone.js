@@ -10,6 +10,12 @@ function anError(error, showHTML) {
     document.getElementById('container').appendChild(errorMsg);
 }
 
+function dispatchLoaded(configFromURL) {
+    var event = new Event('pannellumloaded');
+    event.configFromURL = configFromURL;
+    document.dispatchEvent(event);
+}
+
 var viewer;
 function parseURLParameters() {
     var URL;
@@ -113,6 +119,7 @@ function parseURLParameters() {
             // Create viewer
             configFromURL.escapeHTML = true;
             viewer = pannellum.viewer('container', configFromURL);
+            dispatchLoaded(configFromURL);
         };
         request.open('GET', configFromURL.config);
         request.send();
@@ -127,6 +134,7 @@ function parseURLParameters() {
     configFromURL.escapeHTML = true;
     configFromURL.targetBlank = true;
     viewer = pannellum.viewer('container', configFromURL);
+    dispatchLoaded(configFromURL);
 }
 
 // Display error if opened from local file
