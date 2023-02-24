@@ -1787,13 +1787,14 @@ function renderInit() {
         if (config.backgroundColor !== undefined)
             params.backgroundColor = config.backgroundColor;
         renderer.init(panoImage, config.type, config.haov * Math.PI / 180, config.vaov * Math.PI / 180, config.vOffset * Math.PI / 180, renderInitCallback, params);
+    } catch(event) {
+        // Panorama not loaded
+
         if (config.dynamic !== true) {
             // Allow image to be garbage collected
             panoImage = undefined;
         }
-    } catch(event) {
-        // Panorama not loaded
-        
+
         // Display error if there is a bad texture
         if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
@@ -1842,6 +1843,11 @@ function renderInitCallback() {
         preview = undefined;
     }
     loaded = true;
+
+    if (config.dynamic !== true) {
+        // Allow image to be garbage collected
+        panoImage = undefined;
+    }
     
     animateInit();
 
