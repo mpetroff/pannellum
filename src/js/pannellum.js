@@ -2084,7 +2084,10 @@ function renderHotSpot(hs) {
         var transform = 'translate(' + coord[0] + 'px, ' + coord[1] +
             'px) translateZ(9999px) rotate(' + config.roll + 'deg)';
         if (hs.scale) {
-            transform += ' scale(' + (origHfov/config.hfov) / z + ')';
+            if (typeof hs.scale == 'number')
+                transform += ' scale(' + hs.scale + ')';
+            else
+                transform += ' scale(' + (origHfov/config.hfov) / z + ')';
         }
         hs.div.style.webkitTransform = transform;
         hs.div.style.MozTransform = transform;
