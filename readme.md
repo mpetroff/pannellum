@@ -96,7 +96,7 @@ The support list is based on feature support. As only recent browsers are tested
 
 #### Not officially supported:
 
-Mobile / app frameworks are not officially supported. They may work, but they're not tested and are not the targeted platform.
+Mobile / app / web frameworks are not officially supported. They may work, but they're not tested and are not the targeted platform.
 
 ## Translations
 
