@@ -404,6 +404,7 @@ function Renderer(container, context) {
             gl.clear(gl.COLOR_BUFFER_BIT);
         }
 
+//<<COMMENT>> webgl: getAttribLocation fetches the coordinates
         // Look up texture coordinates location
         program.texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
         gl.enableVertexAttribArray(program.texCoordLocation);
@@ -440,6 +441,7 @@ function Renderer(container, context) {
                 gl.uniform4fv(program.backgroundColor, color.concat([1]));
             }
 
+//<<COMMENT>> webgl: createTexture creates tthe texture and reuturn tthe cubes
             // Create texture
             program.texture = gl.createTexture();
             gl.bindTexture(glBindType, program.texture);
