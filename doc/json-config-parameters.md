@@ -358,6 +358,11 @@ changes in local image scale that occur due to distortions within the viewport.
 If set to a number, a fixed scaling is applied relative to the default hot spot
 size. Defaults to `false`.
 
+#### `sticky` (boolean)
+
+When `true`, the hot spot will stick to the edges of the screen, always visible. 
+Defaults to `false`.
+
 ### `hotSpotDebug` (boolean)
 
 When `true`, the mouse pointer's pitch and yaw are logged to the console when
