@@ -1078,11 +1078,10 @@ function Renderer(container, context) {
             }
             // Draw tiles
             for (var i = 0; i < program.currentNodes.length; i++) {
-                // This optimization that doesn't draw a node if all its children
-                // will be drawn ignores the fact that some nodes don't have
-                // four children; these tiles are always drawn.
+                // This optimization doesn't draw a node if all its children
+                // will be drawn
                 if (program.currentNodes[i].textureLoaded > 1 &&
-                    node_paths[program.currentNodes[i].path] != 4) {
+                    node_paths[program.currentNodes[i].path] != program.currentNodes[i].numChildren) {
                     //var color = program.currentNodes[i].color;
                     //gl.uniform4f(program.colorUniform, color[0], color[1], color[2], 1.0);
                     
@@ -1269,6 +1268,7 @@ function Renderer(container, context) {
                             f3 = 0;
                             i3 = 1;
                         }
+                        node.numChildren = 2;
                     }
                     if (node.y == numTiles) {
                         f2 = 0;
@@ -1277,7 +1277,12 @@ function Renderer(container, context) {
                             f3 = 0;
                             i3 = 1;
                         }
+                        node.numChildren = 2;
                     }
+                    if (node.x == numTiles && node.y == numTiles)
+                        node.numChildren = 1;
+                } else {
+                    node.numChildren = 4;
                 }
                 
                 vtmp = new Float32Array([
@@ -1322,6 +1327,8 @@ function Renderer(container, context) {
                 for (var j = 0; j < children.length; j++) {
                     testMultiresNode(rotPersp, rotPerspNoClip, children[j], pitch, yaw, hfov);
                 }
+            } else {
+                node.numChildren = 0;
             }
         }
     }
