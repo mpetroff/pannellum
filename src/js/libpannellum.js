@@ -1074,7 +1074,7 @@ function Renderer(container, context) {
             for (var i = 0; i < program.currentNodes.length; i++) {
                 if (node_paths[program.currentNodes[i].parentPath] === undefined)
                     node_paths[program.currentNodes[i].parentPath] = 0
-                node_paths[program.currentNodes[i].parentPath] += !(program.currentNodes[i].textureLoaded > 1); // !(undefined > 1) != (undefined <= 1)
+                node_paths[program.currentNodes[i].parentPath] += program.currentNodes[i].textureLoaded > 1;
             }
             // Draw tiles
             for (var i = 0; i < program.currentNodes.length; i++) {
