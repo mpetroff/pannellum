@@ -306,7 +306,6 @@ if len(missingTiles) > 0:
         level = missingTile[1]
         if face != prevFace:
             missingTilesStr += '!' + faceLetters[face]
-            #prevLevel = None
         if level != prevLevel:
             missingTilesStr += '>' + b83encode([level], 1)
             maxTileNum = math.ceil(cubeSize / 2**(levels - level) / tileSize) - 1
