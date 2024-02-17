@@ -506,6 +506,12 @@ used, the image size should be kept small, since it needs to be loaded with the
 configuration parameters.
 
 
+#### `missingTiles` (string)
+
+This specifies tiles that are missing and should not be loaded. A compact
+encoding is used for these data.
+
+
 
 ## Dynamic content specific options
 

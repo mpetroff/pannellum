@@ -658,6 +658,28 @@ function Renderer(container, context) {
                 gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
                 gl.useProgram(program);
             }
+
+            // Parse missing tiles list, if it exists
+            if (image.missingTiles) {
+                var missingTiles = [];
+                var perSide = image.missingTiles.split('!');
+                var level = -1;
+                for (var i = 1; i < perSide.length; i++) {
+                    var side = perSide[i].at(0);
+                    var perLevel = perSide[i].indexOf('>') < 0 ? [side, perSide[i].slice(1)] : perSide[i].split('>');
+                    for (var j = 1; j < perLevel.length; j++) {
+                        if (perSide[i].indexOf('>') >= 0)
+                            var level = shtB83decode(perLevel[j].at(0), 1)[0];
+                        var maxTileNum = Math.ceil(image.cubeResolution /
+                            Math.pow(2, image.maxLevel - level) / image.tileResolution) - 1;
+                        var numTileDigits = Math.ceil(Math.log(maxTileNum + 1) / Math.log(83));
+                        var tiles = perLevel[j].slice(1).length > 0 ? shtB83decode(perLevel[j].slice(1), numTileDigits) : [0, 0];
+                        for (var k = 0; k < tiles.length / 2; k++)
+                            missingTiles.push([side, level, tiles[k * 2], tiles[k * 2 + 1]].toString());
+                    }
+                }
+                image.missingTileList = missingTiles;
+            }
         }
 
         // Check if there was an error
@@ -1069,6 +1091,7 @@ function Renderer(container, context) {
             // Clear canvas
             if (clear)
                 gl.clear(gl.COLOR_BUFFER_BIT);
+
             // Determine tiles that need to be drawn
             var node_paths = {};
             for (var i = 0; i < program.currentNodes.length; i++) {
@@ -1134,6 +1157,11 @@ function Renderer(container, context) {
      * @param {number} hfov - Horizontal field of view to check at.
      */
     function testMultiresNode(rotPersp, rotPerspNoClip, node, pitch, yaw, hfov) {
+        // Don't try to load missing tiles (I wish there were a better way to check than `toString`)
+        if (image.missingTileList !== undefined &&
+            image.missingTileList.indexOf([node.side, node.level, node.x, node.y].toString()) >= 0)
+            return;
+
         if (checkSquareInView(rotPersp, node.vertices)) {
             // In order to determine if this tile resolution needs to be loaded
             // for this node, start by calculating positions of node corners
