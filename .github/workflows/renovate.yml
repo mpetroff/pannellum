@@ -19,3 +19,4 @@ jobs:
           token: ${{ secrets.RENOVATE_TOKEN }}
         env:
           LOG_LEVEL: debug
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
