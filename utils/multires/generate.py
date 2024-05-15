@@ -197,7 +197,7 @@ else:
     cubeSize = 8 * int((360 / haov) * origWidth / math.pi / 8)
 tileSize = min(args.tileSize, cubeSize)
 levels = int(math.ceil(math.log(float(cubeSize) / tileSize, 2))) + 1
-if round(cubeSize / 2**(levels - 2)) == tileSize:
+if int(cubeSize / 2**(levels - 2)) == tileSize:
     levels -= 1  # Handle edge case
 origHeight = str(origHeight)
 origWidth = str(origWidth)
