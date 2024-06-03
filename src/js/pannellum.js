@@ -629,11 +629,11 @@ function parseGPanoXMP(image, url) {
                         config.horizonRoll = xmp.horizonRoll;
                 }
                 
-                if (xmp.pitch != null && specifiedPhotoSphereExcludes.indexOf('pitch') < 0)
+                if (xmp.pitch !== null && specifiedPhotoSphereExcludes.indexOf('pitch') < 0)
                     config.pitch = xmp.pitch;
-                if (xmp.yaw != null && specifiedPhotoSphereExcludes.indexOf('yaw') < 0)
+                if (xmp.yaw !== null && specifiedPhotoSphereExcludes.indexOf('yaw') < 0)
                     config.yaw = xmp.yaw;
-                if (xmp.hfov != null && specifiedPhotoSphereExcludes.indexOf('hfov') < 0)
+                if (xmp.hfov !== null && specifiedPhotoSphereExcludes.indexOf('hfov') < 0)
                     config.hfov = xmp.hfov;
             }
         }
@@ -2111,7 +2111,7 @@ function renderHotSpots() {
 function mergeConfig(sceneId) {
     config = {};
     var k, s;
-    var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset', 'horizonPitch', 'horizonRoll'];
+    var photoSphereExcludes = ['haov', 'vaov', 'vOffset', 'northOffset', 'horizonPitch', 'horizonRoll', 'pitch', 'yaw', 'hfov'];
     specifiedPhotoSphereExcludes = [];
     
     // Merge default config
