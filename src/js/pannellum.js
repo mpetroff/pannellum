@@ -1552,7 +1552,7 @@ function animate() {
         prevTime = undefined;
         var autoRotateStartTime = config.autoRotateInactivityDelay -
             (Date.now() - latestInteraction);
-        if (autoRotateStartTime > 0) {
+        if (autoRotateStartTime > 0 && autoRotateSpeed) {
             autoRotateStart = setTimeout(function() {
                 config.autoRotate = autoRotateSpeed;
                 _this.lookAt(origPitch, undefined, origHfov, 3000);
