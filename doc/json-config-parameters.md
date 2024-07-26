@@ -355,8 +355,11 @@ event object are: `mousedown`, `pointerdown`, `touchend`, `pointerup`, `pointerl
 When `true`, the hot spot is scaled to match changes in the field of view,
 relative to the initial field of view. Note that this does not account for
 changes in local image scale that occur due to distortions within the viewport.
-If set to a number, a fixed scaling is applied relative to the default hot spot
-size. Defaults to `false`.
+Defaults to `false`.
+
+#### `scaleFactor` (number)
+
+Applies a fixed scaling to the default hot spot size. Can be combined with `scale`.
 
 ### `hotSpotDebug` (boolean)
 

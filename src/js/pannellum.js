@@ -2083,12 +2083,10 @@ function renderHotSpot(hs) {
         coord[1] += (canvasHeight - hs.div.offsetHeight) / 2;
         var transform = 'translate(' + coord[0] + 'px, ' + coord[1] +
             'px) translateZ(9999px) rotate(' + config.roll + 'deg)';
-        if (hs.scale) {
-            if (typeof hs.scale == 'number')
-                transform += ' scale(' + hs.scale + ')';
-            else
-                transform += ' scale(' + (origHfov/config.hfov) / z + ')';
-        }
+        if (hs.scale)
+            transform += ' scale(' + (hs.scaleFactor || 1) * (origHfov/config.hfov) / z + ')';
+        else if (hs.scaleFactor)
+            transform += ' scale(' + hs.scaleFactor + ')';
         hs.div.style.webkitTransform = transform;
         hs.div.style.MozTransform = transform;
         hs.div.style.transform = transform;
