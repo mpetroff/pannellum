@@ -3221,7 +3221,9 @@ this.addHotSpot = function(hs, sceneId) {
 };
 
 /**
- * Remove a hot spot.
+ * Remove a hot spot. To use this method, the user must create each hot spot
+ * with a unique ID within a given scene. Behavior for duplicate IDs is
+ * considered undefined, and hot spots created without an ID cannot be removed.
  * @memberof Viewer
  * @instance
  * @param {string} hotSpotId - The ID of the hot spot
