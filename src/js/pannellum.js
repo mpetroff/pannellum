@@ -803,7 +803,6 @@ function onDocumentMouseDown(event) {
     stopAnimation();
 
     stopOrientation();
-    config.roll = 0;
 
     speed.hfov = 0;
 
@@ -932,7 +931,6 @@ function onDocumentTouchStart(event) {
     stopAnimation();
 
     stopOrientation();
-    config.roll = 0;
 
     speed.hfov = 0;
 
@@ -1181,7 +1179,6 @@ function onDocumentKeyPress(event) {
     latestInteraction = Date.now();
 
     stopOrientation();
-    config.roll = 0;
 
     // Record key pressed
     var keynumber = event.which || event.keycode;
@@ -2569,6 +2566,7 @@ function stopOrientation() {
     window.removeEventListener('deviceorientation', orientationListener);
     controls.orientation.classList.remove('pnlm-orientation-button-active');
     orientation = false;
+    config.roll = 0;
 }
 
 /**
