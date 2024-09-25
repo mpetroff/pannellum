@@ -2721,6 +2721,8 @@ this.setPitch = function(pitch, animated, callback, callbackArgs) {
             setTimeout(function(){callback(callbackArgs);}, animated);
     } else {
         config.pitch = pitch;
+        if (typeof callback == 'function')
+            callback(callbackArgs);
     }
     animateInit();
     return this;
@@ -2795,6 +2797,8 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
             setTimeout(function(){callback(callbackArgs);}, animated);
     } else {
         config.yaw = yaw;
+        if (typeof callback == 'function')
+            callback(callbackArgs);
     }
     animateInit();
     return this;
@@ -2862,6 +2866,8 @@ this.setHfov = function(hfov, animated, callback, callbackArgs) {
             setTimeout(function(){callback(callbackArgs);}, animated);
     } else {
         setHfov(hfov);
+        if (typeof callback == 'function')
+            callback(callbackArgs);
     }
     animateInit();
     return this;
