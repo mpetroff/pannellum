@@ -67,6 +67,7 @@ function parseURLParameters() {
             case 'fallback':
             case 'preview':
             case 'panorama':
+            case 'panoramaFullscreen':
             case 'config':
                 configFromURL[option] = decodeURIComponent(value);
                 break;

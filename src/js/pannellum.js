@@ -2327,6 +2327,21 @@ function processOptions(isPreview) {
 function toggleFullscreen() {
     if (loaded && !error) {
         if (!fullscreenActive) {
+            if (config.panoramaFullscreen) {
+                var p = '';
+                if (config.basePath) {
+                    p = config.basePath;
+                }
+                p = absoluteURL(config.panoramaFullscreen) ? config.panoramaFullscreen : p + config.panoramaFullscreen;
+
+                var panoImageFullscreen = document.createElement('img');
+                panoImageFullscreen.src = p;
+                panoImageFullscreen.onload = function() {
+                    panoImage = panoImageFullscreen;
+                    onImageLoad();
+                }
+            }
+
             try {
                 if (container.requestFullscreen) {
                     container.requestFullscreen();
