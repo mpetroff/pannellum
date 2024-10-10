@@ -17,6 +17,7 @@
     line-height: 1.4;
     contain: content;
     direction: ltr;
+    font-size: 16px;
 }
 .pnlm-container, .pnlm-load-button {
     font-family: Helvetica, "Nimbus Sans L", "Liberation Sans", Arial, sans-serif;
