@@ -50,6 +50,7 @@ function Renderer(container, context) {
     var globalParams;
     var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
     var fallbackSides = ['f', 'r', 'b', 'l', 'u', 'd'];
+    var planarBlob;
 
     if (context)
         gl = context;
@@ -986,6 +987,10 @@ function Renderer(container, context) {
             multiresDraw(!isPreview);
         }
         
+        canvas.toBlob(function(blob) {
+            planarBlob = blob;
+        }, 'image/jpeg');
+
         if (params.returnImage !== undefined) {
             if (window.createImageBitmap && params.returnImage == 'ImageBitmap') {
                 return createImageBitmap(canvas);
@@ -1042,7 +1047,19 @@ function Renderer(container, context) {
     this.getCanvas = function() {
         return canvas;
     };
-    
+
+    /**
+     * Retrieve renderer's PlanarImg url.
+     * @memberof Renderer
+     * @instance
+     * @returns {HTMLElement} Renderer's PlanarImg url.
+     */
+    this.getPlanarImg = function() {
+        if(planarBlob){
+            return URL.createObjectURL(planarBlob);
+        }
+    };
+
     /**
      * Sorting method for multires nodes.
      * @private
