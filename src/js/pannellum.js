@@ -2556,6 +2556,10 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     if (workingHfov !== undefined) {
         config.hfov = workingHfov;
     }
+    
+    // Trigger recalculation of orientationYawOffset in orientationListener()
+    if (orientation === true) orientation = 10;
+	
     fireEvent('scenechange', sceneId);
     load();
 }
