@@ -2486,7 +2486,9 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
     if (config.sceneFadeDuration && !fadeDone) {
-        var data = renderer.render(config.pitch * Math.PI / 180, config.yaw * Math.PI / 180, config.hfov * Math.PI / 180, {returnImage: 'ImageBitmap'});
+        var data = renderer.render(config.pitch * Math.PI / 180,
+            config.yaw * Math.PI / 180, config.hfov * Math.PI / 180,
+            {roll: config.roll * Math.PI / 180, returnImage: 'ImageBitmap'});
         if (data !== undefined) {
             if (data.then)
                 fadeImg = document.createElement('canvas');
