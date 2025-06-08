@@ -216,12 +216,14 @@ class PannellumTester(object):
                 )
                 self.browser.set_window_size(800, 600)
             else:
+                from selenium.webdriver.chrome.service import Service
+                service = Service(service_log_path=log_path)
                 options = webdriver.ChromeOptions()
                 options.add_argument("headless")
                 options.add_argument("no-sandbox")
                 options.add_argument("window-size=800x600")
                 self.browser = webdriver.Chrome(
-                    service_log_path=log_path, options=options
+                    service=service, options=options
                 )
         return self.browser
 
