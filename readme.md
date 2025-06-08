@@ -1,6 +1,6 @@
 # Pannellum
 
-[![Build Status](https://app.travis-ci.com/mpetroff/pannellum.svg?branch=master)](https://app.travis-ci.com/github/mpetroff/pannellum)
+[![CI](https://github.com/mpetroff/pannellum/actions/workflows/ci.yaml/badge.svg)](https://github.com/mpetroff/pannellum/actions/workflows/ci.yaml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3334433.svg)](https://doi.org/10.5281/zenodo.3334433)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.01628/status.svg)](https://doi.org/10.21105/joss.01628)
 
