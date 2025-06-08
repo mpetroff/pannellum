@@ -28,4 +28,6 @@ jobs:
       env:
         CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
       run: |
+        echo ${{ steps.setup-chrome.outputs.chrome-path }}
+        sudo ln -s ${{ steps.setup-chrome.outputs.chrome-path }} /usr/bin/google-chrome
         xvfb-run -a python3 ${{ github.workspace }}/tests/run_tests.py
