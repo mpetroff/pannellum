@@ -15,6 +15,7 @@ jobs:
         sudo pip3 install --ignore-installed selenium requests
     - name: Install Chrome
       uses: browser-actions/setup-chrome@v1
+      id: setup-chrome
       with:
         chrome-version: stable
         install-chromedriver: true
@@ -24,5 +25,7 @@ jobs:
       run: |
         python3 ${{ github.workspace }}/utils/build/build.py
     - name: Test
+      env:
+        CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
       run: |
         xvfb-run -a python3 ${{ github.workspace }}/tests/run_tests.py
