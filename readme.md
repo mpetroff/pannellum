@@ -135,7 +135,7 @@ port is selected, along with other arguments. One can see usage via:
 $ python tests/run_tests.py --help
 ```
 
-Continuous integration tests are run via [Travis CI](https://travis-ci.org/mpetroff/pannellum). Running the tests locally requires Python 3, the Selenium Python bindings, [Pillow](https://pillow.readthedocs.io/), [NumPy](https://www.numpy.org/), and either Firefox & [geckodriver](https://github.com/mozilla/geckodriver) or Chrome & [ChromeDriver](https://chromedriver.chromium.org/).
+Continuous integration tests are run via [GitHub Actions](https://github.com/mpetroff/pannellum/actions/workflows/ci.yaml). Running the tests locally requires Python 3, the Selenium Python bindings, [Pillow](https://pillow.readthedocs.io/), [NumPy](https://www.numpy.org/), and either Firefox & [geckodriver](https://github.com/mozilla/geckodriver) or Chrome & [ChromeDriver](https://chromedriver.chromium.org/).
 
 ## Seeking support
 If you wish to ask a question or report a bug, please open an issue at [github.com/mpetroff/pannellum](https://github.com/mpetroff/pannellum). See the _Contributing_ section below for more details.
