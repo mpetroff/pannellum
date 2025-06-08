@@ -20,7 +20,7 @@ jobs:
         echo $CHROME_VERSION
         curl "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip" -O
         unzip chromedriver-linux64.zip
-        sudo mv chromedriver /usr/local/bin
+        sudo mv chromedriver-linux64/chromedriver /usr/local/bin
     - name: Check out repository code
       uses: actions/checkout@v4
     - name: Build
