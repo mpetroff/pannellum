@@ -71,7 +71,7 @@ class PannellumTester(object):
         print("Selected port is %s" % self.port)
         self.httpd = TCPServer(("", self.port), self.handler)
         self.server = Thread(target=self.httpd.serve_forever)
-        self.server.setDaemon(True)
+        self.server.daemon = True
         self.server.start()
         self.started = True
         self.pause_time = 100
