@@ -11,7 +11,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3-pillow python3-numpy python3-selenium mesa-utils libgl1-mesa-dri libglapi-mesa libosmesa6
+        sudo apt-get install -y python3-pillow python3-numpy python3-pip mesa-utils libgl1-mesa-dri libglapi-mesa libosmesa6 python3-setuptools
+        sudo pip3 install --ignore-installed selenium requests
     - name: Install Chrome
       run: |
         google-chrome --version
