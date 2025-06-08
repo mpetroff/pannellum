@@ -2078,6 +2078,10 @@ function renderHotSpot(hs) {
         // Apply transform
         coord[0] += (canvasWidth - hs.div.offsetWidth) / 2;
         coord[1] += (canvasHeight - hs.div.offsetHeight) / 2;
+        if (hs.sticky) {
+            coord[0] = Math.min(canvasWidth - hs.div.offsetWidth, Math.max(0, coord[0]));
+            coord[1] = Math.min(canvasHeight - hs.div.offsetHeight, Math.max(0, coord[1]));
+        }
         var transform = 'translate(' + coord[0] + 'px, ' + coord[1] +
             'px) translateZ(9999px) rotate(' + config.roll + 'deg)';
         if (hs.scale)
