@@ -12,7 +12,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y python3-pillow python3-numpy python3-pip mesa-utils libgl1-mesa-dri libglapi-mesa libosmesa6 python3-setuptools
-        sudo pip3 install selenium requests
+        sudo pip3 install --ignore-installed selenium requests
     - name: Install Chrome
       uses: browser-actions/setup-chrome@v1
       with:
