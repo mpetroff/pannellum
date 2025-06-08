@@ -1,0 +1,31 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pillow python3-numpy python3-pip mesa-utils libgl1-mesa-dri libglapi-mesa libosmesa6 python3-setuptools
+        sudo pip3 install --ignore-installed selenium requests
+    - name: Install Chrome
+      run: |
+        google-chrome --version
+        CHROME_VERSION=`google-chrome --version | sed -r 's/Google Chrome ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+).*/\1/'`
+        echo $CHROME_VERSION
+        curl "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip" -O
+        unzip chromedriver-linux64.zip
+        sudo mv chromedriver-linux64/chromedriver /usr/local/bin
+    - name: Check out repository code
+      uses: actions/checkout@v4
+    - name: Build
+      run: |
+        python3 ${{ github.workspace }}/utils/build/build.py
+    - name: Test
+      run: |
+        xvfb-run -a python3 ${{ github.workspace }}/tests/run_tests.py

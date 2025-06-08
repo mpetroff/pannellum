@@ -71,7 +71,7 @@ class PannellumTester(object):
         print("Selected port is %s" % self.port)
         self.httpd = TCPServer(("", self.port), self.handler)
         self.server = Thread(target=self.httpd.serve_forever)
-        self.server.setDaemon(True)
+        self.server.daemon = True
         self.server.start()
         self.started = True
         self.pause_time = 100
@@ -216,12 +216,14 @@ class PannellumTester(object):
                 )
                 self.browser.set_window_size(800, 600)
             else:
+                from selenium.webdriver.chrome.service import Service
+                service = Service(service_log_path=log_path)
                 options = webdriver.ChromeOptions()
                 options.add_argument("headless")
                 options.add_argument("no-sandbox")
                 options.add_argument("window-size=800x600")
                 self.browser = webdriver.Chrome(
-                    service_log_path=log_path, options=options
+                    service=service, options=options
                 )
         return self.browser
 
