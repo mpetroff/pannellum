@@ -168,7 +168,10 @@ Sets the panorama's starting horizontal field of view in degrees. Defaults to
 ### `minYaw` and `maxYaw` (number)
 
 Sets the minimum / maximum yaw the viewer edge can be at, in degrees.
-Defaults to `-180` / `180`, i.e. no limit.
+Defaults to `-180` / `180`, i.e., no limit, which are also the minimum and
+maximum values for these parameters. A further restriction is `minYaw` must
+be less than `maxYaw`, and with these parameters set, the viewer cannot pass
+the +/-180 degree point.
 
 
 ### `minPitch` and `maxPitch` (number)
