@@ -364,6 +364,11 @@ Defaults to `false`.
 
 Applies a fixed scaling to the default hot spot size. Can be combined with `scale`.
 
+#### `sticky` (boolean)
+
+When `true`, the hot spot will stick to the edges of the screen, always visible. 
+Defaults to `false`.
+
 ### `hotSpotDebug` (boolean)
 
 When `true`, the mouse pointer's pitch and yaw are logged to the console when
