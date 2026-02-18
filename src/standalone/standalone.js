@@ -9,23 +9,23 @@ function anError(error) {
 
 var viewer;
 function parseURLParameters() {
-    var URL;
+    var url;
     if (window.location.hash.length > 0) {
         // Prefered method since parameters aren't sent to server
-        URL = window.location.hash.slice(1);
+        url = window.location.hash.slice(1);
     } else {
-        URL = window.location.search.slice(1);
+        url = window.location.search.slice(1);
     }
-    if (!URL) {
+    if (!url) {
         // Display error if no configuration parameters are specified
         anError('No configuration options were specified.');
         return;
     }
-    URL = URL.split('&');
+    url = url.split('&');
     var configFromURL = {};
-    for (var i = 0; i < URL.length; i++) {
-        var option = URL[i].split('=')[0];
-        var value = URL[i].split('=')[1];
+    for (var i = 0; i < url.length; i++) {
+        var option = url[i].split('=')[0];
+        var value = url[i].split('=')[1];
         if (value == '')
             continue; // Skip options with empty values in URL config
         switch(option) {
@@ -51,13 +51,27 @@ function parseURLParameters() {
 
     // Check for JSON configuration file
     if (configFromURL.config) {
+        var configUrl;
+        try {
+            configUrl = new URL(configFromURL.config, window.location.href);
+        } catch(err) {
+            anError('Invalid config URL specified.');
+            return;
+        }
+
+        // Prohibit cross-origin requests, to mitigate XSS risk
+        if (configUrl.origin !== window.location.origin) {
+            anError('Config URL must be on same origin.');
+            return;
+        }
+
         // Get JSON configuration file
         request = new XMLHttpRequest();
         request.onload = function() {
             if (request.status != 200) {
                 // Display error if JSON can't be loaded
                 var a = document.createElement('a');
-                a.href = configFromURL.config;
+                a.href = configUrl;
                 a.textContent = a.href;
                 anError('The file ' + a.outerHTML + ' could not be accessed.');
                 return;
@@ -66,8 +80,10 @@ function parseURLParameters() {
             var responseMap = JSON.parse(request.responseText);
 
             // Set JSON file location
-            if (responseMap.basePath === undefined)
-                responseMap.basePath = configFromURL.config.substring(0, configFromURL.config.lastIndexOf('/')+1);
+            if (responseMap.basePath === undefined) {
+                var configUrlStr = String(configUrl);
+                responseMap.basePath = configUrlStr.substring(0, configUrlStr.lastIndexOf('/') + 1);
+            }
 
             // Merge options
             for (var key in responseMap) {
@@ -85,7 +101,7 @@ function parseURLParameters() {
             configFromURL.escapeHTML = true;
             viewer = pannellum.viewer('container', configFromURL);
         };
-        request.open('GET', configFromURL.config);
+        request.open('GET', configUrl);
         request.send();
         return;
     }
