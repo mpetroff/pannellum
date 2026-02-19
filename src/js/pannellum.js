@@ -349,7 +349,7 @@ function init() {
         
         var onError = function(e) {
             var a = document.createElement('a');
-            a.href = e.target.src;
+            a.href = sanitizeURL(e.target.src, true);
             a.textContent = a.href;
             anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
         };
@@ -390,7 +390,7 @@ function init() {
                 if (xhr.status != 200) {
                     // Display error if image can't be loaded
                     var a = document.createElement('a');
-                    a.href = p;
+                    a.href = sanitizeURL(p, true);
                     a.textContent = a.href;
                     anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
                 }
