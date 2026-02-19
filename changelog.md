@@ -2,6 +2,19 @@ Changelog
 =========
 
 
+Changes in Pannellum 2.5.7 (2026-02-18)
+---------------------------------------
+
+Security fixes:
+ - Fixed XSS vulnerability regarding hot spot attributes that allowed script
+   execution without any user interaction other than visiting the standalone
+   viewer from a link that pointed to a malicious JSON config file
+   (GHSA-8423-w5wx-h2r6)
+ - Require same-origin for JSON config file for standalone viewer to mitigate
+   XSS risk
+ - Sanitize load error URLs
+
+
 Changes in Pannellum 2.5.6 (2019-11-26)
 ---------------------------------------
 
