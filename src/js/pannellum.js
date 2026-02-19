@@ -1734,7 +1734,19 @@ function createHotSpot(hs) {
         a.href = sanitizeURL(hs.URL, true);
         if (hs.attributes) {
             for (var key in hs.attributes) {
-                a.setAttribute(key, hs.attributes[key]);
+                // The setAttribute method converts the key to a lowercase
+                // string, so we do this conversion ourselves, before examining
+                // it (and we also remove all non-ASCII characters)
+                key = String(key).toLowerCase().replace(/[^a-z]/g, '');
+                if (!initialConfig.escapeHTML ||
+                    (!key.startsWith('on') && !key.includes('href'))) {
+                    // setAttribute is an injection sink, so we need to filter
+                    // out HTML event handler attributes and href (which is
+                    // specifically sanitized above) to avoid XSS
+                    a.setAttribute(key, hs.attributes[key]);
+                } else {
+                    console.log('Hot spot attribute skipped.');
+                }
             }
         } else {
             a.target = '_blank';
