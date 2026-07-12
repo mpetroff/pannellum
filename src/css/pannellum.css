@@ -35,13 +35,11 @@
 }
 
 .pnlm-grab {
-    cursor: grab;
-    cursor: url('img/grab.svg') 12 8, default;
+    cursor: url('img/grab.svg') 12 8, grab;
 }
 
 .pnlm-grabbing {
-    cursor: grabbing;
-    cursor: url('img/grabbing.svg') 12 8, default;
+    cursor: url('img/grabbing.svg') 12 8, grabbing;
 }
 
 .pnlm-sprite {
