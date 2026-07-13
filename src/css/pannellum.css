@@ -157,6 +157,17 @@
     background-position: 0 -78px;
 }
 
+.pnlm-vr-button {
+    width: 26px;
+    height: 26px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23444"><path d="M21 7H3c-1.1 0-2 .9-2 2v6c0 1.1 0 2 1 2h4.5c.8 0 1.6-.5 1.9-1.2l1.1-2.5c.2-.4.6-.6 1-.6s.8.2 1 .6l1.1 2.5c.3.7 1.1 1.2 1.9 1.2H20c1 0 1-.9 1-2V9c0-1.1-.9-2-2-2zM6 14.5c-1.4 0-2.5-1.1-2.5-2.5S4.6 9.5 6 9.5s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5zm12 0c-1.4 0-2.5-1.1-2.5-2.5s1.1-2.5 2.5-2.5 2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.pnlm-vr-button:hover {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M21 7H3c-1.1 0-2 .9-2 2v6c0 1.1 0 2 1 2h4.5c.8 0 1.6-.5 1.9-1.2l1.1-2.5c.2-.4.6-.6 1-.6s.8.2 1 .6l1.1 2.5c.3.7 1.1 1.2 1.9 1.2H20c1 0 1-.9 1-2V9c0-1.1-.9-2-2-2zM6 14.5c-1.4 0-2.5-1.1-2.5-2.5S4.6 9.5 6 9.5s2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5zm12 0c-1.4 0-2.5-1.1-2.5-2.5s1.1-2.5 2.5-2.5 2.5 1.1 2.5 2.5-1.1 2.5-2.5 2.5z"/></svg>');
+}
+
 .pnlm-panorama-info {
     position: absolute;
     bottom: 4px;

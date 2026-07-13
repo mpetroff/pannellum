@@ -12,3 +12,8 @@ utils/doc/generated_docs
 
 # Ignore logs
 tests/*.log
+
+# Ignore local development server and SSL certs
+server.js
+key.pem
+cert.pem

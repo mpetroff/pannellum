@@ -32,7 +32,26 @@ Configuration parameters are documented in the `doc/json-config-parameters.md` f
 
 ### Using a minified copy
 
-For final deployment, it is recommended that one use a minified copy of Pannellum instead of using the source files in `src` directly. The easiest method is to download the most recent [release](https://github.com/mpetroff/pannellum/releases) and use the pre-built copy of either `pannellum.htm` or `pannellum.js` & `pannellum.css`. If you wish to make changes to Pannellum or use the latest development copy of the code, follow the instructions in the _Building_ section below to create `build/pannellum.htm`, `build/pannellum.js`, and `build/pannellum.css`.
+For final deployment, it is recommended that one use a minified copy of Pannellum instead of using the source files in `src` directly. The easiest method is to download the most recent [release](https://github.com/mpetroff/pannellum/releases) and use the pre-built copy of either `pannellum.htm` or `pannellum.js` & `pannellum.css`. If you wish to make changes to Pannellum or use the latest development copy of the code, follow the instructions in the _Building_ section below to create `build/pannellum.htm`, `build/pannellum.js`, `build/pannellum.css`, and `build/pannellum.xr.js`.
+
+### VR Headset Support (WebXR)
+
+Pannellum includes optional support for VR headsets (such as the Meta Quest 3) via the WebXR Device API. To preserve a minimal core file size, this functionality is packaged as a separate optional extension: `pannellum.xr.js`.
+
+To enable WebXR VR support:
+1. Load both the core `pannellum.js` (and its CSS) and `pannellum.xr.js` in your HTML:
+   ```html
+   <link rel="stylesheet" href="build/pannellum.css">
+   <script src="build/pannellum.js"></script>
+   <script src="build/pannellum.xr.js"></script>
+   ```
+2. The viewer will automatically detect WebXR capability and render a VR goggles button in the control bar. When clicked, it initiates an immersive stereoscopic session.
+3. Immersive VR features include:
+   * **Head Tracking**: Smooth stereoscopic rendering responsive to headset movement.
+   * **VR Controller Interaction**: Pointer rays project from active controllers. The laser pointer dynamically highlights green when targeting a hotspot; pulling the trigger selects the hotspot.
+   * **Snap Turning**: Push the controller thumbstick left or right to rotate the view by 30 degrees at a time.
+   * **Interactive 3D Tooltips**: Text billboards float above targeted hotspots for clear descriptions.
+   * **VR Loading Spinner**: A smooth, anti-aliased 3D loading arc is displayed directly in front of the viewer's gaze during scene transitions.
 
 ### Using `generate.py` to create multires panoramas
 To be able to create multiresolution panoramas, you need to have the `nona` program installed, which is available as part of [Hugin](http://hugin.sourceforge.net/), as well as Python 3 with the [Pillow](https://pillow.readthedocs.org/) and [NumPy](https://numpy.org/) packages. The [pyshtools](https://shtools.github.io/SHTOOLS/) Python package is also recommended. Then, run
@@ -109,7 +128,7 @@ $ cd utils/build
 $ ./build.sh
 ```
 
-If successful, this should create `build/pannellum.htm`, `build/pannellum.js`, and `build/pannellum.css`, relative to the root directory of the repository.
+If successful, this should create `build/pannellum.htm`, `build/pannellum.js`, `build/pannellum.css`, and `build/pannellum.xr.js`, relative to the root directory of the repository.
 
 ## Tests
 

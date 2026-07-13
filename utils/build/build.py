@@ -146,10 +146,24 @@ def build(files, css, html, filename, release=False):
 
 def main():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))  # cd to script dir
-    if (len(sys.argv) > 1 and sys.argv[1] == 'release'):
+    release = (len(sys.argv) > 1 and sys.argv[1] == 'release')
+    if release:
         build(JS, CSS, HTML, 'pannellum', True)
+        version = read('../VERSION').strip()
     else:
         build(JS, CSS, HTML, 'pannellum')
+        if os.path.exists('../../.git'):
+            version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').strip()
+        else:
+            version = "testing"
+            
+    # Build pannellum.xr.js
+    print('=' * 40)
+    print('Compiling pannellum.xr.js')
+    print('=' * 40)
+    xr_js = read('js/pannellum.xr.js')
+    xr_compressed = JScompress(xr_js)
+    output(addHeaderJS(xr_compressed, version), 'pannellum.xr.js')
 
 if __name__ == "__main__":
     main()

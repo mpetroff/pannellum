@@ -72,6 +72,9 @@ function Renderer(container, context) {
      * @param {Object} [params] - Other configuration parameters (`horizonPitch`, `horizonRoll`, `backgroundColor`).
      */
     this.init = function(_image, _imageType, haov, vaov, voffset, callback, params) {
+        if (gl) {
+            while (gl.getError() !== 0) {}
+        }
         // Default argument for image type
         if (_imageType === undefined)
             _imageType = 'equirectangular';
@@ -175,8 +178,10 @@ function Renderer(container, context) {
             navigator.userAgent.toLowerCase().match(/(iphone|ipod|ipad).* os 10_/) ||
             navigator.userAgent.match(/Trident.*rv[ :]*11\./)))) {
             // Enable WebGL on canvas
-            if (!gl)
-                gl = canvas.getContext('experimental-webgl', {alpha: false, depth: false});
+            if (!gl) {
+                gl = canvas.getContext('webgl', {alpha: false, depth: false, xrCompatible: true}) ||
+                     canvas.getContext('experimental-webgl', {alpha: false, depth: false, xrCompatible: true});
+            }
             if (gl && gl.getError() == 1286)
                 handleWebGLError1286();
         }
@@ -398,8 +403,8 @@ function Renderer(container, context) {
         program.drawInProgress = false;
 
         // Set background clear color (does not apply to cubemap/fallback image)
+        var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
         if (params.backgroundColor !== null) {
-            var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
             gl.clearColor(color[0], color[1], color[2], 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
         }
@@ -428,6 +433,9 @@ function Renderer(container, context) {
             program.v = gl.getUniformLocation(program, 'u_v');
             program.vo = gl.getUniformLocation(program, 'u_vo');
             program.rot = gl.getUniformLocation(program, 'u_rot');
+            program.invProjView = gl.getUniformLocation(program, 'u_invProjView');
+            program.useMatrix = gl.getUniformLocation(program, 'u_useMatrix');
+            gl.uniform1i(program.useMatrix, 0);
 
             // Pass horizontal extent, vertical extent, and vertical offset
             gl.uniform1f(program.h, haov / (Math.PI * 2.0));
@@ -686,7 +694,7 @@ function Renderer(container, context) {
         var err = gl.getError();
         if (err !== 0) {
             console.log('Error: Something went wrong with WebGL!', err);
-            throw {type: 'webgl error'};
+            throw {type: 'webgl error', code: err};
         }
 
         callback();
@@ -999,6 +1007,119 @@ function Renderer(container, context) {
     };
     
     /**
+     * Render new view of panorama for WebXR (stereoscopic/matrix-based).
+     * @memberof Renderer
+     * @instance
+     * @param {Float32Array} invProjView - Inverse view-projection matrix (for equirectangular/cubemap).
+     * @param {Object} [params] - Extra configuration parameters.
+     * @param {boolean} [params.dynamic] - Whether or not the image is dynamic (e.g., video) and should be updated.
+     * @param {Float32Array} [params.projMatrix] - Projection matrix (for multires).
+     * @param {Float32Array} [params.viewMatrix] - View matrix (for multires).
+     * @param {Float32Array} [params.rotPersp] - Rotated perspective matrix (for multires frustum culling).
+     * @param {Float32Array} [params.rotPerspNoClip] - Rotated perspective matrix without clipping (for multires frustum culling).
+     * @param {number} [params.pitch] - Viewport pitch.
+     * @param {number} [params.yaw] - Viewport yaw.
+     * @param {number} [params.hfov] - Viewport horizontal field of view.
+     */
+    this.renderXR = function(invProjView, params) {
+        if (!gl) return;
+        if (params === undefined) params = {};
+        
+        if (imageType != 'multires') {
+            // Equirectangular / Cubemap
+            gl.useProgram(program);
+            
+            // Re-bind texture coordinate buffer and attribute location
+            gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+            gl.enableVertexAttribArray(program.texCoordLocation);
+            gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+            
+            // Re-bind active texture
+            var glBindType = (imageType == 'cubemap') ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(glBindType, program.texture);
+            
+            gl.uniform1i(program.useMatrix, 1);
+            gl.uniformMatrix4fv(program.invProjView, false, invProjView);
+            
+            if (params.dynamic === true && imageType == 'equirectangular') {
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+            }
+            
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            gl.uniform1i(program.useMatrix, 0);
+        } else {
+            // Multires
+            gl.useProgram(program);
+            
+            // Re-bind buffers and attributes
+            gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
+            gl.enableVertexAttribArray(program.vertPosLocation);
+            gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
+            
+            gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertTexCoordBuf);
+            gl.enableVertexAttribArray(program.texCoordLocation);
+            gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+            
+            gl.activeTexture(gl.TEXTURE0);
+            
+            var projMatrix = params.projMatrix;
+            var viewMatrix = params.viewMatrix;
+            var rotPersp = params.rotPersp;
+            var rotPerspNoClip = params.rotPerspNoClip;
+            
+            gl.uniformMatrix4fv(program.perspUniform, false, projMatrix);
+            gl.uniformMatrix4fv(program.cubeUniform, false, viewMatrix);
+            
+            program.nodeCache.sort(multiresNodeSort);
+            if (program.nodeCache.length > 200 &&
+                program.nodeCache.length > program.currentNodes.length + 50) {
+                var removed = program.nodeCache.splice(200, program.nodeCache.length - 200);
+                for (var j = 0; j < removed.length; j++) {
+                    gl.deleteTexture(removed[j].texture);
+                }
+            }
+            program.currentNodes = [];
+            
+            var pitch = params.pitch || 0;
+            var yaw = params.yaw || 0;
+            var hfov = params.hfov || Math.PI / 2;
+            
+            for (var s = 0; s < 6; s++) {
+                var ntmp = new MultiresNode(vtmps[s], sides[s], 1, 0, 0, image.fullpath, null);
+                testMultiresNode(rotPersp, rotPerspNoClip, ntmp, pitch, yaw, hfov);
+            }
+            
+            program.currentNodes.sort(multiresNodeRenderSort);
+            
+            for (var i = pendingTextureRequests.length - 1; i >= 0; i--) {
+                if (program.currentNodes.indexOf(pendingTextureRequests[i].node) === -1) {
+                    pendingTextureRequests[i].node.textureLoad = false;
+                    pendingTextureRequests.splice(i, 1);
+                }
+            }
+            
+            if (pendingTextureRequests.length === 0) {
+                for (var i = 0; i < program.currentNodes.length; i++) {
+                    var node = program.currentNodes[i];
+                    if (!node.texture && !node.textureLoad) {
+                        node.textureLoad = true;
+                        setTimeout(processNextTile, 0, node);
+                        break;
+                    }
+                }
+            }
+            
+            if (program.textureLoads.length > 0)
+                program.textureLoads.shift()(true);
+            
+            var isPreview = (typeof image.shtHash !== 'undefined') ||
+                (typeof image.equirectangularThumbnail !== 'undefined');
+            multiresDraw(!isPreview);
+        }
+    };
+    
+    /**
      * Check if images are loading.
      * @memberof Renderer
      * @instance
@@ -1041,6 +1162,25 @@ function Renderer(container, context) {
      */
     this.getCanvas = function() {
         return canvas;
+    };
+    
+    /**
+     * Retrieve internal WebGL context and program details.
+     * @memberof Renderer
+     * @instance
+     * @returns {Object} Internal details.
+     */
+    this.getGLContextDetails = function() {
+        return {
+            gl: gl,
+            program: program,
+            image: image,
+            imageType: imageType,
+            texCoordBuffer: texCoordBuffer,
+            cubeVertBuf: cubeVertBuf,
+            cubeVertTexCoordBuf: cubeVertTexCoordBuf,
+            cubeVertIndBuf: cubeVertIndBuf
+        };
     };
     
     /**
@@ -1908,6 +2048,8 @@ var fragEquiCubeBase = [
 'uniform float u_v;',
 'uniform float u_vo;',
 'uniform float u_rot;',
+'uniform mat4 u_invProjView;',
+'uniform bool u_useMatrix;',
 
 'const float PI = 3.14159265358979323846264;',
 
@@ -1924,19 +2066,29 @@ var fragEquiCubeBase = [
 'uniform vec4 u_backgroundColor;',
 
 'void main() {',
-    // Map canvas/camera to sphere
-    'float x = v_texCoord.x * u_aspectRatio;',
-    'float y = v_texCoord.y;',
-    'float sinrot = sin(u_rot);',
-    'float cosrot = cos(u_rot);',
-    'float rot_x = x * cosrot - y * sinrot;',
-    'float rot_y = x * sinrot + y * cosrot;',
-    'float sintheta = sin(u_theta);',
-    'float costheta = cos(u_theta);',
-    'float a = u_f * costheta - rot_y * sintheta;',
-    'float root = sqrt(rot_x * rot_x + a * a);',
-    'float lambda = atan(rot_x / root, a / root) + u_psi;',
-    'float phi = atan((rot_y * costheta + u_f * sintheta) / root);',
+    'float lambda;',
+    'float phi;',
+    'if (u_useMatrix) {',
+        'vec4 rayDir = u_invProjView * vec4(v_texCoord, 1.0, 1.0);',
+        'vec3 dir = normalize(rayDir.xyz / rayDir.w);',
+        'dir.z = -dir.z;',
+        'lambda = atan(dir.x, dir.z);',
+        'phi = asin(clamp(dir.y, -1.0, 1.0));',
+    '} else {',
+        // Map canvas/camera to sphere
+        'float x = v_texCoord.x * u_aspectRatio;',
+        'float y = v_texCoord.y;',
+        'float sinrot = sin(u_rot);',
+        'float cosrot = cos(u_rot);',
+        'float rot_x = x * cosrot - y * sinrot;',
+        'float rot_y = x * sinrot + y * cosrot;',
+        'float sintheta = sin(u_theta);',
+        'float costheta = cos(u_theta);',
+        'float a = u_f * costheta - rot_y * sintheta;',
+        'float root = sqrt(rot_x * rot_x + a * a);',
+        'lambda = atan(rot_x / root, a / root) + u_psi;',
+        'phi = atan((rot_y * costheta + u_f * sintheta) / root);',
+    '}',
 ].join('\n');
 
 // Fragment shader
