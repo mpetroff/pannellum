@@ -205,7 +205,9 @@ infoDisplay.load.boxp = document.createElement('p');
 infoDisplay.load.box.appendChild(infoDisplay.load.boxp);
 infoDisplay.load.lbox = document.createElement('div');
 infoDisplay.load.lbox.className = 'pnlm-lbox';
-infoDisplay.load.lbox.innerHTML = '<div class="pnlm-loading"></div>';
+var spinner = document.createElement('div');
+spinner.className = 'pnlm-loading';
+infoDisplay.load.lbox.appendChild(spinner);
 infoDisplay.load.box.appendChild(infoDisplay.load.lbox);
 infoDisplay.load.lbar = document.createElement('div');
 infoDisplay.load.lbar.className = 'pnlm-lbar';
@@ -309,16 +311,6 @@ processOptions(true);
  * @private
  */
 function init() {
-    // Display an error for IE 9 as it doesn't work but also doesn't otherwise
-    // show an error (older versions don't work at all)
-    // Based on: http://stackoverflow.com/a/10965203
-    var div = document.createElement("div");
-    div.innerHTML = "<!--[if lte IE 9]><i></i><![endif]-->";
-    if (div.getElementsByTagName("i").length == 1) {
-        anError();
-        return;
-    }
-
     origHfov = config.hfov;
     origPitch = config.pitch;
 
@@ -426,7 +418,7 @@ function init() {
                 }
                 var img = this.response;
                 parseGPanoXMP(img, p);
-                infoDisplay.load.msg.innerHTML = '';
+                infoDisplay.load.msg.textContent = '';
             };
             xhr.onprogress = function(e) {
                 if (e.lengthComputable) {
@@ -447,7 +439,7 @@ function init() {
                         numerator = e.loaded;
                         denominator = e.total;
                     }
-                    infoDisplay.load.msg.innerHTML = numerator + ' / ' + denominator + ' ' + unit;
+                    infoDisplay.load.msg.textContent = numerator + ' / ' + denominator + ' ' + unit;
                 } else {
                     // Display loading spinner
                     infoDisplay.load.lbox.style.display = 'block';
@@ -2220,9 +2212,9 @@ function processOptions(isPreview) {
 
     // Reset title / author display
     if (!config.hasOwnProperty('title'))
-        infoDisplay.title.innerHTML = '';
+        infoDisplay.title.textContent = '';
     if (!config.hasOwnProperty('author'))
-        infoDisplay.author.innerHTML = '';
+        infoDisplay.author.textContent = '';
     if (!config.hasOwnProperty('title') && !config.hasOwnProperty('author'))
         infoDisplay.container.style.display = 'none';
     if (config.targetBlank) {
@@ -3429,7 +3421,7 @@ this.destroy = function() {
         container.removeEventListener('blur', clearKeys, false);
         document.removeEventListener('mouseleave', onDocumentMouseUp, false);
     }
-    container.innerHTML = '';
+    container.textContent = '';
     container.classList.remove('pnlm-container');
 };
 
