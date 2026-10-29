@@ -100,6 +100,8 @@ function Renderer(container, context) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
             if (program.texture)
                 gl.deleteTexture(program.texture);
+            if (program.texture2)
+                gl.deleteTexture(program.texture2);
             if (program.nodeCache)
                 for (var i = 0; i < program.nodeCache.length; i++)
                     gl.deleteTexture(program.nodeCache[i].texture);
