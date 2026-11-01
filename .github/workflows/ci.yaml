@@ -29,3 +29,4 @@ jobs:
     - name: Test
       run: |
         xvfb-run -a python3 ${{ github.workspace }}/tests/run_tests.py
+        python3 ${{ github.workspace }}/tests/run_browser_tests.py
