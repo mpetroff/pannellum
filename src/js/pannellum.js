@@ -124,7 +124,7 @@ var defaultConfig = {
 // When setting strings in external configuration, `\n` should be used instead of `<br>` to insert line breaks
 defaultConfig.strings = {
     // Labels
-    loadButtonLabel: 'Click to<br>Load<br>Panorama',
+    loadButtonLabel: 'Click to\nLoad\nPanorama',
     loadingLabel: 'Loading...',
     bylineLabel: 'by %s',    // One substitution: author
 
@@ -365,7 +365,7 @@ function init() {
             var a = document.createElement('a');
             a.href = sanitizeURL(e.target.src, true);
             a.textContent = a.href;
-            anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
+            anError(config.strings.fileAccessError, [a]);
         };
         
         for (i = 0; i < panoImage.length; i++) {
@@ -413,7 +413,7 @@ function init() {
                     var a = document.createElement('a');
                     a.href = sanitizeURL(p, true);
                     a.textContent = a.href;
-                    anError(config.strings.fileAccessError.replace('%s', a.outerHTML));
+                    anError(config.strings.fileAccessError, [a]);
                     return;
                 }
                 var img = this.response;
@@ -673,18 +673,22 @@ function parseGPanoXMP(image, url) {
  * @private
  * @param {string} errorMsg - Error message to display. If not specified, a
  *      generic WebGL error is displayed.
+ * @param {(Node | string)[]} [placeholders] - the replacements for each `%s` placeholder
  */
-function anError(errorMsg) {
+function anError(errorMsg, placeholders) {
     if (errorMsg === undefined)
         errorMsg = config.strings.genericWebGLError;
-    infoDisplay.errorMsg.innerHTML = '<p>' + errorMsg + '</p>';
+    var p = document.createElement('p');
+    p.appendChild(createChildren(errorMsg, placeholders));
+    infoDisplay.errorMsg.textContent = '';
+    infoDisplay.errorMsg.appendChild(p);
     controls.load.style.display = 'none';
     infoDisplay.load.box.style.display = 'none';
     infoDisplay.errorMsg.style.display = 'table';
     error = true;
     loaded = undefined;
     renderContainer.style.display = 'none';
-    fireEvent('error', errorMsg);
+    fireEvent('error', p.textContent);
 }
 
 /**
@@ -705,11 +709,15 @@ function clearError() {
  * Displays an interaction message.
  * @private
  * @param {string} msg - Message to display.
+ * @param {(Node | string)[]} [placeholders] - the replacements for each `%s` placeholder
  */
-function showInteractionMessage(interactionMsg) {
+function showInteractionMessage(interactionMsg, placeholders) {
     infoDisplay.interactionMsg.style.opacity = 1;
 
-    infoDisplay.interactionMsg.innerHTML = '<p>' + interactionMsg + '</p>';
+    var p = document.createElement('p');
+    p.appendChild(createChildren(interactionMsg, placeholders));
+    infoDisplay.interactionMsg.textContent = '';
+    infoDisplay.interactionMsg.appendChild(p);
     infoDisplay.interactionMsg.style.display = 'table';
     fireEvent('messageshown');
 
@@ -1133,7 +1141,10 @@ function onDocumentMouseWheel(event) {
     // Ctrl for zoom
     if (!fullscreenActive && config.mouseZoom == 'ctrl' && !event.ctrlKey) {
         var keyname = navigator.platform.indexOf('Mac') != -1 ? 'control' : 'ctrl';
-        showInteractionMessage(config.strings.ctrlZoomActivate.replace('%s', '<kbd class="pnlm-outline">' + keyname + '</kbd>'));
+        var kbd = document.createElement('kbd');
+        kbd.className = 'pnlm-outline';
+        kbd.textContent = keyname;
+        showInteractionMessage(config.strings.ctrlZoomActivate, [kbd]);
         return;
     }
     clearInteractionMessage();
@@ -1788,7 +1799,7 @@ function renderInit() {
         if (event.type == 'webgl error' || event.type == 'no webgl') {
             anError();
         } else if (event.type == 'webgl size error') {
-            anError(config.strings.textureSizeError.replace('%s', event.width).replace('%s', event.maxWidth));
+            anError(config.strings.textureSizeError, [event.width, event.maxWidth]);
         } else {
             anError(config.strings.unknownError);
             throw event;
@@ -1859,11 +1870,11 @@ function createHotSpot(hs) {
     if (hs.cssClass)
         div.className += ' ' + hs.cssClass;
     else
-        div.className += ' pnlm-hotspot pnlm-sprite pnlm-' + escapeHTML(hs.type);
+        div.className += ' pnlm-hotspot pnlm-sprite pnlm-' + hs.type;
 
     var span = document.createElement('span');
     if (hs.text)
-        span.innerHTML = escapeHTML(hs.text);
+        span.appendChild(createChildren(hs.text));
 
     var a;
     if (hs.video) {
@@ -2126,7 +2137,7 @@ function mergeConfig(sceneId) {
             if (k == 'strings') {
                 for (s in initialConfig.default.strings) {
                     if (initialConfig.default.strings.hasOwnProperty(s)) {
-                        config.strings[s] = escapeHTML(initialConfig.default.strings[s]);
+                        config.strings[s] = String(initialConfig.default.strings[s]);
                     }
                 }
             } else {
@@ -2146,7 +2157,7 @@ function mergeConfig(sceneId) {
                 if (k == 'strings') {
                     for (s in scene.strings) {
                         if (scene.strings.hasOwnProperty(s)) {
-                            config.strings[s] = escapeHTML(scene.strings[s]);
+                            config.strings[s] = String(scene.strings[s]);
                         }
                     }
                 } else {
@@ -2166,7 +2177,7 @@ function mergeConfig(sceneId) {
             if (k == 'strings') {
                 for (s in initialConfig.strings) {
                     if (initialConfig.strings.hasOwnProperty(s)) {
-                        config.strings[s] = escapeHTML(initialConfig.strings[s]);
+                        config.strings[s] = String(initialConfig.strings[s]);
                     }
                 }
             } else {
@@ -2223,31 +2234,39 @@ function processOptions(isPreview) {
     }
 
     // Fill in load button label and loading box text
-    controls.load.innerHTML = '<div><p>' + config.strings.loadButtonLabel + '</p></div>';
-    infoDisplay.load.boxp.innerHTML = config.strings.loadingLabel;
+    var loadButtonDiv = document.createElement('div');
+    var loadButtonP = document.createElement('p');
+    loadButtonP.appendChild(createChildren(config.strings.loadButtonLabel));
+    loadButtonDiv.appendChild(loadButtonP);
+    controls.load.textContent = '';
+    controls.load.appendChild(loadButtonDiv);
+    infoDisplay.load.boxp.textContent = '';
+    infoDisplay.load.boxp.appendChild(createChildren(config.strings.loadingLabel));
 
     // Process other options
     for (var key in config) {
       if (config.hasOwnProperty(key)) {
         switch(key) {
             case 'title':
-                infoDisplay.title.innerHTML = escapeHTML(config[key]);
+                infoDisplay.title.textContent = '';
+                infoDisplay.title.appendChild(createChildren(config[key]));
                 infoDisplay.container.style.display = 'inline';
                 break;
             
             case 'author':
-                var authorText = escapeHTML(config[key]);
+                var authorText = createChildren(config[key]);
+                var authorLink = null;
                 if (config.authorURL) {
-                    var authorLink = document.createElement('a');
+                    authorLink = document.createElement('a');
                     authorLink.href = sanitizeURL(config['authorURL'], true);
                     if (config.targetBlank) {
                         authorLink.target = '_blank';
                         authorLink.rel = 'noopener';
                     }
-                    authorLink.innerHTML = escapeHTML(config[key]);
-                    authorText = authorLink.outerHTML;
+                    authorLink.appendChild(authorText);
                 }
-                infoDisplay.author.innerHTML = config.strings.bylineLabel.replace('%s', authorText);
+                infoDisplay.author.textContent = '';
+                infoDisplay.author.appendChild(createChildren(config.strings.bylineLabel, [authorLink || authorText]));
                 infoDisplay.container.style.display = 'inline';
                 break;
             
@@ -2603,21 +2622,40 @@ function startOrientation() {
 }
 
 /**
- * Escapes HTML string (to mitigate possible DOM XSS attacks).
+ * Converts the string `s` into a {@link DocumentFragment}, replacing:
+ * - any linebreaks (`\n`) with `<br />`, and
+ * - any placeholders (`%s`) with the corresponding value in the `placeholders` arg.
+ *
+ * This is a safe alternative to manually constructing an `innerHTML` string.
  * @private
  * @param {string} s - String to escape
- * @returns {string} Escaped string
+ * @param {(Node | string)[]} [placeholders] - the replacements for each `%s` placeholder
+ * @returns {DocumentFragment}
  */
-function escapeHTML(s) {
-    if (!initialConfig.escapeHTML)
-        return String(s).split('\n').join('<br>');
-    return String(s).split(/&/g).join('&amp;')
-        .split('"').join('&quot;')
-        .split("'").join('&#39;')
-        .split('<').join('&lt;')
-        .split('>').join('&gt;')
-        .split('/').join('&#x2f;')
-        .split('\n').join('<br>');  // Allow line breaks
+function createChildren(s, placeholders) {
+    var fragment = document.createDocumentFragment();
+    var segments = String(s).split('%s');
+    for (var i = 0; i < segments.length; i++) {
+        // add the `i-1`th placeholder before adding `i`th string
+        if (i) {
+            var thisPlaceholder = placeholders && i - 1 < placeholders.length ? placeholders[i - 1] : '%s';
+            if (thisPlaceholder instanceof Node) {
+                fragment.appendChild(thisPlaceholder);
+            } else {
+                fragment.appendChild(document.createTextNode(thisPlaceholder));
+            }
+        }
+
+        // replace \n and literal `"<br>"` strings with an actual <br /> element
+        var lines = segments[i].split(/\n|<br *\/?>/i);
+        for (var j = 0; j < lines.length; j++) {
+            if (j) {
+                fragment.appendChild(document.createElement('br'));
+            }
+            fragment.appendChild(document.createTextNode(lines[j]));
+        }
+    }
+    return fragment;
 }
 
 /**
