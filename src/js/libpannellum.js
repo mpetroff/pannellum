@@ -145,10 +145,8 @@ function Renderer(container, context) {
             if (faceMissing) { // Fill any missing fallback/cubemap faces with background
                 var nbytes = imgSize * imgSize * 4; // RGB, plus non-functional alpha
                 var imageArray = new Uint8ClampedArray(nbytes);
-                var rgb = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
-                rgb[0] *= 255;
-                rgb[1] *= 255;
-                rgb[2] *= 255;
+                var bgColor = globalParams.backgroundColor ? globalParams.backgroundColor : [0, 0, 0];
+                var rgb = [bgColor[0] * 255, bgColor[1] * 255, bgColor[2] * 255];
                 // Maybe filling could be done faster, see e.g., https://stackoverflow.com/questions/1295584/most-efficient-way-to-create-a-zero-filled-javascript-array
                 for (var i = 0; i < nbytes; i++) {
                     imageArray[i++] = rgb[0];
@@ -400,8 +398,8 @@ function Renderer(container, context) {
         program.drawInProgress = false;
 
         // Set background clear color (does not apply to cubemap/fallback image)
-        if (params.backgroundColor !== null) {
-            var color = params.backgroundColor ? params.backgroundColor : [0, 0, 0];
+        if (globalParams.backgroundColor !== null) {
+            var color = globalParams.backgroundColor ? globalParams.backgroundColor : [0, 0, 0];
             gl.clearColor(color[0], color[1], color[2], 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
         }
