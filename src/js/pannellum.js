@@ -1032,7 +1032,7 @@ function onDocumentTouchMove(event) {
  * Event handler for end of touches. Stops panning and/or zooming.
  * @private
  */
-function onDocumentTouchEnd() {
+function onDocumentTouchEnd(event) {
     draggingHotSpot = null;
 
     isUserInteracting = false;
@@ -1113,7 +1113,7 @@ function onDocumentPointerUp(event) {
         if (!defined) {
             pointerIDs = [];
             pointerCoordinates = [];
-            onDocumentTouchEnd();
+            onDocumentTouchEnd(event);
         }
         event.preventDefault();
     }
