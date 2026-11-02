@@ -238,7 +238,9 @@ when the `lookAt` method is called. The default timing function is
 
 ### `escapeHTML` (boolean)
 
-When true, HTML is escaped from configuration strings to help mitigate possible
+HTML is always escaped, using native DOM manipulation (like [`document.createTextNode`](https://developer.mozilla.org/docs/Web/API/Document/createTextNode)) instead of [`innerHTML = …`](https://developer.mozilla.org/docs/Web/API/Element/innerHTML).
+
+Therefore, the only impact of the `escapeHTML` option is to [ban certain Hot Spot attributes](https://nvd.nist.gov/vuln/detail/cve-2026-27210) (such as `on*`), to help mitigate possible
 DOM XSS attacks. This is always `true` when using the standalone viewer since
 the configuration is provided via the URL; it defaults to `false` but can be
 set to `true` when using the API.
