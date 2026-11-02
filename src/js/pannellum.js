@@ -2116,7 +2116,18 @@ function mergeConfig(sceneId) {
     // Merge default config
     for (k in defaultConfig) {
         if (defaultConfig.hasOwnProperty(k)) {
-            config[k] = defaultConfig[k];
+            if (k == 'strings') {
+                // Copy the default strings, so that scene- or
+                // config-specific strings don't mutate the shared defaults
+                config.strings = {};
+                for (s in defaultConfig.strings) {
+                    if (defaultConfig.strings.hasOwnProperty(s)) {
+                        config.strings[s] = defaultConfig.strings[s];
+                    }
+                }
+            } else {
+                config[k] = defaultConfig[k];
+            }
         }
     }
     
