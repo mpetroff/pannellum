@@ -329,7 +329,8 @@ function Renderer(container, context) {
                 throw {type: 'webgl size error', width: image.width, maxWidth: maxWidth * 2};
             }
         } else if (imageType == 'cubemap') {
-            if (cubeImgWidth > gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE)) {
+            maxWidth = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+            if (cubeImgWidth > maxWidth) {
                 console.log('Error: The image is too big; it\'s ' + cubeImgWidth + 'px wide, ' +
                             'but this device\'s maximum supported size is ' + maxWidth + 'px.');
                 throw {type: 'webgl size error', width: cubeImgWidth, maxWidth: maxWidth};
