@@ -451,6 +451,7 @@ function init() {
             } catch (e) {
                 // Malformed URL
                 anError(config.strings.malformedURLError);
+                return;
             }
             xhr.responseType = 'blob';
             xhr.setRequestHeader('Accept', 'image/*,*/*;q=0.9');
