@@ -2827,7 +2827,7 @@ this.setYaw = function(yaw, animated, callback, callbackArgs) {
         return this;
     }
     animated = animated == undefined ? 1000: Number(animated);
-    yaw = ((yaw + 180) % 360) - 180; // Keep in bounds
+    yaw = ((yaw + 540) % 360) - 180; // Keep in bounds
     if (animated) {
         // Animate in shortest direction
         if (config.yaw - yaw > 180)
