@@ -72,3 +72,9 @@ Fired when a message, e.g., for needing `ctrl` + scroll to zoom, is shown.
 ## `messagecleared`
 
 Fired when a previously shown message is cleared.
+
+
+## `destroy`
+
+Fired before the renderer and DOM are destroyed, allowing extensions to release
+external presentation resources. Source loading does not continue after destroy.

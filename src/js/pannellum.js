@@ -58,6 +58,7 @@ var config,
     prevTime,
     speed = {'yaw': 0, 'pitch': 0, 'hfov': 0},
     animating = false,
+    renderSuspensions = 0,
     orientation = false,
     orientationYawOffset = 0,
     autoRotateStart,
@@ -1519,7 +1520,9 @@ function animateInit() {
  * @private
  */
 function animate() {
-    if (destroyed) {
+    if (destroyed || renderSuspensions) {
+        animating = false;
+        prevTime = undefined;
         return;
     }
 
@@ -2391,6 +2394,7 @@ function onFullScreenChange(resize) {
     }
     if (resize !== 'resize')
         fireEvent('fullscreenchange', fullscreenActive);
+    if (renderSuspensions) return;
     // Resize renderer (deal with browser quirks and fixes #155)
     renderer.resize();
     setHfov(config.hfov);
@@ -2508,7 +2512,7 @@ function loadScene(sceneId, targetPitch, targetYaw, targetHfov, fadeDone) {
     
     // Set up fade if specified
     var fadeImg, workingPitch, workingYaw, workingHfov;
-    if (config.sceneFadeDuration && !fadeDone) {
+    if (config.sceneFadeDuration && !fadeDone && !renderSuspensions) {
         var data = renderer.render(config.pitch * Math.PI / 180,
             config.yaw * Math.PI / 180, config.hfov * Math.PI / 180,
             {roll: config.roll * Math.PI / 180, returnImage: 'ImageBitmap'});
@@ -3098,6 +3102,36 @@ this.stopMovement = function() {
 };
 
 /**
+ * Suspend desktop rendering while an external loop owns presentation.
+ * Nested suspensions are supported. The returned release function is idempotent;
+ * the last release restores the viewport and restarts desktop rendering.
+ * Source loading and load / scenechange events continue during suspension.
+ * @returns {Function} Release this suspension.
+ */
+this.suspendRendering = function() {
+    if (destroyed) return function() {};
+    renderSuspensions++;
+    if (renderSuspensions == 1) {
+        clearTimeout(autoRotateStart);
+        animatedMove = {};
+        speed = {yaw: 0, pitch: 0, hfov: 0};
+        isUserInteracting = false;
+        clearKeys();
+    }
+    var released = false;
+    return function() {
+        if (released || destroyed) return;
+        released = true;
+        renderSuspensions--;
+        if (!renderSuspensions && renderer) {
+            var context = renderer.getContext();
+            if (context && context.isContextLost()) return;
+            onDocumentResize();
+        }
+    };
+};
+
+/**
  * Returns the panorama renderer.
  * @memberof Viewer
  * @instance
@@ -3431,6 +3465,7 @@ function fireEvent(type) {
  */
 this.destroy = function() {
     destroyed = true;
+    fireEvent('destroy');
     clearTimeout(autoRotateStart);
 
     if (xhr)
