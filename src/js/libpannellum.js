@@ -25,6 +25,22 @@ window.libpannellum = (function(window, document, undefined) {
 
 'use strict';
 
+// if trustedTypes are supported, then the worker will be registered under
+// a policy called 'pannellum'.
+var trustedTypesPolicy;
+function createWorkerUrl(url) {
+    if (!window.trustedTypes) return url;
+    if (!trustedTypesPolicy) {
+        trustedTypesPolicy = window.trustedTypes.createPolicy('pannellum', {
+            createScriptURL: function(url) {
+                if (url.slice(0, 5) !== 'blob:') throw new Error('only Blob URLs are allowed');
+                return url;
+            }
+        });
+    }
+    return trustedTypesPolicy.createScriptURL(url);
+}
+
 /**
  * Creates a new panorama renderer.
  * @constructor
@@ -1569,7 +1585,8 @@ function Renderer(container, context) {
     }
 
     // Load images in separate thread when possible
-    var processNextTile;
+    var processNextTile = processNextTileFallback;
+    var worker;
     if (window.Worker && window.createImageBitmap) {
         function workerFunc() {
             self.onmessage = function(e) {
@@ -1590,8 +1607,17 @@ function Renderer(container, context) {
             };
         }
         var workerFuncBlob = new Blob(['(' + workerFunc.toString() + ')()'], {type: 'application/javascript'}),
-            worker = new Worker(URL.createObjectURL(workerFuncBlob)),
-            texturesLoading = {};
+            workerUrl = URL.createObjectURL(workerFuncBlob);
+        try {
+            worker = new Worker(createWorkerUrl(workerUrl));
+        } catch (e) {
+            // this can happen when using a CSP or Trusted Types. In this case,
+            // we will fallback to the main thread.
+            console.warn('Creating the WebWorker was blocked, falling back to main thread.', e);
+        }
+    }
+    if (worker) {
+        var texturesLoading = {};
         worker.onmessage = function(e) {
             var path = e.data[0],
                 success = e.data[1],
@@ -1618,8 +1644,6 @@ function Renderer(container, context) {
             texturesLoading[path] = node;
             worker.postMessage([path, globalParams.crossOrigin]);
         };
-    } else {
-        processNextTile = processNextTileFallback;
     }
     
     /**
