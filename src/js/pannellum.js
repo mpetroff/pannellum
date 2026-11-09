@@ -1184,7 +1184,7 @@ function onDocumentKeyPress(event) {
     stopOrientation();
 
     // Record key pressed
-    var keynumber = event.which || event.keycode;
+    var keynumber = event.which || event.keyCode;
 
     // Override default action for keys that are used
     if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
@@ -1224,7 +1224,7 @@ function clearKeys() {
  */
 function onDocumentKeyUp(event) {
     // Record key pressed
-    var keynumber = event.which || event.keycode;
+    var keynumber = event.which || event.keyCode;
     
     // Override default action for keys that are used
     if (config.capturedKeyNumbers.indexOf(keynumber) < 0)
