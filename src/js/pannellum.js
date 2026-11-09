@@ -1910,6 +1910,7 @@ function createHotSpot(hs) {
         a.href = sanitizeURL(hs.URL, true);
         if (hs.attributes) {
             for (var key in hs.attributes) {
+                var attributeValue = hs.attributes[key];
                 // The setAttribute method converts the key to a lowercase
                 // string, so we do this conversion ourselves, before examining
                 // it (and we also remove all non-ASCII characters)
@@ -1919,7 +1920,7 @@ function createHotSpot(hs) {
                     // setAttribute is an injection sink, so we need to filter
                     // out HTML event handler attributes and href (which is
                     // specifically sanitized above) to avoid XSS
-                    a.setAttribute(key, hs.attributes[key]);
+                    a.setAttribute(key, attributeValue);
                 } else {
                     console.log('Hot spot attribute skipped.');
                 }
