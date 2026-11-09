@@ -730,6 +730,7 @@ function Renderer(container, context) {
             if (gl.getError() == 1286)
                 handleWebGLError1286();
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            if (program) gl.useProgram(program);
             if (imageType != 'multires') {
                 gl.uniform1f(program.aspectRatio, canvas.clientWidth / canvas.clientHeight);
             } else if (image.shtHash) {
@@ -758,6 +759,29 @@ function Renderer(container, context) {
         else
             pose = [horizonPitch, horizonRoll];
     };
+
+    // Establish the bindings owned by this renderer after other GL users.
+    // The caller owns framebuffer, viewport, clear, blend and scissor state.
+    function bindRenderState() {
+        gl.useProgram(program);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, imageType == 'multires' ? cubeVertTexCoordBuf : texCoordBuffer);
+        gl.enableVertexAttribArray(program.texCoordLocation);
+        gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+        if (imageType == 'multires') {
+            gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
+            gl.enableVertexAttribArray(program.vertPosLocation);
+            gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertIndBuf);
+        } else {
+            gl.bindTexture(imageType == 'cubemap' ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, program.texture);
+            if (program.texture2) {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, program.texture2);
+                gl.activeTexture(gl.TEXTURE0);
+            }
+        }
+    }
 
     /**
      * Render new view of panorama.
@@ -858,6 +882,8 @@ function Renderer(container, context) {
             return;
         }
         
+        bindRenderState();
+
         if (imageType != 'multires') {
             // Calculate focal length from vertical field of view
             var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
