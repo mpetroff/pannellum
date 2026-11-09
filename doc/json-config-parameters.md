@@ -547,3 +547,9 @@ but options specified for individual scenes override these options. The
 the scene ID for the first scene to be displayed. The `scenes` property
 contains a dictionary of scenes, specified by scene IDs. The values assigned to
 these IDs are specific to each scene.
+
+## Trusted Types
+
+Pannellum supports [Trusted Types](https://developer.mozilla.org/docs/Web/API/Trusted_Types_API).
+Since it uses a WebWorker, you'll need to add `"pannellum"` as a trusted policy name.
+This policy is only used to create the WebWorker, it's never used for HTML sanitisation.
