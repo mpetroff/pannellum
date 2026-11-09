@@ -1024,6 +1024,8 @@ function Renderer(container, context) {
      * @returns {boolean} Whether or not base image tiles are loaded.
      */
     this.isBaseLoaded = function() {
+        if (!gl || imageType != 'multires')
+            return false;
         if (program.currentNodes.length >= 6) {
             for (var i = 0; i < 6; i++) {
                 if (!program.currentNodes[i].textureLoaded) {
