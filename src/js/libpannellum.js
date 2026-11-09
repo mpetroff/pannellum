@@ -48,6 +48,7 @@ function Renderer(container, context) {
     var image, imageType;
     var texCoordBuffer, cubeVertBuf, cubeVertTexCoordBuf, cubeVertIndBuf;
     var globalParams;
+    var sourceAngles;
     var sides = ['f', 'b', 'u', 'd', 'l', 'r'];
     var fallbackSides = ['f', 'r', 'b', 'l', 'u', 'd'];
 
@@ -84,6 +85,7 @@ function Renderer(container, context) {
 
         imageType = _imageType;
         image = _image;
+        sourceAngles = {haov: haov, vaov: vaov, vOffset: voffset};
         globalParams = params || {};
 
         // Clear old data
@@ -730,6 +732,7 @@ function Renderer(container, context) {
             if (gl.getError() == 1286)
                 handleWebGLError1286();
             gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            if (program) gl.useProgram(program);
             if (imageType != 'multires') {
                 gl.uniform1f(program.aspectRatio, canvas.clientWidth / canvas.clientHeight);
             } else if (image.shtHash) {
@@ -759,6 +762,29 @@ function Renderer(container, context) {
             pose = [horizonPitch, horizonRoll];
     };
 
+    // Establish the bindings owned by this renderer after other GL users.
+    // The caller owns framebuffer, viewport, clear, blend and scissor state.
+    function bindRenderState() {
+        gl.useProgram(program);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, imageType == 'multires' ? cubeVertTexCoordBuf : texCoordBuffer);
+        gl.enableVertexAttribArray(program.texCoordLocation);
+        gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+        if (imageType == 'multires') {
+            gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertBuf);
+            gl.enableVertexAttribArray(program.vertPosLocation);
+            gl.vertexAttribPointer(program.vertPosLocation, 3, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertIndBuf);
+        } else {
+            gl.bindTexture(imageType == 'cubemap' ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, program.texture);
+            if (program.texture2) {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, program.texture2);
+                gl.activeTexture(gl.TEXTURE0);
+            }
+        }
+    }
+
     /**
      * Render new view of panorama.
      * @memberof Renderer
@@ -769,6 +795,7 @@ function Renderer(container, context) {
      * @param {Object} [params] - Extra configuration parameters. 
      * @param {number} [params.roll] - Camera roll (in radians).
      * @param {string} [params.returnImage] - Return rendered image? If specified, should be 'ImageBitmap', 'image/jpeg', or 'image/png'.
+     * @param {boolean} [params.clear=true] - Clear multires background before drawing.
      * @param {function} [params.hook] - Hook for executing arbitrary function in this environment.
      * @param {boolean} [params.dynamic] - Whether or not the image is dynamic (e.g., video) and should be updated.
      */
@@ -858,6 +885,8 @@ function Renderer(container, context) {
             return;
         }
         
+        bindRenderState();
+
         if (imageType != 'multires') {
             // Calculate focal length from vertical field of view
             var vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
@@ -985,7 +1014,7 @@ function Renderer(container, context) {
                 program.textureLoads.shift()(true);
 
             // Draw tiles
-            multiresDraw(!isPreview);
+            multiresDraw(!isPreview && params.clear !== false);
         }
         
         if (params.returnImage !== undefined) {
@@ -1000,6 +1029,33 @@ function Renderer(container, context) {
         }
     };
     
+    /**
+     * Get the decoded source and its projection metadata without drawing.
+     * Dimensions refer to one face for cubemaps; angles are in radians.
+     * The image is borrowed: callers must not close or replace it.
+     * @returns {Object|null} Source snapshot, or null before initialization.
+     */
+    this.getSource = function() {
+        if (!image) return null;
+        var face = imageType == 'cubemap' ? image[0] : image;
+        return {
+            image: image, type: imageType,
+            width: face.videoWidth || face.naturalWidth || face.width || 0,
+            height: face.videoHeight || face.naturalHeight || face.height || 0,
+            haov: sourceAngles.haov, vaov: sourceAngles.vaov, vOffset: sourceAngles.vOffset,
+            horizonPitch: pose ? pose[0] : 0, horizonRoll: pose ? pose[1] : 0
+        };
+    };
+
+    /**
+     * Get the shared WebGL context, or undefined for the CSS fallback.
+     * The renderer owns the context lifetime; callers must not destroy it.
+     * @returns {WebGLRenderingContext|undefined} Rendering context.
+     */
+    this.getContext = function() {
+        return gl;
+    };
+
     /**
      * Check if images are loading.
      * @memberof Renderer
